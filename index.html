@@ -70,7 +70,6 @@
 
     <h1>🌲 Forest Hunt</h1>
 
-    <!-- LOCATION -->
     <section>
         <h2>Your Location</h2>
 
@@ -84,7 +83,6 @@
     </section>
 
 
-    <!-- CHALLENGE -->
     <section>
         <h2>Challenge 1</h2>
 
@@ -100,7 +98,6 @@
             🔒 Challenge locked.
         </div>
 
-        <!-- Hidden until player reaches the target -->
         <div id="challengeClue" style="display:none;">
 
             <h3>🌲 Challenge 1</h3>
@@ -119,7 +116,6 @@
     </section>
 
 
-    <!-- CAMERA -->
     <section>
         <h2>📷 Your Photo</h2>
 
@@ -155,29 +151,21 @@
 
 <script>
 
-    // --------------------------------------------------
-    // TEST CHALLENGE LOCATION
-    // --------------------------------------------------
-
+    // The test target
     let targetLatitude = 52.5000;
     let targetLongitude = 0.7000;
 
-    // Player must be within this distance
-    // to unlock the challenge.
+    // Must be within 50 metres
     const challengeRadius = 50;
 
-
-    // --------------------------------------------------
-    // STORE PLAYER LOCATION
-    // --------------------------------------------------
-
+    // Player's current position
     let playerLatitude = null;
     let playerLongitude = null;
 
 
-    // --------------------------------------------------
-    // GET LOCATION
-    // --------------------------------------------------
+    // ----------------------------------------
+    // GET PLAYER LOCATION
+    // ----------------------------------------
 
     function getLocation() {
 
@@ -202,24 +190,21 @@
                 const accuracy = position.coords.accuracy;
 
                 document.getElementById("location").innerHTML =
-
                     "Latitude: " +
                     playerLatitude.toFixed(6) +
-
-                    "<br>Longitude: " +
+                    "<br>" +
+                    "Longitude: " +
                     playerLongitude.toFixed(6) +
-
-                    "<br>Accuracy: approximately " +
+                    "<br>" +
+                    "Accuracy: approximately " +
                     Math.round(accuracy) +
                     " metres";
-
             },
 
             function(error) {
 
                 document.getElementById("location").innerHTML =
                     "Could not get your location.";
-
             },
 
             {
@@ -231,16 +216,11 @@
     }
 
 
-    // --------------------------------------------------
-    // DISTANCE CALCULATION
-    // --------------------------------------------------
+    // ----------------------------------------
+    // CALCULATE DISTANCE
+    // ----------------------------------------
 
-    function distanceInMetres(
-        lat1,
-        lon1,
-        lat2,
-        lon2
-    ) {
+    function distanceInMetres(lat1, lon1, lat2, lon2) {
 
         const earthRadius = 6371000;
 
@@ -273,9 +253,9 @@
     }
 
 
-    // --------------------------------------------------
-    // CHECK CHALLENGE
-    // --------------------------------------------------
+    // ----------------------------------------
+    // CHECK CHALLENGE LOCATION
+    // ----------------------------------------
 
     function checkChallenge() {
 
@@ -299,11 +279,7 @@
 
         if (distance <= challengeRadius) {
 
-            document.getElementById("challengeResult").innerHTML =
-                "🔓 Challenge unlocked!";
-
-            document.getElementById("challengeClue").style.display =
-                "block";
+            unlockChallenge();
 
         } else {
 
@@ -318,10 +294,23 @@
     }
 
 
-    // --------------------------------------------------
+    // ----------------------------------------
+    // UNLOCK CHALLENGE
+    // ----------------------------------------
+
+    function unlockChallenge() {
+
+        document.getElementById("challengeResult").innerHTML =
+            "🔓 Challenge unlocked!";
+
+        document.getElementById("challengeClue").style.display =
+            "block";
+    }
+
+
+    // ----------------------------------------
     // TEST MODE
-    // Set target to the player's current location
-    // --------------------------------------------------
+    // ----------------------------------------
 
     function setTargetToMyLocation() {
 
@@ -340,30 +329,34 @@
 
             function(position) {
 
-                targetLatitude =
-                    position.coords.latitude;
+                // Make the current position the target
+                targetLatitude = position.coords.latitude;
+                targetLongitude = position.coords.longitude;
 
-                targetLongitude =
-                    position.coords.longitude;
+                // Also remember the player's position
+                playerLatitude = position.coords.latitude;
+                playerLongitude = position.coords.longitude;
 
-                playerLatitude =
-                    position.coords.latitude;
+                // Update location display
+                document.getElementById("location").innerHTML =
+                    "Latitude: " +
+                    playerLatitude.toFixed(6) +
+                    "<br>" +
+                    "Longitude: " +
+                    playerLongitude.toFixed(6) +
+                    "<br>" +
+                    "Accuracy: approximately " +
+                    Math.round(position.coords.accuracy) +
+                    " metres";
 
-                playerLongitude =
-                    position.coords.longitude;
-
-                document.getElementById("challengeResult").innerHTML =
-                    "🧪 Test target set to your current location.";
-
-                document.getElementById("challengeClue").style.display =
-                    "none";
+                // Immediately unlock
+                unlockChallenge();
             },
 
             function(error) {
 
                 document.getElementById("challengeResult").innerHTML =
                     "Could not get your location.";
-
             },
 
             {
@@ -375,44 +368,40 @@
     }
 
 
-    // --------------------------------------------------
+    // ----------------------------------------
     // PHOTO SELECTION
-    // --------------------------------------------------
+    // ----------------------------------------
 
     document
         .getElementById("photoInput")
-        .addEventListener(
-            "change",
-            function(event) {
+        .addEventListener("change", function(event) {
 
-                const file =
-                    event.target.files[0];
+            const file = event.target.files[0];
 
-                if (!file) {
-                    return;
-                }
-
-                const image =
-                    document.getElementById("photoPreview");
-
-                image.src =
-                    URL.createObjectURL(file);
-
-                image.style.display =
-                    "block";
-
-                document.getElementById("submitPhoto").disabled =
-                    false;
-
-                document.getElementById("photoResult").innerHTML =
-                    "";
+            if (!file) {
+                return;
             }
-        );
+
+            const image =
+                document.getElementById("photoPreview");
+
+            image.src =
+                URL.createObjectURL(file);
+
+            image.style.display =
+                "block";
+
+            document.getElementById("submitPhoto").disabled =
+                false;
+
+            document.getElementById("photoResult").innerHTML =
+                "";
+        });
 
 
-    // --------------------------------------------------
+    // ----------------------------------------
     // SUBMIT PHOTO
-    // --------------------------------------------------
+    // ----------------------------------------
 
     function submitPhoto() {
 
