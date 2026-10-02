@@ -99,6 +99,8 @@
         Check Challenge Location
     </button>
 
+<button onclick="setTargetToMyLocation()">Set Target to My Location (Test)</button>
+
     <div id="challengeResult">
         Challenge not checked yet.
     </div>
@@ -141,8 +143,8 @@
     // These are deliberately just test coordinates.
     // We will replace them with a real forest location later.
 
-    const targetLatitude = 52.5000;
-    const targetLongitude = 0.7000;
+let targetLatitude = 52.5000;
+let targetLongitude = 0.7000;
 
     // Player must be within this many metres.
 
@@ -377,6 +379,22 @@
                 "block";
         }
     );
+
+function setTargetToMyLocation() {
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            targetLatitude = position.coords.latitude;
+            targetLongitude = position.coords.longitude;
+
+            document.getElementById("challengeResult").innerHTML =
+                "🧪 Test target set to your current location.";
+        },
+        function(error) {
+            document.getElementById("challengeResult").innerHTML =
+                "Could not get your location.";
+        }
+    );
+}
 
 </script>
 ```
