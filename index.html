@@ -99,6 +99,17 @@
         Check Challenge Location
     </button>
 
+<div id="challengeClue" style="display:none;">
+    <h3>🌲 Challenge 1</h3>
+
+    <p>
+        Find a tree with a distinctive split trunk.
+        Take a photograph showing the split.
+    </p>
+
+    <p><strong>Your task:</strong> Take a photo of the tree.</p>
+</div>
+
 <button onclick="setTargetToMyLocation()">Set Target to My Location (Test)</button>
 
     <div id="challengeResult">
@@ -253,24 +264,16 @@ let targetLongitude = 0.7000;
 
 
                 if (distance <= challengeRadius) {
+    document.getElementById("challengeResult").innerHTML =
+        "🔓 Challenge unlocked!";
 
-                    result.innerHTML =
-                        "🔓 <strong>Challenge unlocked!</strong><br>" +
-                        "You are approximately " +
-                        Math.round(distance) +
-                        " metres from the target.";
+    document.getElementById("challengeClue").style.display = "block";
+} else {
+    document.getElementById("challengeResult").innerHTML =
+        "🔒 Not there yet.";
 
-                } else {
-
-                    result.innerHTML =
-                        "🔒 <strong>Not there yet.</strong><br>" +
-                        "You are approximately " +
-                        Math.round(distance) +
-                        " metres from the target.<br>" +
-                        "You need to be within " +
-                        challengeRadius +
-                        " metres.";
-                }
+    document.getElementById("challengeClue").style.display = "none";
+}
             },
 
 
