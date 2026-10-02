@@ -41,7 +41,8 @@
         color: white;
     }
 
-    #location {
+    #location,
+    #challengeResult {
         margin-top: 15px;
         line-height: 1.6;
     }
@@ -66,9 +67,12 @@
 
 ```
 <h1>🌲 Forest Hunt</h1>
-<p>Prototype 1</p>
+<p>Prototype 2 — GPS Challenge</p>
 
+
+<!-- LOCATION -->
 <div class="box">
+
     <h2>Your location</h2>
 
     <button onclick="getLocation()">
@@ -78,13 +82,38 @@
     <div id="location">
         Location not yet obtained.
     </div>
+
 </div>
 
+
+<!-- GPS CHALLENGE -->
 <div class="box">
+
+    <h2>Challenge 1</h2>
+
+    <p>
+        Reach the secret location to unlock the challenge.
+    </p>
+
+    <button onclick="checkChallenge()">
+        Check Challenge Location
+    </button>
+
+    <div id="challengeResult">
+        Challenge not checked yet.
+    </div>
+
+</div>
+
+
+<!-- PHOTO -->
+<div class="box">
+
     <h2>Your photograph</h2>
 
     <label class="camera-button">
         Take Photo
+
         <input
             type="file"
             accept="image/*"
@@ -99,36 +128,74 @@
     <p class="small">
         On a phone, this should open the camera.
     </p>
+
 </div>
 
+
 <script>
+
+    // --------------------------------------------------
+    // TEST CHALLENGE LOCATION
+    // --------------------------------------------------
+
+    // These are deliberately just test coordinates.
+    // We will replace them with a real forest location later.
+
+    const targetLatitude = 52.5000;
+    const targetLongitude = 0.7000;
+
+    // Player must be within this many metres.
+
+    const challengeRadius = 50;
+
+
+    // --------------------------------------------------
+    // GET LOCATION
+    // --------------------------------------------------
+
     function getLocation() {
 
-        const locationElement = document.getElementById("location");
+        const locationElement =
+            document.getElementById("location");
 
         if (!navigator.geolocation) {
+
             locationElement.textContent =
                 "Your browser does not support GPS location.";
+
             return;
         }
 
         locationElement.textContent =
             "Getting your location...";
 
+
         navigator.geolocation.getCurrentPosition(
 
             function(position) {
 
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-                const accuracy = position.coords.accuracy;
+                const latitude =
+                    position.coords.latitude;
+
+                const longitude =
+                    position.coords.longitude;
+
+                const accuracy =
+                    position.coords.accuracy;
+
 
                 locationElement.innerHTML =
-                    "<strong>Latitude:</strong> " + latitude + "<br>" +
-                    "<strong>Longitude:</strong> " + longitude + "<br>" +
+                    "<strong>Latitude:</strong> " +
+                    latitude + "<br>" +
+
+                    "<strong>Longitude:</strong> " +
+                    longitude + "<br>" +
+
                     "<strong>Accuracy:</strong> approximately " +
-                    Math.round(accuracy) + " metres";
+                    Math.round(accuracy) +
+                    " metres";
             },
+
 
             function(error) {
 
@@ -140,6 +207,146 @@
     }
 
 
+    // --------------------------------------------------
+    // CHECK CHALLENGE
+    // --------------------------------------------------
+
+    function checkChallenge() {
+
+        const result =
+            document.getElementById("challengeResult");
+
+
+        if (!navigator.geolocation) {
+
+            result.textContent =
+                "GPS is not available.";
+
+            return;
+        }
+
+
+        result.textContent =
+            "Checking your location...";
+
+
+        navigator.geolocation.getCurrentPosition(
+
+            function(position) {
+
+                const playerLatitude =
+                    position.coords.latitude;
+
+                const playerLongitude =
+                    position.coords.longitude;
+
+
+                const distance =
+                    distanceInMetres(
+                        playerLatitude,
+                        playerLongitude,
+                        targetLatitude,
+                        targetLongitude
+                    );
+
+
+                if (distance <= challengeRadius) {
+
+                    result.innerHTML =
+                        "🔓 <strong>Challenge unlocked!</strong><br>" +
+                        "You are approximately " +
+                        Math.round(distance) +
+                        " metres from the target.";
+
+                } else {
+
+                    result.innerHTML =
+                        "🔒 <strong>Not there yet.</strong><br>" +
+                        "You are approximately " +
+                        Math.round(distance) +
+                        " metres from the target.<br>" +
+                        "You need to be within " +
+                        challengeRadius +
+                        " metres.";
+                }
+            },
+
+
+            function(error) {
+
+                result.textContent =
+                    "Could not get your location. " +
+                    error.message;
+            }
+        );
+    }
+
+
+    // --------------------------------------------------
+    // DISTANCE CALCULATION
+    // --------------------------------------------------
+
+    function distanceInMetres(
+        latitude1,
+        longitude1,
+        latitude2,
+        longitude2
+    ) {
+
+        const earthRadius = 6371000;
+
+
+        const latitudeDifference =
+            degreesToRadians(
+                latitude2 - latitude1
+            );
+
+
+        const longitudeDifference =
+            degreesToRadians(
+                longitude2 - longitude1
+            );
+
+
+        const a =
+            Math.sin(latitudeDifference / 2) *
+            Math.sin(latitudeDifference / 2) +
+
+            Math.cos(
+                degreesToRadians(latitude1)
+            ) *
+
+            Math.cos(
+                degreesToRadians(latitude2)
+            ) *
+
+            Math.sin(longitudeDifference / 2) *
+            Math.sin(longitudeDifference / 2);
+
+
+        const c =
+            2 *
+            Math.atan2(
+                Math.sqrt(a),
+                Math.sqrt(1 - a)
+            );
+
+
+        return earthRadius * c;
+    }
+
+
+    function degreesToRadians(degrees) {
+
+        return degrees * Math.PI / 180;
+
+    }
+
+
+    // --------------------------------------------------
+    // CAMERA
+    // --------------------------------------------------
+
     const photoInput =
         document.getElementById("photoInput");
 
@@ -147,19 +354,30 @@
         document.getElementById("preview");
 
 
-    photoInput.addEventListener("change", function() {
+    photoInput.addEventListener(
+        "change",
+        function() {
 
-        const file = photoInput.files[0];
+            const file =
+                photoInput.files[0];
 
-        if (!file) {
-            return;
+            if (!file) {
+                return;
+            }
+
+
+            const imageUrl =
+                URL.createObjectURL(file);
+
+
+            preview.src =
+                imageUrl;
+
+            preview.style.display =
+                "block";
         }
+    );
 
-        const imageUrl = URL.createObjectURL(file);
-
-        preview.src = imageUrl;
-        preview.style.display = "block";
-    });
 </script>
 ```
 
