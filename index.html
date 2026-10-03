@@ -9,10 +9,11 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
             padding: 20px;
-            background: #f4f4f4;
+            line-height: 1.5;
+            background: #f5f5f5;
             color: #222;
         }
 
@@ -20,43 +21,62 @@
             text-align: center;
         }
 
-        section {
+        .panel {
             background: white;
             padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         button {
+            font-size: 16px;
             padding: 12px 18px;
             margin: 5px 0;
-            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #2e7d32;
+            color: white;
             cursor: pointer;
-            border-radius: 6px;
-            border: 1px solid #888;
         }
 
         button:disabled {
-            opacity: 0.5;
+            background: #aaa;
             cursor: not-allowed;
         }
 
-        select {
-            padding: 10px;
-            font-size: 16px;
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #eee;
         }
 
-        #location,
-        #gpsTestResult {
-            margin-top: 15px;
-            line-height: 1.6;
+        .success {
+            background: #dff0d8;
+            color: #245b20;
+        }
+
+        .warning {
+            background: #fff3cd;
+            color: #664d03;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #842029;
         }
 
         .challenge {
-            margin-top: 15px;
-            padding: 15px;
-            background: #eef7ee;
-            border-radius: 8px;
+            border-left: 6px solid #2e7d32;
+        }
+
+        .locked {
+            opacity: 0.55;
+        }
+
+        .hidden {
+            display: none;
         }
 
         #photoPreview {
@@ -65,16 +85,14 @@
             border-radius: 8px;
         }
 
-        #photoResult {
+        .distance {
+            font-size: 24px;
             font-weight: bold;
-            margin-top: 15px;
         }
 
-        .gpsBox {
-            background: #eeeeee;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
+        .small {
+            font-size: 14px;
+            color: #666;
         }
     </style>
 </head>
@@ -83,241 +101,119 @@
 
     <h1>🌲 Forest Hunt</h1>
 
-
-    <!-- ============================================= -->
-    <!-- GPS TEST PANEL -->
-    <!-- ============================================= -->
-
-    <section>
-
-        <h2>📍 GPS Test</h2>
-
-        <p>
-            This is a development tool for testing how the
-            geofence behaves at different distances.
-        </p>
-
-        <div class="gpsBox">
-
-            <label for="testDistance">
-                Test target distance:
-            </label>
-
-            <br><br>
-
-            <select id="testDistance">
-
-                <option value="0">
-                    0 metres
-                </option>
-
-                <option value="25">
-                    25 metres
-                </option>
-
-                <option value="50">
-                    50 metres
-                </option>
-
-                <option value="75">
-                    75 metres
-                </option>
-
-                <option value="100" selected>
-                    100 metres
-                </option>
-
-                <option value="150">
-                    150 metres
-                </option>
-
-            </select>
-
-            <br>
-
-            <button onclick="runGpsTest()">
-                Test GPS
-            </button>
-
-            <div id="gpsTestResult">
-                GPS test not run yet.
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ============================================= -->
-    <!-- PLAYER LOCATION -->
-    <!-- ============================================= -->
-
-    <section>
+    <!-- LOCATION -->
+    <div class="panel">
 
         <h2>Your Location</h2>
 
         <button onclick="getLocation()">
-            Get My Location
+            📍 Get My Location
         </button>
 
-        <div id="location">
+        <div id="locationStatus" class="status">
             Location not checked yet.
         </div>
 
-    </section>
+    </div>
 
 
-    <!-- ============================================= -->
+    <!-- CURRENT GPS STATUS -->
+    <div class="panel">
+
+        <h2>GPS Search Area</h2>
+
+        <p>
+            The hunt uses GPS to determine whether you are close enough
+            to the current challenge location.
+        </p>
+
+        <div id="gpsStatus" class="status">
+            Waiting for your location...
+        </div>
+
+    </div>
+
+
     <!-- CHALLENGE 1 -->
-    <!-- ============================================= -->
-
-    <section id="challenge1">
+    <div id="challenge1" class="panel challenge">
 
         <h2>Challenge 1</h2>
 
-        <button onclick="setTargetToMyLocation()">
-            Set Target to My Location (Test)
+        <h3>🏞️ The Playing Field</h3>
+
+        <p>
+            Find the playing field. Once you enter the search area,
+            the challenge will unlock.
+        </p>
+
+        <div id="challenge1Status" class="status">
+            Waiting for GPS...
+        </div>
+
+        <button id="photoButton1"
+                onclick="showPhotoSection(1)"
+                disabled>
+            📷 Take Photograph
         </button>
 
-        <div id="challenge1Result">
-            🔒 Challenge locked.
-        </div>
-
-        <div id="challenge1Distance"></div>
-
-        <div
-            id="challenge1Clue"
-            class="challenge"
-            style="display:none;"
-        >
-
-            <h3>🌲 The Split Tree</h3>
-
-            <p>
-                Find a tree with a distinctive split trunk.
-                Take a photograph showing the split.
-            </p>
-
-            <p>
-                <strong>Your task:</strong>
-                Take a photo of the tree.
-            </p>
-
-            <button onclick="showPhotoSection(1)">
-                📷 Take Photo
-            </button>
-
-        </div>
-
-    </section>
+    </div>
 
 
-    <!-- ============================================= -->
     <!-- CHALLENGE 2 -->
-    <!-- ============================================= -->
-
-    <section
-        id="challenge2"
-        style="display:none;"
-    >
+    <div id="challenge2" class="panel challenge locked">
 
         <h2>Challenge 2</h2>
 
-        <button onclick="setTargetToMyLocation2()">
-            Set Target to My Location (Test)
+        <h3>🏛️ The Hall</h3>
+
+        <p>
+            Find the hall. Enter the search area and take a photograph.
+        </p>
+
+        <div id="challenge2Status" class="status">
+            🔒 Complete Challenge 1 first.
+        </div>
+
+        <button id="photoButton2"
+                onclick="showPhotoSection(2)"
+                disabled>
+            📷 Take Photograph
         </button>
 
-        <div id="challenge2Result">
-            🔒 Challenge locked.
-        </div>
-
-        <div id="challenge2Distance"></div>
-
-        <div
-            id="challenge2Clue"
-            class="challenge"
-            style="display:none;"
-        >
-
-            <h3>🌳 The Woodland View</h3>
-
-            <p>
-                Find an interesting view through the trees.
-                Take a photograph showing the view.
-            </p>
-
-            <p>
-                <strong>Your task:</strong>
-                Take a photo of the view.
-            </p>
-
-            <button onclick="showPhotoSection(2)">
-                📷 Take Photo
-            </button>
-
-        </div>
-
-    </section>
+    </div>
 
 
-    <!-- ============================================= -->
     <!-- CHALLENGE 3 -->
-    <!-- ============================================= -->
-
-    <section
-        id="challenge3"
-        style="display:none;"
-    >
+    <div id="challenge3" class="panel challenge locked">
 
         <h2>Challenge 3</h2>
 
-        <button onclick="setTargetToMyLocation3()">
-            Set Target to My Location (Test)
+        <h3>🏘️ The High Street</h3>
+
+        <p>
+            Find the High Street. Enter the search area and take a photograph.
+        </p>
+
+        <div id="challenge3Status" class="status">
+            🔒 Complete Challenge 2 first.
+        </div>
+
+        <button id="photoButton3"
+                onclick="showPhotoSection(3)"
+                disabled>
+            📷 Take Photograph
         </button>
 
-        <div id="challenge3Result">
-            🔒 Challenge locked.
-        </div>
-
-        <div id="challenge3Distance"></div>
-
-        <div
-            id="challenge3Clue"
-            class="challenge"
-            style="display:none;"
-        >
-
-            <h3>🍂 The Forest Floor</h3>
-
-            <p>
-                Find an interesting natural feature on the
-                forest floor and photograph it.
-            </p>
-
-            <p>
-                <strong>Your task:</strong>
-                Take a photo of the feature.
-            </p>
-
-            <button onclick="showPhotoSection(3)">
-                📷 Take Photo
-            </button>
-
-        </div>
-
-    </section>
+    </div>
 
 
-    <!-- ============================================= -->
     <!-- PHOTO -->
-    <!-- ============================================= -->
+    <div id="photoSection" class="panel hidden">
 
-    <section id="photoSection">
+        <h2>📷 Photograph</h2>
 
-        <h2>📷 Your Photo</h2>
-
-        <p id="photoInstructions">
-            Complete a challenge to take your photo.
+        <p>
+            Take a photograph to complete this challenge.
         </p>
 
         <input
@@ -325,99 +221,158 @@
             id="photoInput"
             accept="image/*"
             capture="environment"
-            disabled
         >
-
-        <br><br>
 
         <img
             id="photoPreview"
-            style="display:none;"
-            alt="Your photo"
+            class="hidden"
+            alt="Photo preview"
         >
 
         <br>
 
         <button
-            id="submitPhoto"
+            id="submitPhotoButton"
             onclick="submitPhoto()"
-            disabled
-        >
-            Submit Photo
+            disabled>
+            Submit Photograph
         </button>
 
-        <p id="photoResult"></p>
+        <div id="photoStatus" class="status">
+            No photograph selected.
+        </div>
 
-    </section>
+    </div>
+
+
+    <!-- FINISHED -->
+    <div id="completePanel" class="panel hidden">
+
+        <h2>🎉 Hunt Complete!</h2>
+
+        <p>
+            Congratulations — you've completed all three challenges.
+        </p>
+
+    </div>
 
 
 <script>
 
-    // ==================================================
-    // GAME SETTINGS
-    // ==================================================
+    // ------------------------------------------------------------
+    // SETTINGS
+    // ------------------------------------------------------------
 
-    const challengeRadius = 50;
+    // Search radius in metres.
+    const challengeRadius = 150;
 
-    let targetLatitude = 52.5000;
-    let targetLongitude = 0.7000;
+
+    // ------------------------------------------------------------
+    // REAL TEST LOCATIONS
+    // ------------------------------------------------------------
+
+    const challenges = {
+
+        1: {
+            name: "The Playing Field",
+            latitude: 52.538761848398785,
+            longitude: 0.5901938775221194
+        },
+
+        2: {
+            name: "The Hall",
+            latitude: 52.54189431671765,
+            longitude: 0.5853905864119698
+        },
+
+        3: {
+            name: "The High Street",
+            latitude: 52.541854232784715,
+            longitude: 0.5890602942562545
+        }
+
+    };
+
+
+    // ------------------------------------------------------------
+    // GAME STATE
+    // ------------------------------------------------------------
 
     let playerLatitude = null;
     let playerLongitude = null;
+    let playerAccuracy = null;
 
-    let currentChallenge = 0;
+    let currentChallenge = 1;
 
     let challenge1Complete = false;
     let challenge2Complete = false;
     let challenge3Complete = false;
 
 
-    // ==================================================
+    // ------------------------------------------------------------
     // GET LOCATION
-    // ==================================================
+    // ------------------------------------------------------------
 
     function getLocation() {
 
+        const status = document.getElementById("locationStatus");
+
+        status.className = "status";
+        status.innerHTML = "📡 Getting your location...";
+
         if (!navigator.geolocation) {
 
-            document.getElementById("location").innerHTML =
-                "Geolocation is not supported by this browser.";
+            status.className = "status error";
+            status.innerHTML =
+                "Your browser does not support GPS location.";
 
             return;
         }
-
-        document.getElementById("location").innerHTML =
-            "Getting your location...";
 
         navigator.geolocation.getCurrentPosition(
 
             function(position) {
 
-                playerLatitude =
-                    position.coords.latitude;
+                playerLatitude = position.coords.latitude;
+                playerLongitude = position.coords.longitude;
+                playerAccuracy = position.coords.accuracy;
 
-                playerLongitude =
-                    position.coords.longitude;
+                status.className = "status success";
 
-                const accuracy =
-                    position.coords.accuracy;
+                status.innerHTML =
+                    "<strong>Location found.</strong><br>" +
+                    "Latitude: " + playerLatitude.toFixed(6) + "<br>" +
+                    "Longitude: " + playerLongitude.toFixed(6) + "<br>" +
+                    "GPS accuracy: ±" +
+                    Math.round(playerAccuracy) + "m";
 
-                document.getElementById("location").innerHTML =
-                    "Latitude: " +
-                    playerLatitude.toFixed(6) +
-                    "<br>" +
-                    "Longitude: " +
-                    playerLongitude.toFixed(6) +
-                    "<br>" +
-                    "GPS accuracy: approximately " +
-                    Math.round(accuracy) +
-                    " metres";
+                checkCurrentChallenge();
+
             },
 
             function(error) {
 
-                document.getElementById("location").innerHTML =
-                    "Could not get your location.";
+                status.className = "status error";
+
+                let message = "Unable to get your location.";
+
+                if (error.code === 1) {
+                    message =
+                        "Location permission was denied. Please allow location access.";
+                }
+
+                if (error.code === 2) {
+                    message =
+                        "Your location could not be determined.";
+                }
+
+                if (error.code === 3) {
+                    message =
+                        "Location request timed out. Please try again.";
+                }
+
+                status.innerHTML = message;
+
             },
 
             {
@@ -425,39 +380,37 @@
                 timeout: 10000,
                 maximumAge: 0
             }
+
         );
+
     }
 
 
-    // ==================================================
+    // ------------------------------------------------------------
     // DISTANCE CALCULATION
-    // ==================================================
+    // ------------------------------------------------------------
 
     function distanceInMetres(lat1, lon1, lat2, lon2) {
 
         const earthRadius = 6371000;
 
-        const lat1Radians =
-            lat1 * Math.PI / 180;
+        const lat1Radians = lat1 * Math.PI / 180;
+        const lat2Radians = lat2 * Math.PI / 180;
 
-        const lat2Radians =
-            lat2 * Math.PI / 180;
-
-        const differenceLatitude =
+        const deltaLat =
             (lat2 - lat1) * Math.PI / 180;
 
-        const differenceLongitude =
+        const deltaLon =
             (lon2 - lon1) * Math.PI / 180;
 
         const a =
-            Math.sin(differenceLatitude / 2) *
-            Math.sin(differenceLatitude / 2) +
+            Math.sin(deltaLat / 2) *
+            Math.sin(deltaLat / 2) +
 
             Math.cos(lat1Radians) *
             Math.cos(lat2Radians) *
-
-            Math.sin(differenceLongitude / 2) *
-            Math.sin(differenceLongitude / 2);
+            Math.sin(deltaLon / 2) *
+            Math.sin(deltaLon / 2);
 
         const c =
             2 * Math.atan2(
@@ -469,493 +422,411 @@
     }
 
 
-    // ==================================================
-    // GPS TEST
-    // ==================================================
+    // ------------------------------------------------------------
+    // CHECK CURRENT CHALLENGE
+    // ------------------------------------------------------------
 
-    function runGpsTest() {
+    function checkCurrentChallenge() {
 
-        if (!navigator.geolocation) {
-
-            document.getElementById("gpsTestResult").innerHTML =
-                "Geolocation is not supported.";
-
+        if (
+            playerLatitude === null ||
+            playerLongitude === null
+        ) {
             return;
         }
 
-        document.getElementById("gpsTestResult").innerHTML =
-            "Getting GPS position...";
+        const challenge = challenges[currentChallenge];
 
-        navigator.geolocation.getCurrentPosition(
-
-            function(position) {
-
-                const latitude =
-                    position.coords.latitude;
-
-                const longitude =
-                    position.coords.longitude;
-
-                const accuracy =
-                    position.coords.accuracy;
-
-                const requestedDistance =
-                    Number(
-                        document.getElementById("testDistance").value
-                    );
-
-                // Put the simulated target north of the player.
-                const metresPerDegreeLatitude =
-                    111320;
-
-                const targetLat =
-                    latitude +
-                    requestedDistance /
-                    metresPerDegreeLatitude;
-
-                const targetLon =
-                    longitude;
-
-                const actualDistance =
-                    distanceInMetres(
-                        latitude,
-                        longitude,
-                        targetLat,
-                        targetLon
-                    );
-
-                let status;
-
-                if (actualDistance <= challengeRadius) {
-
-                    status =
-                        "🔓 INSIDE the 50 metre zone";
-
-                } else {
-
-                    status =
-                        "🔒 OUTSIDE the 50 metre zone";
-                }
-
-                document.getElementById("gpsTestResult").innerHTML =
-
-                    "<strong>Your GPS position</strong><br>" +
-
-                    "Latitude: " +
-                    latitude.toFixed(6) +
-                    "<br>" +
-
-                    "Longitude: " +
-                    longitude.toFixed(6) +
-                    "<br><br>" +
-
-                    "<strong>GPS accuracy:</strong> ±" +
-                    Math.round(accuracy) +
-                    " metres" +
-
-                    "<br><br>" +
-
-                    "<strong>Target:</strong> approximately " +
-                    Math.round(requestedDistance) +
-                    " metres away" +
-
-                    "<br>" +
-
-                    "<strong>Calculated distance:</strong> " +
-                    Math.round(actualDistance) +
-                    " metres" +
-
-                    "<br><br>" +
-
-                    "<strong>" +
-                    status +
-                    "</strong>";
-            },
-
-            function(error) {
-
-                document.getElementById("gpsTestResult").innerHTML =
-                    "Could not get your GPS position.";
-            },
-
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
+        const distance = distanceInMetres(
+            playerLatitude,
+            playerLongitude,
+            challenge.latitude,
+            challenge.longitude
         );
-    }
 
+        const gpsStatus =
+            document.getElementById("gpsStatus");
 
-    // ==================================================
-    // CHALLENGE 1
-    // ==================================================
-
-    function setTargetToMyLocation() {
-
-        getTestLocation(function() {
-
-            unlockChallenge1();
-
-        });
-    }
-
-
-    function unlockChallenge1() {
-
-        currentChallenge = 1;
-
-        document.getElementById("challenge1Result").innerHTML =
-            "🔓 Challenge unlocked!";
-
-        document.getElementById("challenge1Distance").innerHTML =
-            "You are at the test checkpoint.";
-
-        document.getElementById("challenge1Clue").style.display =
-            "block";
-    }
-
-
-    // ==================================================
-    // CHALLENGE 2
-    // ==================================================
-
-    function setTargetToMyLocation2() {
-
-        getTestLocation(function() {
-
-            unlockChallenge2();
-
-        });
-    }
-
-
-    function unlockChallenge2() {
-
-        currentChallenge = 2;
-
-        document.getElementById("challenge2Result").innerHTML =
-            "🔓 Challenge unlocked!";
-
-        document.getElementById("challenge2Distance").innerHTML =
-            "You are at the test checkpoint.";
-
-        document.getElementById("challenge2Clue").style.display =
-            "block";
-    }
-
-
-    // ==================================================
-    // CHALLENGE 3
-    // ==================================================
-
-    function setTargetToMyLocation3() {
-
-        getTestLocation(function() {
-
-            unlockChallenge3();
-
-        });
-    }
-
-
-    function unlockChallenge3() {
-
-        currentChallenge = 3;
-
-        document.getElementById("challenge3Result").innerHTML =
-            "🔓 Challenge unlocked!";
-
-        document.getElementById("challenge3Distance").innerHTML =
-            "You are at the test checkpoint.";
-
-        document.getElementById("challenge3Clue").style.display =
-            "block";
-    }
-
-
-    // ==================================================
-    // TEST LOCATION
-    // ==================================================
-
-    function getTestLocation(callback) {
-
-        if (!navigator.geolocation) {
-
-            alert(
-                "Geolocation is not supported by this browser."
+        const challengeStatus =
+            document.getElementById(
+                "challenge" + currentChallenge + "Status"
             );
 
-            return;
+        const photoButton =
+            document.getElementById(
+                "photoButton" + currentChallenge
+            );
+
+
+        // --------------------------------------------------------
+        // INSIDE ZONE
+        // --------------------------------------------------------
+
+        if (distance <= challengeRadius) {
+
+            gpsStatus.className =
+                "status success";
+
+            gpsStatus.innerHTML =
+                "<strong>🎯 Search area reached!</strong><br>" +
+                "You are approximately " +
+                Math.round(distance) +
+                "m from the target.<br>" +
+                "Search zone: " +
+                challengeRadius +
+                "m";
+
+
+            challengeStatus.className =
+                "status success";
+
+            challengeStatus.innerHTML =
+                "<strong>✓ Challenge unlocked!</strong><br>" +
+                "You are in the search area for " +
+                challenge.name +
+                ".";
+
+
+            photoButton.disabled = false;
+
         }
 
-        document.getElementById("location").innerHTML =
-            "Getting your location...";
 
-        navigator.geolocation.getCurrentPosition(
+        // --------------------------------------------------------
+        // OUTSIDE ZONE
+        // --------------------------------------------------------
 
-            function(position) {
+        else {
 
-                playerLatitude =
-                    position.coords.latitude;
+            gpsStatus.className =
+                "status warning";
 
-                playerLongitude =
-                    position.coords.longitude;
+            gpsStatus.innerHTML =
+                "<strong>Not in the search area yet.</strong><br>" +
+                "You are approximately " +
+                Math.round(distance) +
+                "m from the target.<br>" +
+                "You need to be within " +
+                challengeRadius +
+                "m.";
 
-                targetLatitude =
-                    playerLatitude;
 
-                targetLongitude =
-                    playerLongitude;
+            challengeStatus.className =
+                "status warning";
 
-                document.getElementById("location").innerHTML =
-                    "Latitude: " +
-                    playerLatitude.toFixed(6) +
-                    "<br>" +
-                    "Longitude: " +
-                    playerLongitude.toFixed(6) +
-                    "<br>" +
-                    "GPS accuracy: approximately " +
-                    Math.round(position.coords.accuracy) +
-                    " metres";
+            challengeStatus.innerHTML =
+                "📍 " +
+                Math.round(distance) +
+                "m from the search area.<br>" +
+                "Keep moving towards " +
+                challenge.name +
+                ".";
 
-                callback();
-            },
+            photoButton.disabled = true;
 
-            function(error) {
+        }
 
-                document.getElementById("location").innerHTML =
-                    "Could not get your location.";
-            },
-
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
-        );
     }
 
 
-    // ==================================================
-    // SHOW PHOTO SECTION
-    // ==================================================
+    // ------------------------------------------------------------
+    // PHOTO SECTION
+    // ------------------------------------------------------------
 
     function showPhotoSection(challengeNumber) {
 
-        currentChallenge =
-            challengeNumber;
+        currentChallenge = challengeNumber;
 
-        document.getElementById("photoInput").disabled =
-            false;
+        const photoSection =
+            document.getElementById("photoSection");
 
-        document.getElementById("photoInstructions").innerHTML =
-            "Take a photograph for Challenge " +
-            challengeNumber +
-            ".";
+        photoSection.classList.remove("hidden");
 
-        document.getElementById("photoResult").innerHTML =
-            "";
+        document.getElementById("photoStatus").innerHTML =
+            "Take your photograph.";
 
-        window.scrollTo({
-            top:
-                document.getElementById(
-                    "photoSection"
-                ).offsetTop,
+        document.getElementById("photoPreview")
+            .classList.add("hidden");
+
+        document.getElementById("submitPhotoButton")
+            .disabled = true;
+
+        photoSection.scrollIntoView({
             behavior: "smooth"
         });
+
     }
 
 
-    // ==================================================
-    // PHOTO SELECTION
-    // ==================================================
+    // ------------------------------------------------------------
+    // PHOTO SELECTED
+    // ------------------------------------------------------------
 
-    document
-        .getElementById("photoInput")
-        .addEventListener(
-            "change",
-            function(event) {
+    document.getElementById("photoInput")
+        .addEventListener("change", function(event) {
 
-                const file =
-                    event.target.files[0];
+            const file = event.target.files[0];
 
-                if (!file) {
-                    return;
-                }
-
-                const image =
-                    document.getElementById("photoPreview");
-
-                image.src =
-                    URL.createObjectURL(file);
-
-                image.style.display =
-                    "block";
-
-                document.getElementById(
-                    "submitPhoto"
-                ).disabled = false;
-
-                document.getElementById(
-                    "photoResult"
-                ).innerHTML = "";
+            if (!file) {
+                return;
             }
-        );
+
+            const preview =
+                document.getElementById("photoPreview");
+
+            preview.src =
+                URL.createObjectURL(file);
+
+            preview.classList.remove("hidden");
+
+            document.getElementById(
+                "submitPhotoButton"
+            ).disabled = false;
+
+            document.getElementById(
+                "photoStatus"
+            ).className = "status success";
+
+            document.getElementById(
+                "photoStatus"
+            ).innerHTML =
+                "✓ Photograph ready to submit.";
+
+        });
 
 
-    // ==================================================
+    // ------------------------------------------------------------
     // SUBMIT PHOTO
-    // ==================================================
+    // ------------------------------------------------------------
 
     function submitPhoto() {
 
-        const photoInput =
-            document.getElementById("photoInput");
+        const file =
+            document.getElementById("photoInput")
+                .files[0];
 
-        if (photoInput.files.length === 0) {
-
-            document.getElementById(
-                "photoResult"
-            ).innerHTML =
-                "📷 Please take a photo first.";
-
+        if (!file) {
             return;
         }
 
 
-        // ----------------------------------------------
-        // CHALLENGE 1
-        // ----------------------------------------------
+        // --------------------------------------------------------
+        // FOR NOW:
+        // Any photograph is accepted.
+        //
+        // Later this is where we will send the photograph
+        // to an AI image-checking service.
+        // --------------------------------------------------------
 
         if (currentChallenge === 1) {
 
             challenge1Complete = true;
 
             document.getElementById(
-                "photoResult"
+                "challenge1Status"
             ).innerHTML =
-                "✅ Challenge 1 complete!";
+                "<strong>✓ Challenge 1 complete!</strong>";
 
-            document.getElementById(
-                "challenge1Result"
-            ).innerHTML =
-                "✅ Challenge 1 completed!";
+            unlockChallenge2();
 
-            document.getElementById(
-                "challenge1Clue"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "challenge2"
-            ).style.display =
-                "block";
-
-            window.scrollTo({
-                top:
-                    document.getElementById(
-                        "challenge2"
-                    ).offsetTop,
-                behavior: "smooth"
-            });
-
-            resetPhoto();
-
-            return;
         }
 
-
-        // ----------------------------------------------
-        // CHALLENGE 2
-        // ----------------------------------------------
-
-        if (currentChallenge === 2) {
+        else if (currentChallenge === 2) {
 
             challenge2Complete = true;
 
             document.getElementById(
-                "photoResult"
+                "challenge2Status"
             ).innerHTML =
-                "✅ Challenge 2 complete!";
+                "<strong>✓ Challenge 2 complete!</strong>";
 
-            document.getElementById(
-                "challenge2Result"
-            ).innerHTML =
-                "✅ Challenge 2 completed!";
+            unlockChallenge3();
 
-            document.getElementById(
-                "challenge2Clue"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "challenge3"
-            ).style.display =
-                "block";
-
-            window.scrollTo({
-                top:
-                    document.getElementById(
-                        "challenge3"
-                    ).offsetTop,
-                behavior: "smooth"
-            });
-
-            resetPhoto();
-
-            return;
         }
 
-
-        // ----------------------------------------------
-        // CHALLENGE 3
-        // ----------------------------------------------
-
-        if (currentChallenge === 3) {
+        else if (currentChallenge === 3) {
 
             challenge3Complete = true;
 
             document.getElementById(
-                "photoResult"
+                "challenge3Status"
             ).innerHTML =
-                "🎉 Hunt complete! Congratulations!";
+                "<strong>✓ Challenge 3 complete!</strong>";
 
-            document.getElementById(
-                "challenge3Result"
-            ).innerHTML =
-                "🎉 Challenge 3 completed!";
+            finishHunt();
 
-            document.getElementById(
-                "challenge3Clue"
-            ).style.display =
-                "none";
-
-            resetPhoto();
         }
-    }
 
 
-    // ==================================================
-    // RESET PHOTO
-    // ==================================================
+        // Reset photograph
 
-    function resetPhoto() {
-
-        document.getElementById(
-            "submitPhoto"
-        ).disabled = true;
-
-        document.getElementById(
-            "photoInput"
-        ).value = "";
+        document.getElementById("photoInput").value = "";
 
         document.getElementById(
             "photoPreview"
-        ).style.display = "none";
+        ).classList.add("hidden");
+
+        document.getElementById(
+            "submitPhotoButton"
+        ).disabled = true;
+
     }
+
+
+    // ------------------------------------------------------------
+    // UNLOCK CHALLENGE 2
+    // ------------------------------------------------------------
+
+    function unlockChallenge2() {
+
+        currentChallenge = 2;
+
+        const panel =
+            document.getElementById("challenge2");
+
+        panel.classList.remove("locked");
+
+        document.getElementById(
+            "challenge2Status"
+        ).className = "status";
+
+        document.getElementById(
+            "challenge2Status"
+        ).innerHTML =
+            "🔓 Challenge 2 unlocked.<br>" +
+            "Move towards the Hall.";
+
+        document.getElementById(
+            "gpsStatus"
+        ).className = "status";
+
+        document.getElementById(
+            "gpsStatus"
+        ).innerHTML =
+            "Now searching for Challenge 2: " +
+            challenges[2].name;
+
+        checkCurrentChallenge();
+
+    }
+
+
+    // ------------------------------------------------------------
+    // UNLOCK CHALLENGE 3
+    // ------------------------------------------------------------
+
+    function unlockChallenge3() {
+
+        currentChallenge = 3;
+
+        const panel =
+            document.getElementById("challenge3");
+
+        panel.classList.remove("locked");
+
+        document.getElementById(
+            "challenge3Status"
+        ).className = "status";
+
+        document.getElementById(
+            "challenge3Status"
+        ).innerHTML =
+            "🔓 Challenge 3 unlocked.<br>" +
+            "Move towards the High Street.";
+
+        document.getElementById(
+            "gpsStatus"
+        ).className = "status";
+
+        document.getElementById(
+            "gpsStatus"
+        ).innerHTML =
+            "Now searching for Challenge 3: " +
+            challenges[3].name;
+
+        checkCurrentChallenge();
+
+    }
+
+
+    // ------------------------------------------------------------
+    // FINISH HUNT
+    // ------------------------------------------------------------
+
+    function finishHunt() {
+
+        document.getElementById(
+            "completePanel"
+        ).classList.remove("hidden");
+
+        document.getElementById(
+            "gpsStatus"
+        ).className = "status success";
+
+        document.getElementById(
+            "gpsStatus"
+        ).innerHTML =
+            "🎉 Hunt complete!";
+
+        document.getElementById(
+            "completePanel"
+        ).scrollIntoView({
+            behavior: "smooth"
+        });
+
+    }
+
+
+    // ------------------------------------------------------------
+    // AUTOMATIC GPS REFRESH
+    // ------------------------------------------------------------
+
+    // Check the player's position every 5 seconds.
+    // This means they don't have to keep pressing the button
+    // while walking towards a challenge.
+
+    setInterval(function() {
+
+        if (
+            navigator.geolocation &&
+            currentChallenge <= 3
+        ) {
+
+            navigator.geolocation.getCurrentPosition(
+
+                function(position) {
+
+                    playerLatitude =
+                        position.coords.latitude;
+
+                    playerLongitude =
+                        position.coords.longitude;
+
+                    playerAccuracy =
+                        position.coords.accuracy;
+
+                    checkCurrentChallenge();
+
+                },
+
+                function(error) {
+
+                    // Don't display an error here.
+                    // The previous position can remain visible.
+
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 5000
+                }
+
+            );
+
+        }
+
+    }, 5000);
 
 </script>
 
