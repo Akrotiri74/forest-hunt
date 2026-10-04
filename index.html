@@ -6,190 +6,176 @@
 <title>Forest Hunt</title>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        background: #eef4ec;
-        color: #17351d;
-    }
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #eef4ec;
+    color: #17351d;
+}
 
-    header {
-        background: #245c2a;
-        color: white;
-        padding: 18px;
-        text-align: center;
-    }
+header {
+    background: #245c2a;
+    color: white;
+    padding: 18px;
+    text-align: center;
+}
 
-    h1, h2, h3 {
-        margin-top: 0;
-    }
+h1, h2, h3 {
+    margin-top: 0;
+}
 
-    .container {
-        max-width: 700px;
-        margin: auto;
-        padding: 15px;
-    }
+.container {
+    max-width: 700px;
+    margin: auto;
+    padding: 15px;
+}
 
-    .card {
-        background: white;
-        border-radius: 12px;
-        padding: 18px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 7px rgba(0,0,0,0.12);
-    }
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 7px rgba(0,0,0,0.12);
+}
 
-    button {
-        width: 100%;
-        padding: 15px;
-        margin-top: 10px;
-        border: none;
-        border-radius: 8px;
-        background: #2e7d32;
-        color: white;
-        font-size: 17px;
-        font-weight: bold;
-    }
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #2e7d32;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+}
 
-    button.secondary {
-        background: #607d68;
-    }
+button.secondary {
+    background: #607d68;
+}
 
-    button.warning {
-        background: #b26a00;
-    }
+button.warning {
+    background: #b26a00;
+}
 
-    button.danger {
-        background: #b3261e;
-    }
+button.danger {
+    background: #b3261e;
+}
 
-    button:disabled {
-        background: #aaa;
-    }
+button:disabled {
+    background: #aaa;
+}
 
-    input[type="text"] {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 14px;
-        font-size: 18px;
-        margin-top: 8px;
-        border: 1px solid #aaa;
-        border-radius: 8px;
-    }
+input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    font-size: 18px;
+    margin-top: 8px;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+}
 
-    input[type="file"] {
-        width: 100%;
-        margin-top: 10px;
-    }
+input[type="file"] {
+    width: 100%;
+    margin-top: 10px;
+}
 
-    .hidden {
-        display: none;
-    }
+.hidden {
+    display: none;
+}
 
-    .timer {
-        font-size: 42px;
-        font-weight: bold;
-        text-align: center;
-        padding: 10px;
-    }
+.timer {
+    font-size: 42px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+}
 
-    .timer.late {
-        color: #b3261e;
-    }
+.timer.late {
+    color: #b3261e;
+}
 
-    .score {
-        font-size: 24px;
-        font-weight: bold;
-    }
+.score {
+    font-size: 24px;
+    font-weight: bold;
+}
 
-    .status {
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
-        background: #edf5ed;
-    }
+.status {
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    background: #edf5ed;
+}
 
-    .pending {
-        background: #fff3cd;
-        color: #6b4d00;
-    }
+.pending {
+    background: #fff3cd;
+    color: #6b4d00;
+}
 
-    .approved {
-        background: #d9f2dc;
-        color: #1e5b28;
-    }
+.approved {
+    background: #d9f2dc;
+    color: #1e5b28;
+}
 
-    .rejected {
-        background: #f8d7da;
-        color: #842029;
-    }
+.rejected {
+    background: #f8d7da;
+    color: #842029;
+}
 
-    .activity {
-        border-left: 6px solid #2e7d32;
-        padding-left: 12px;
-        margin-bottom: 15px;
-    }
+.activity {
+    border-left: 6px solid #2e7d32;
+    padding-left: 12px;
+    margin-bottom: 15px;
+}
 
-    .locked {
-        opacity: 0.55;
-    }
+.points {
+    font-size: 20px;
+    font-weight: bold;
+}
 
-    .points {
-        font-size: 20px;
-        font-weight: bold;
-    }
+.small {
+    font-size: 14px;
+    color: #555;
+}
 
-    .small {
-        font-size: 14px;
-        color: #555;
-    }
+.big-message {
+    font-size: 22px;
+    text-align: center;
+    padding: 15px;
+}
 
-    .success {
-        color: #1e6b27;
-        font-weight: bold;
-    }
+.photo-preview {
+    max-width: 100%;
+    max-height: 300px;
+    margin-top: 10px;
+    border-radius: 8px;
+}
 
-    .error {
-        color: #a61b1b;
-        font-weight: bold;
-    }
+.validator-photo {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    background: #eee;
+    border-radius: 8px;
+    margin-top: 10px;
+}
 
-    .photo-preview {
-        max-width: 100%;
-        max-height: 300px;
-        margin-top: 10px;
-        border-radius: 8px;
-    }
+.two-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
-    .validator-photo {
-        width: 100%;
-        max-height: 400px;
-        object-fit: contain;
-        background: #eee;
-        border-radius: 8px;
-        margin-top: 10px;
-    }
+.test-controls button {
+    font-size: 14px;
+    padding: 10px;
+}
 
-    .two-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .test-controls button {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    .team-button {
-        font-size: 20px;
-        padding: 20px;
-    }
-
-    .big-message {
-        font-size: 22px;
-        text-align: center;
-        padding: 15px;
-    }
+.team-button {
+    font-size: 20px;
+    padding: 20px;
+}
 </style>
 </head>
 
@@ -201,305 +187,348 @@
 
 <div class="container">
 
-    <!-- TEAM SELECTION -->
-    <div id="teamScreen">
+<!-- =====================================================
+     TEAM SELECTION
+===================================================== -->
 
-        <div class="card">
-            <h2>Choose Your Team</h2>
-            <p>Select your team before the briefing.</p>
+<div id="teamScreen">
 
-            <button class="team-button" onclick="selectTeam(1)">
-                TEAM 1
-            </button>
+    <div class="card">
 
-            <button class="team-button" onclick="selectTeam(2)">
-                TEAM 2
-            </button>
+        <h2>Choose Your Team</h2>
 
-            <button class="team-button" onclick="selectTeam(3)">
-                TEAM 3
-            </button>
-        </div>
+        <p>Select your team before the briefing.</p>
 
-        <div class="card">
-            <button class="secondary" onclick="toggleTestMode()">
-                🧪 ENABLE TEST MODE
-            </button>
+        <button class="team-button" onclick="selectTeam(1)">
+            TEAM 1
+        </button>
 
-            <div id="testModeStatus" class="small"></div>
+        <button class="team-button" onclick="selectTeam(2)">
+            TEAM 2
+        </button>
 
-            <button class="warning" onclick="showValidatorScreen()">
-                📷 VALIDATOR VIEW
-            </button>
-        </div>
+        <button class="team-button" onclick="selectTeam(3)">
+            TEAM 3
+        </button>
 
     </div>
 
+    <div class="card">
 
-    <!-- BRIEFING -->
-    <div id="briefingScreen" class="hidden">
+        <button class="secondary" onclick="toggleTestMode()">
+            🧪 ENABLE TEST MODE
+        </button>
 
-        <div class="card">
-            <h2>Team <span id="briefingTeam"></span></h2>
+        <div id="testModeStatus" class="small"></div>
 
-            <h3>THE HUNT</h3>
-
-            <p>
-                You have <strong>60 minutes</strong> to complete as many
-                challenges as possible and return to the meeting point.
-            </p>
-
-            <p>
-                Your first challenge is compulsory and will send your team
-                in a different direction from the other teams.
-            </p>
-
-            <p>
-                Once your first challenge is completed, all remaining
-                challenges become available and you may tackle them
-                in any order.
-            </p>
-
-            <p>
-                Some challenges require photographs.
-                These will be checked by the organiser.
-            </p>
-
-            <p>
-                Other challenges require you to find something and solve
-                a puzzle using information from the physical location.
-            </p>
-
-            <p>
-                <strong>Most points wins.</strong>
-            </p>
-
-            <p>
-                If you return late, points will be deducted.
-            </p>
-
-            <button onclick="startHunt()">
-                ▶ START THE HUNT
-            </button>
-
-            <button class="secondary" onclick="backToTeams()">
-                BACK
-            </button>
-        </div>
-
-    </div>
-
-
-    <!-- GAME SCREEN -->
-    <div id="gameScreen" class="hidden">
-
-        <div class="card">
-
-            <h2>TEAM <span id="gameTeam"></span></h2>
-
-            <div id="timer" class="timer">
-                60:00
-            </div>
-
-            <div class="scoreboard">
-
-                <div class="score">
-                    Score: <span id="score">0</span>
-                </div>
-
-                <div>
-                    Activities: <span id="completedCount">0</span>
-                </div>
-
-                <div>
-                    Late penalty: <span id="latePenalty">0</span>
-                </div>
-
-            </div>
-
-            <div id="gpsStatus" class="status">
-                Getting GPS position...
-            </div>
-
-            <!-- NEW: VALIDATOR BUTTON AVAILABLE DURING THE HUNT -->
-            <button class="warning" onclick="showValidatorScreen()">
-                📷 VALIDATOR VIEW
-            </button>
-
-        </div>
-
-
-        <!-- STARTER -->
-        <div id="starterCard" class="card">
-
-            <h2>🚩 YOUR FIRST CHALLENGE</h2>
-
-            <div id="starterContent"></div>
-
-        </div>
-
-
-        <!-- ACTIVITIES -->
-        <div id="activitiesCard" class="card">
-
-            <h2>CHALLENGES</h2>
-
-            <div id="activities"></div>
-
-        </div>
-
-
-        <!-- RETURN -->
-        <div id="returnCard" class="card">
-
-            <h2>🏁 RETURN TO START</h2>
-
-            <p>
-                When you are ready to finish, return to the meeting point.
-            </p>
-
-            <div id="returnStatus" class="status">
-                Checking your location...
-            </div>
-
-            <button id="finishButton" disabled onclick="finishHunt()">
-                FINISH HUNT
-            </button>
-
-        </div>
-
-
-        <!-- TEST CONTROLS -->
-        <div id="testControls" class="card hidden">
-
-            <h2>🧪 TEST MODE</h2>
-
-            <p class="small">
-                These controls simulate movement and time.
-            </p>
-
-            <h3>Simulated Location</h3>
-
-            <button onclick="simulateActivityLocation(1)">
-                Go to Hall
-            </button>
-
-            <button onclick="simulateActivityLocation(2)">
-                Go to High Street
-            </button>
-
-            <button onclick="simulateActivityLocation(3)">
-                Go to Playing Field
-            </button>
-
-            <button onclick="simulateStartLocation()">
-                Go to Start
-            </button>
-
-            <h3>Simulated Time</h3>
-
-            <div class="test-controls">
-
-                <div class="two-buttons">
-                    <button onclick="changeTestTime(60)">
-                        +1 min
-                    </button>
-
-                    <button onclick="changeTestTime(300)">
-                        +5 min
-                    </button>
-                </div>
-
-                <div class="two-buttons">
-                    <button onclick="changeTestTime(600)">
-                        +10 min
-                    </button>
-
-                    <button onclick="changeTestTime(1200)">
-                        +20 min
-                    </button>
-                </div>
-
-                <div class="two-buttons">
-                    <button onclick="jumpTestTime(61)">
-                        Jump 61 min
-                    </button>
-
-                    <button onclick="jumpTestTime(70)">
-                        Jump 70 min
-                    </button>
-                </div>
-
-                <button onclick="resetTestTime()">
-                    Reset Time
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- VALIDATOR SCREEN -->
-    <div id="validatorScreen" class="hidden">
-
-        <div class="card">
-
-            <h2>📷 PHOTO VALIDATOR</h2>
-
-            <p>
-                Review submitted photographs and approve or reject them.
-            </p>
-
-            <div id="validatorList"></div>
-
-            <button class="secondary" onclick="backFromValidator()">
-                ← BACK TO HUNT
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- FINISH SCREEN -->
-    <div id="finishScreen" class="hidden">
-
-        <div class="card">
-
-            <h2>🏁 HUNT FINISHED</h2>
-
-            <div class="big-message">
-                Final Score
-            </div>
-
-            <div class="timer">
-                <span id="finalScore">0</span>
-            </div>
-
-            <p>
-                Completed activities:
-                <strong><span id="finalActivities">0</span></strong>
-            </p>
-
-            <p>
-                Late penalty:
-                <strong><span id="finalPenalty">0</span></strong>
-            </p>
-
-            <button onclick="location.reload()">
-                NEW HUNT
-            </button>
-
-        </div>
+        <button class="warning" onclick="showValidatorScreen()">
+            📷 VALIDATOR VIEW
+        </button>
 
     </div>
 
 </div>
 
 
+<!-- =====================================================
+     BRIEFING
+===================================================== -->
+
+<div id="briefingScreen" class="hidden">
+
+    <div class="card">
+
+        <h2>Team <span id="briefingTeam"></span></h2>
+
+        <h3>THE HUNT</h3>
+
+        <p>
+            You have <strong>60 minutes</strong> to complete as many
+            challenges as possible and return to the meeting point.
+        </p>
+
+        <p>
+            Your first challenge is compulsory and will send your team
+            in a different direction from the other teams.
+        </p>
+
+        <p>
+            Once your first challenge is completed, all remaining
+            challenges become available and may be tackled in any order.
+        </p>
+
+        <p>
+            Some challenges require photographs which will be checked
+            by the organiser.
+        </p>
+
+        <p>
+            <strong>Most points wins.</strong>
+        </p>
+
+        <p>
+            Returning late results in a five-point penalty for every
+            two minutes or part of two minutes late.
+        </p>
+
+        <button onclick="startHunt()">
+            ▶ START THE HUNT
+        </button>
+
+        <button class="secondary" onclick="backToTeams()">
+            BACK
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     GAME SCREEN
+===================================================== -->
+
+<div id="gameScreen" class="hidden">
+
+    <div class="card">
+
+        <h2>TEAM <span id="gameTeam"></span></h2>
+
+        <div id="timer" class="timer">
+            60:00
+        </div>
+
+        <div class="score">
+            Score: <span id="score">0</span>
+        </div>
+
+        <div>
+            Activities:
+            <span id="completedCount">0</span>
+        </div>
+
+        <div>
+            Late penalty:
+            <span id="latePenalty">0</span>
+        </div>
+
+        <div id="gpsStatus" class="status">
+            Getting GPS position...
+        </div>
+
+        <button class="warning" onclick="showValidatorScreen()">
+            📷 VALIDATOR VIEW
+        </button>
+
+    </div>
+
+
+    <!-- STARTER -->
+
+    <div id="starterCard" class="card">
+
+        <h2>🚩 YOUR FIRST CHALLENGE</h2>
+
+        <div id="starterContent"></div>
+
+    </div>
+
+
+    <!-- ACTIVITIES -->
+
+    <div class="card">
+
+        <h2>CHALLENGES</h2>
+
+        <div id="activities"></div>
+
+    </div>
+
+
+    <!-- RETURN -->
+
+    <div class="card">
+
+        <h2>🏁 RETURN TO START</h2>
+
+        <div id="returnStatus" class="status">
+            Checking your location...
+        </div>
+
+        <button id="finishButton"
+                disabled
+                onclick="finishHunt()">
+            FINISH HUNT
+        </button>
+
+    </div>
+
+
+    <!-- TEST CONTROLS -->
+
+    <div id="testControls" class="card hidden">
+
+        <h2>🧪 TEST MODE</h2>
+
+        <h3>Simulated Location</h3>
+
+        <button onclick="simulateActivityLocation(1)">
+            Go to Hall
+        </button>
+
+        <button onclick="simulateActivityLocation(2)">
+            Go to High Street
+        </button>
+
+        <button onclick="simulateActivityLocation(3)">
+            Go to Playing Field
+        </button>
+
+        <button onclick="simulateStartLocation()">
+            Go to Start
+        </button>
+
+        <h3>Simulated Time</h3>
+
+        <div class="two-buttons">
+
+            <button onclick="changeTestTime(60)">
+                +1 min
+            </button>
+
+            <button onclick="changeTestTime(300)">
+                +5 min
+            </button>
+
+        </div>
+
+        <div class="two-buttons">
+
+            <button onclick="changeTestTime(600)">
+                +10 min
+            </button>
+
+            <button onclick="changeTestTime(1200)">
+                +20 min
+            </button>
+
+        </div>
+
+        <div class="two-buttons">
+
+            <button onclick="jumpTestTime(61)">
+                Jump 61 min
+            </button>
+
+            <button onclick="jumpTestTime(70)">
+                Jump 70 min
+            </button>
+
+        </div>
+
+        <button onclick="resetTestTime()">
+            Reset Time
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     VALIDATOR
+===================================================== -->
+
+<div id="validatorScreen" class="hidden">
+
+    <div class="card">
+
+        <h2>📷 PHOTO VALIDATOR</h2>
+
+        <p>
+            Photographs submitted by players appear here.
+        </p>
+
+        <div id="validatorList"></div>
+
+        <button class="secondary"
+                onclick="backFromValidator()">
+            ← BACK TO HUNT
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     FINISH
+===================================================== -->
+
+<div id="finishScreen" class="hidden">
+
+    <div class="card">
+
+        <h2>🏁 HUNT FINISHED</h2>
+
+        <div class="big-message">
+            Final Score
+        </div>
+
+        <div class="timer">
+            <span id="finalScore">0</span>
+        </div>
+
+        <p>
+            Completed activities:
+            <strong>
+                <span id="finalActivities">0</span>
+            </strong>
+        </p>
+
+        <p>
+            Late penalty:
+            <strong>
+                <span id="finalPenalty">0</span>
+            </strong>
+        </p>
+
+        <button onclick="location.reload()">
+            NEW HUNT
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     SUPABASE JAVASCRIPT LIBRARY
+===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
 <script>
+
+/* =========================================================
+   SUPABASE CONNECTION
+========================================================= */
+
+const SUPABASE_URL =
+    "https://dvfdahpvowvkyayresgb.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_vbcEN8oMYusinLUwEJ_qaQ_U5MeEW4h";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
+
 
 /* =========================================================
    GAME SETTINGS
@@ -644,7 +673,7 @@ let activitiesState = {};
 
 
 /* =========================================================
-   INITIALISE ACTIVITY STATE
+   INITIALISE ACTIVITIES
 ========================================================= */
 
 function initialiseActivities() {
@@ -659,7 +688,9 @@ function initialiseActivities() {
 
             photoState: null,
 
-            rejectionReason: null
+            rejectionReason: null,
+
+            submissionId: null
 
         };
 
@@ -698,22 +729,29 @@ function saveGame() {
 
 function loadGame() {
 
-    const saved = localStorage.getItem("forestHuntGame");
+    const saved =
+        localStorage.getItem(
+            "forestHuntGame"
+        );
 
     if (!saved) {
 
         initialiseActivities();
 
         return false;
+
     }
 
     try {
 
-        const data = JSON.parse(saved);
+        const data =
+            JSON.parse(saved);
 
-        selectedTeam = data.selectedTeam;
+        selectedTeam =
+            data.selectedTeam;
 
-        gameStartedAt = data.gameStartedAt;
+        gameStartedAt =
+            data.gameStartedAt;
 
         activitiesState =
             data.activitiesState || {};
@@ -748,7 +786,9 @@ function hideAllScreens() {
 
     document
         .querySelectorAll(".container > div")
-        .forEach(el => el.classList.add("hidden"));
+        .forEach(
+            el => el.classList.add("hidden")
+        );
 
 }
 
@@ -813,14 +853,16 @@ function toggleTestMode() {
 function updateTestModeStatus() {
 
     const el =
-        document.getElementById("testModeStatus");
+        document.getElementById(
+            "testModeStatus"
+        );
 
     if (!el) return;
 
     el.textContent =
         testMode
-            ? "Test Mode is ON"
-            : "Test Mode is OFF";
+        ? "Test Mode is ON"
+        : "Test Mode is OFF";
 
 }
 
@@ -833,9 +875,12 @@ function startHunt() {
 
     if (!selectedTeam) {
 
-        alert("Please choose a team.");
+        alert(
+            "Please choose a team."
+        );
 
         return;
+
     }
 
     initialiseActivities();
@@ -869,19 +914,12 @@ function showGameScreen() {
         .getElementById("gameTeam")
         .textContent = selectedTeam;
 
-    if (testMode) {
-
-        document
-            .getElementById("testControls")
-            .classList.remove("hidden");
-
-    } else {
-
-        document
-            .getElementById("testControls")
-            .classList.add("hidden");
-
-    }
+    document
+        .getElementById("testControls")
+        .classList.toggle(
+            "hidden",
+            !testMode
+        );
 
     startTimer();
 
@@ -902,10 +940,14 @@ function getElapsedSeconds() {
 
     const realElapsed =
         Math.floor(
-            (Date.now() - gameStartedAt) / 1000
+            (Date.now() - gameStartedAt)
+            / 1000
         );
 
-    return realElapsed + testTimeOffsetSeconds;
+    return (
+        realElapsed +
+        testTimeOffsetSeconds
+    );
 
 }
 
@@ -921,7 +963,10 @@ function startTimer() {
     updateTimer();
 
     timerInterval =
-        setInterval(updateTimer, 1000);
+        setInterval(
+            updateTimer,
+            1000
+        );
 
 }
 
@@ -945,15 +990,17 @@ function updateTimer() {
     if (remaining >= 0) {
 
         const minutes =
-            Math.floor(remaining / 60);
+            Math.floor(
+                remaining / 60
+            );
 
         const seconds =
             remaining % 60;
 
         timer.textContent =
-            String(minutes).padStart(2, "0")
+            String(minutes).padStart(2,"0")
             + ":"
-            + String(seconds).padStart(2, "0");
+            + String(seconds).padStart(2,"0");
 
         timer.classList.remove("late");
 
@@ -963,16 +1010,18 @@ function updateTimer() {
             Math.abs(remaining);
 
         const minutes =
-            Math.floor(overtime / 60);
+            Math.floor(
+                overtime / 60
+            );
 
         const seconds =
             overtime % 60;
 
         timer.textContent =
             "+"
-            + String(minutes).padStart(2, "0")
+            + String(minutes).padStart(2,"0")
             + ":"
-            + String(seconds).padStart(2, "0");
+            + String(seconds).padStart(2,"0");
 
         timer.classList.add("late");
 
@@ -997,17 +1046,21 @@ function calculateLatePenalty() {
     const totalSeconds =
         gameDurationMinutes * 60;
 
-    if (elapsed <= totalSeconds) {
+    if (
+        elapsed <= totalSeconds
+    ) {
 
         return 0;
 
     }
 
     const lateSeconds =
-        elapsed - totalSeconds;
+        elapsed -
+        totalSeconds;
 
     return Math.ceil(
-        lateSeconds / penaltyIntervalSeconds
+        lateSeconds /
+        penaltyIntervalSeconds
     ) * penaltyPerInterval;
 
 }
@@ -1037,7 +1090,10 @@ function calculateScore() {
 
     });
 
-    return score - calculateLatePenalty();
+    return (
+        score -
+        calculateLatePenalty()
+    );
 
 }
 
@@ -1045,13 +1101,9 @@ function calculateScore() {
 function updateScoreboard() {
 
     const score =
-        document.getElementById("score");
-
-    const completedCount =
-        document.getElementById("completedCount");
-
-    const latePenalty =
-        document.getElementById("latePenalty");
+        document.getElementById(
+            "score"
+        );
 
     if (!score) return;
 
@@ -1076,10 +1128,14 @@ function updateScoreboard() {
     score.textContent =
         calculateScore();
 
-    completedCount.textContent =
+    document
+        .getElementById("completedCount")
+        .textContent =
         completed;
 
-    latePenalty.textContent =
+    document
+        .getElementById("latePenalty")
+        .textContent =
         calculateLatePenalty();
 
 }
@@ -1099,6 +1155,7 @@ function startGPS() {
             "🧪 TEST MODE – simulated position";
 
         return;
+
     }
 
     if (!navigator.geolocation) {
@@ -1106,9 +1163,10 @@ function startGPS() {
         document
             .getElementById("gpsStatus")
             .textContent =
-            "GPS is not available on this device.";
+            "GPS is not available.";
 
         return;
+
     }
 
     gpsWatchId =
@@ -1118,9 +1176,11 @@ function startGPS() {
 
                 currentPosition = {
 
-                    lat: position.coords.latitude,
+                    lat:
+                        position.coords.latitude,
 
-                    lon: position.coords.longitude
+                    lon:
+                        position.coords.longitude
 
                 };
 
@@ -1192,9 +1252,13 @@ function distanceMetres(
         Math.sin(dLat / 2)
         * Math.sin(dLat / 2)
         +
-        Math.cos(lat1 * Math.PI / 180)
+        Math.cos(
+            lat1 * Math.PI / 180
+        )
         *
-        Math.cos(lat2 * Math.PI / 180)
+        Math.cos(
+            lat2 * Math.PI / 180
+        )
         *
         Math.sin(dLon / 2)
         *
@@ -1211,10 +1275,6 @@ function distanceMetres(
 
 }
 
-
-/* =========================================================
-   CURRENT POSITION
-========================================================= */
 
 function getCurrentPosition() {
 
@@ -1237,7 +1297,8 @@ function getStarterActivity() {
 
     return activities.find(
         activity =>
-            activity.starterForTeam === selectedTeam
+            activity.starterForTeam ===
+            selectedTeam
     );
 
 }
@@ -1246,19 +1307,14 @@ function getStarterActivity() {
 function renderStarter() {
 
     const container =
-        document.getElementById("starterContent");
+        document.getElementById(
+            "starterContent"
+        );
 
     const starter =
         getStarterActivity();
 
-    if (!starter) {
-
-        container.innerHTML =
-            "<p>No starter challenge assigned.</p>";
-
-        return;
-
-    }
+    if (!starter) return;
 
     const state =
         activitiesState[starter.id];
@@ -1284,37 +1340,45 @@ function renderStarter() {
         <p class="points">
             ${starter.points} points
         </p>
+
     `;
 
     if (
         starter.type === "PHOTO"
     ) {
 
-        html += renderPhotoChallenge(
-            starter,
-            true
-        );
+        html +=
+            renderPhotoChallenge(
+                starter
+            );
 
     } else {
 
-        html += renderPuzzleChallenge(
-            starter,
-            true
-        );
+        html +=
+            renderPuzzleChallenge(
+                starter
+            );
 
     }
 
-    if (state.photoState === "PENDING") {
+    if (
+        state.photoState ===
+        "PENDING"
+    ) {
 
         html += `
             <div class="status pending">
-                📷 Photo submitted — awaiting organiser approval.
+                📷 Photo submitted —
+                awaiting organiser approval.
             </div>
         `;
 
     }
 
-    if (state.photoState === "REJECTED") {
+    if (
+        state.photoState ===
+        "REJECTED"
+    ) {
 
         html += `
             <div class="status rejected">
@@ -1323,7 +1387,8 @@ function renderStarter() {
 
                 ${
                     state.rejectionReason
-                    ? "<br><br>" + state.rejectionReason
+                    ? "<br><br>"
+                      + state.rejectionReason
                     : ""
                 }
 
@@ -1335,7 +1400,8 @@ function renderStarter() {
 
     }
 
-    container.innerHTML = html;
+    container.innerHTML =
+        html;
 
 }
 
@@ -1357,25 +1423,24 @@ function renderGame() {
 }
 
 
-/* =========================================================
-   RENDER ACTIVITIES
-========================================================= */
-
 function renderActivities() {
 
     const container =
-        document.getElementById("activities");
+        document.getElementById(
+            "activities"
+        );
 
     if (!starterCompleted) {
 
         container.innerHTML = `
             <p>
-                Complete your first challenge to unlock
-                the remaining activities.
+                Complete your first challenge
+                to unlock the remaining activities.
             </p>
         `;
 
         return;
+
     }
 
     let html = "";
@@ -1395,30 +1460,27 @@ function renderActivities() {
         }
 
         const state =
-            activitiesState[activity.id];
+            activitiesState[
+                activity.id
+            ];
 
         html += `
             <div class="activity">
 
-                <h3>
-                    ${activity.name}
-                </h3>
+                <h3>${activity.name}</h3>
 
                 <div class="points">
                     ${activity.points} points
                 </div>
 
-                <p>
-                    📍 ${activity.location}
-                </p>
+                <p>📍 ${activity.location}</p>
 
-                <p>
-                    ${activity.description}
-                </p>
+                <p>${activity.description}</p>
         `;
 
         if (
-            state.status === "COMPLETED"
+            state.status ===
+            "COMPLETED"
         ) {
 
             html += `
@@ -1428,7 +1490,8 @@ function renderActivities() {
             `;
 
         } else if (
-            state.photoState === "PENDING"
+            state.photoState ===
+            "PENDING"
         ) {
 
             html += `
@@ -1438,7 +1501,8 @@ function renderActivities() {
             `;
 
         } else if (
-            state.photoState === "REJECTED"
+            state.photoState ===
+            "REJECTED"
         ) {
 
             html += `
@@ -1448,22 +1512,25 @@ function renderActivities() {
 
                     ${
                         state.rejectionReason
-                        ? "<br><br>" + state.rejectionReason
+                        ? "<br><br>"
+                          + state.rejectionReason
                         : ""
                     }
 
                 </div>
             `;
 
-            html += renderChallengeControls(
-                activity
-            );
+            html +=
+                renderChallengeControls(
+                    activity
+                );
 
         } else {
 
-            html += renderChallengeControls(
-                activity
-            );
+            html +=
+                renderChallengeControls(
+                    activity
+                );
 
         }
 
@@ -1471,7 +1538,8 @@ function renderActivities() {
 
     });
 
-    container.innerHTML = html;
+    container.innerHTML =
+        html;
 
 }
 
@@ -1501,32 +1569,33 @@ function renderChallengeControls(
 
         nearby =
             distance <= searchRadius;
+
     }
 
     if (!nearby) {
 
         return `
             <div class="status">
-                🔒 Move closer to this location to unlock.
+                🔒 Move closer to this
+                location to unlock.
             </div>
         `;
 
     }
 
     if (
-        activity.type === "PHOTO"
+        activity.type ===
+        "PHOTO"
     ) {
 
         return renderPhotoChallenge(
-            activity,
-            false
+            activity
         );
 
     }
 
     return renderPuzzleChallenge(
-        activity,
-        false
+        activity
     );
 
 }
@@ -1537,27 +1606,22 @@ function renderChallengeControls(
 ========================================================= */
 
 function renderPhotoChallenge(
-    activity,
-    isStarter
+    activity
 ) {
-
-    const state =
-        activitiesState[activity.id];
-
-    const fileId =
-        "photo-" + activity.id;
 
     return `
 
         <label>
-            <strong>Take a photograph:</strong>
+            <strong>
+                Take a photograph:
+            </strong>
         </label>
 
         <input
             type="file"
             accept="image/*"
             capture="environment"
-            id="${fileId}"
+            id="photo-${activity.id}"
             onchange="previewPhoto(${activity.id})"
         >
 
@@ -1574,11 +1638,9 @@ function renderPhotoChallenge(
 }
 
 
-/* =========================================================
-   PHOTO PREVIEW
-========================================================= */
-
-function previewPhoto(activityId) {
+function previewPhoto(
+    activityId
+) {
 
     const input =
         document.getElementById(
@@ -1627,10 +1689,12 @@ function previewPhoto(activityId) {
 
 
 /* =========================================================
-   SUBMIT PHOTO
+   UPLOAD PHOTO
 ========================================================= */
 
-function submitPhoto(activityId) {
+async function submitPhoto(
+    activityId
+) {
 
     const file =
         selectedPhotoFiles[activityId];
@@ -1638,10 +1702,11 @@ function submitPhoto(activityId) {
     if (!file) {
 
         alert(
-            "Please take or select a photograph first."
+            "Please take a photograph first."
         );
 
         return;
+
     }
 
     const activity =
@@ -1651,33 +1716,171 @@ function submitPhoto(activityId) {
 
     if (!activity) return;
 
-    activitiesState[activityId].photoState =
-        "PENDING";
+    const button =
+        document.querySelector(
+            `button[onclick="submitPhoto(${activityId})"]`
+        );
 
-    activitiesState[activityId].status =
-        "PENDING";
+    if (button) {
 
-    activitiesState[activityId].rejectionReason =
-        null;
+        button.disabled = true;
 
-    saveGame();
+        button.textContent =
+            "UPLOADING...";
 
-    alert(
-        "Photo submitted. The organiser will now check it."
-    );
+    }
 
-    renderGame();
+    try {
+
+        const extension =
+            file.name.includes(".")
+            ? file.name
+                .split(".")
+                .pop()
+                .toLowerCase()
+            : "jpg";
+
+        const filePath =
+            "team-" +
+            selectedTeam +
+            "/" +
+            Date.now() +
+            "-" +
+            activityId +
+            "." +
+            extension;
+
+
+        /*
+         * Upload photograph to Supabase Storage.
+         */
+
+        const {
+            error: uploadError
+        } =
+            await supabaseClient
+                .storage
+                .from("hunt-photos")
+                .upload(
+                    filePath,
+                    file,
+                    {
+                        contentType:
+                            file.type ||
+                            "image/jpeg",
+
+                        upsert: false
+                    }
+                );
+
+
+        if (uploadError) {
+
+            throw uploadError;
+
+        }
+
+
+        /*
+         * Create database submission.
+         */
+
+        const {
+            data,
+            error: databaseError
+        } =
+            await supabaseClient
+                .from(
+                    "photo_submissions"
+                )
+                .insert({
+
+                    team_number:
+                        selectedTeam,
+
+                    activity_id:
+                        activityId,
+
+                    file_path:
+                        filePath,
+
+                    status:
+                        "PENDING"
+
+                })
+                .select()
+                .single();
+
+
+        if (databaseError) {
+
+            throw databaseError;
+
+        }
+
+
+        /*
+         * Update local game state.
+         */
+
+        activitiesState[activityId]
+            .photoState =
+            "PENDING";
+
+        activitiesState[activityId]
+            .status =
+            "PENDING";
+
+        activitiesState[activityId]
+            .submissionId =
+            data.id;
+
+        activitiesState[activityId]
+            .rejectionReason =
+            null;
+
+        saveGame();
+
+
+        alert(
+            "Photo uploaded successfully. The organiser can now review it."
+        );
+
+        renderGame();
+
+
+    } catch (error) {
+
+        console.error(
+            "Supabase upload error:",
+            error
+        );
+
+        alert(
+            "The photo could not be uploaded.\n\n"
+            + error.message
+        );
+
+        if (button) {
+
+            button.disabled = false;
+
+            button.textContent =
+                "📷 SUBMIT PHOTO";
+
+        }
+
+    }
 
 }
 
 
 /* =========================================================
-   PUZZLE
+   PUZZLES
 ========================================================= */
 
 function renderPuzzleChallenge(
-    activity,
-    isStarter
+    activity
 ) {
 
     return `
@@ -1699,7 +1902,9 @@ function renderPuzzleChallenge(
 }
 
 
-function submitPuzzle(activityId) {
+function submitPuzzle(
+    activityId
+) {
 
     const activity =
         activities.find(
@@ -1723,19 +1928,17 @@ function submitPuzzle(activityId) {
         activity.answer.toUpperCase()
     ) {
 
-        activitiesState[activityId].status =
+        activitiesState[activityId]
+            .status =
             "COMPLETED";
-
-        saveGame();
 
         if (
             activity.starterForTeam ===
             selectedTeam
         ) {
 
-            starterCompleted = true;
-
-            saveGame();
+            starterCompleted =
+                true;
 
             alert(
                 "Correct! Your starter challenge is complete. All remaining activities are now unlocked."
@@ -1748,6 +1951,8 @@ function submitPuzzle(activityId) {
             );
 
         }
+
+        saveGame();
 
         renderGame();
 
@@ -1766,121 +1971,198 @@ function submitPuzzle(activityId) {
    VALIDATOR
 ========================================================= */
 
-function showValidatorScreen() {
+async function showValidatorScreen() {
 
     hideAllScreens();
 
     document
-        .getElementById("validatorScreen")
+        .getElementById(
+            "validatorScreen"
+        )
         .classList.remove("hidden");
 
-    renderValidator();
+    await renderValidator();
 
 }
 
 
-function renderValidator() {
+async function renderValidator() {
 
     const container =
         document.getElementById(
             "validatorList"
         );
 
-    let pendingCount = 0;
+    container.innerHTML = `
+        <div class="status">
+            Checking for submitted photographs...
+        </div>
+    `;
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from(
+                "photo_submissions"
+            )
+            .select("*")
+            .eq(
+                "status",
+                "PENDING"
+            )
+            .order(
+                "submitted_at",
+                {
+                    ascending: true
+                }
+            );
+
+
+    if (error) {
+
+        console.error(error);
+
+        container.innerHTML = `
+            <div class="status rejected">
+                Unable to load submissions:
+                <br><br>
+                ${error.message}
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div class="status">
+                No photographs are currently
+                waiting for approval.
+            </div>
+        `;
+
+        return;
+
+    }
+
 
     let html = "";
 
-    activities.forEach(activity => {
 
-        const state =
-            activitiesState[activity.id];
+    for (
+        const submission of data
+    ) {
+
+        const activity =
+            activities.find(
+                a =>
+                    a.id ===
+                    submission.activity_id
+            );
+
+
+        let imageUrl = null;
+
+
+        const {
+            data: signedData,
+            error: signedError
+        } =
+            await supabaseClient
+                .storage
+                .from("hunt-photos")
+                .createSignedUrl(
+                    submission.file_path,
+                    3600
+                );
+
 
         if (
-            state &&
-            state.photoState === "PENDING"
+            !signedError &&
+            signedData
         ) {
 
-            pendingCount++;
-
-            const preview =
-                photoPreviewUrls[activity.id];
-
-            html += `
-
-                <div class="card">
-
-                    <h3>
-                        ${activity.name}
-                    </h3>
-
-                    <p>
-                        Team ${getActivityTeam(activity)}
-                    </p>
-
-                    ${
-                        preview
-                        ? `
-                            <img
-                                src="${preview}"
-                                class="validator-photo"
-                            >
-                        `
-                        : `
-                            <p>
-                                Photo file unavailable in this browser session.
-                            </p>
-                        `
-                    }
-
-                    <div class="two-buttons">
-
-                        <button
-                            onclick="approvePhoto(${activity.id})"
-                        >
-                            ✅ APPROVE
-                        </button>
-
-                        <button
-                            class="danger"
-                            onclick="rejectPhoto(${activity.id})"
-                        >
-                            ❌ REJECT
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `;
+            imageUrl =
+                signedData.signedUrl;
 
         }
 
-    });
 
-    if (pendingCount === 0) {
+        html += `
 
-        html = `
-            <div class="status">
-                No photographs are currently waiting for approval.
+            <div class="card">
+
+                <h3>
+                    ${
+                        activity
+                        ? activity.name
+                        : "Unknown activity"
+                    }
+                </h3>
+
+                <p>
+                    <strong>
+                        Team ${submission.team_number}
+                    </strong>
+                </p>
+
+                <p class="small">
+                    Submitted:
+                    ${new Date(
+                        submission.submitted_at
+                    ).toLocaleString()}
+                </p>
+
+                ${
+                    imageUrl
+                    ? `
+                        <img
+                            src="${imageUrl}"
+                            class="validator-photo"
+                        >
+                    `
+                    : `
+                        <div class="status rejected">
+                            Unable to display photograph.
+                        </div>
+                    `
+                }
+
+                <div class="two-buttons">
+
+                    <button
+                        onclick="approvePhoto(${submission.id})"
+                    >
+                        ✅ APPROVE
+                    </button>
+
+                    <button
+                        class="danger"
+                        onclick="rejectPhoto(${submission.id})"
+                    >
+                        ❌ REJECT
+                    </button>
+
+                </div>
+
             </div>
+
         `;
 
     }
 
-    container.innerHTML = html;
 
-}
-
-
-function getActivityTeam(activity) {
-
-    if (activity.starterForTeam) {
-
-        return activity.starterForTeam;
-
-    }
-
-    return selectedTeam || "?";
+    container.innerHTML =
+        html;
 
 }
 
@@ -1889,36 +2171,139 @@ function getActivityTeam(activity) {
    APPROVE PHOTO
 ========================================================= */
 
-function approvePhoto(activityId) {
+async function approvePhoto(
+    submissionId
+) {
 
-    const activity =
-        activities.find(
-            a => a.id === activityId
+    const {
+        data: submission,
+        error: fetchError
+    } =
+        await supabaseClient
+            .from(
+                "photo_submissions"
+            )
+            .select("*")
+            .eq(
+                "id",
+                submissionId
+            )
+            .single();
+
+
+    if (fetchError) {
+
+        alert(
+            "Could not find submission."
         );
 
-    if (!activity) return;
-
-    activitiesState[activityId].status =
-        "COMPLETED";
-
-    activitiesState[activityId].photoState =
-        "APPROVED";
-
-    activitiesState[activityId].rejectionReason =
-        null;
-
-    if (
-        activity.starterForTeam ===
-        selectedTeam
-    ) {
-
-        starterCompleted = true;
+        return;
 
     }
 
-    saveGame();
 
-    renderValidator();
+    const {
+        error
+    } =
+        await supabaseClient
+            .from(
+                "photo_submissions"
+            )
+            .update({
+
+                status:
+                    "APPROVED",
+
+                reviewed_at:
+                    new Date().toISOString()
+
+            })
+            .eq(
+                "id",
+                submissionId
+            );
+
+
+    if (error) {
+
+        alert(
+            "Could not approve photograph:\n"
+            + error.message
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Update the local game if the
+     * validator is operating on the
+     * same browser/team.
+     */
+
+    if (
+        selectedTeam ===
+        submission.team_number
+    ) {
+
+        const state =
+            activitiesState[
+                submission.activity_id
+            ];
+
+        if (state) {
+
+            state.status =
+                "COMPLETED";
+
+            state.photoState =
+                "APPROVED";
+
+            state.submissionId =
+                submission.id;
+
+            state.rejectionReason =
+                null;
+
+        }
+
+
+        const activity =
+            activities.find(
+                a =>
+                    a.id ===
+                    submission.activity_id
+            );
+
+        if (
+            activity &&
+            activity.starterForTeam ===
+            selectedTeam
+        ) {
+
+            starterCompleted =
+                true;
+
+        }
+
+        saveGame();
+
+    }
+
+
+    await renderValidator();
+
+
+    if (
+        gameStartedAt &&
+        selectedTeam ===
+        submission.team_number
+    ) {
+
+        renderGame();
+
+    }
 
 }
 
@@ -1927,37 +2312,129 @@ function approvePhoto(activityId) {
    REJECT PHOTO
 ========================================================= */
 
-function rejectPhoto(activityId) {
+async function rejectPhoto(
+    submissionId
+) {
 
     const reason =
         prompt(
             "Reason for rejection (optional):"
         );
 
-    activitiesState[activityId].status =
-        "AVAILABLE";
 
-    activitiesState[activityId].photoState =
-        "REJECTED";
+    const {
+        data: submission,
+        error: fetchError
+    } =
+        await supabaseClient
+            .from(
+                "photo_submissions"
+            )
+            .select("*")
+            .eq(
+                "id",
+                submissionId
+            )
+            .single();
 
-    activitiesState[activityId].rejectionReason =
-        reason || "";
 
-    selectedPhotoFiles[activityId] =
-        null;
+    if (fetchError) {
 
-    photoPreviewUrls[activityId] =
-        null;
+        alert(
+            "Could not find submission."
+        );
 
-    saveGame();
+        return;
 
-    renderValidator();
+    }
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from(
+                "photo_submissions"
+            )
+            .update({
+
+                status:
+                    "REJECTED",
+
+                rejection_reason:
+                    reason || "",
+
+                reviewed_at:
+                    new Date().toISOString()
+
+            })
+            .eq(
+                "id",
+                submissionId
+            );
+
+
+    if (error) {
+
+        alert(
+            "Could not reject photograph:\n"
+            + error.message
+        );
+
+        return;
+
+    }
+
+
+    if (
+        selectedTeam ===
+        submission.team_number
+    ) {
+
+        const state =
+            activitiesState[
+                submission.activity_id
+            ];
+
+        if (state) {
+
+            state.status =
+                "AVAILABLE";
+
+            state.photoState =
+                "REJECTED";
+
+            state.rejectionReason =
+                reason || "";
+
+            state.submissionId =
+                null;
+
+        }
+
+        saveGame();
+
+    }
+
+
+    await renderValidator();
+
+
+    if (
+        gameStartedAt &&
+        selectedTeam ===
+        submission.team_number
+    ) {
+
+        renderGame();
+
+    }
 
 }
 
 
 /* =========================================================
-   RETURN FROM VALIDATOR
+   BACK FROM VALIDATOR
 ========================================================= */
 
 function backFromValidator() {
@@ -1991,7 +2468,10 @@ function updateReturnStatus() {
             "finishButton"
         );
 
-    if (!status || !button) return;
+    if (
+        !status ||
+        !button
+    ) return;
 
     const position =
         getCurrentPosition();
@@ -2001,7 +2481,8 @@ function updateReturnStatus() {
         status.textContent =
             "📍 Waiting for GPS position...";
 
-        button.disabled = true;
+        button.disabled =
+            true;
 
         return;
 
@@ -2015,14 +2496,17 @@ function updateReturnStatus() {
             meetingPoint.lon
         );
 
+
     if (
-        distance <= returnRadius
+        distance <=
+        returnRadius
     ) {
 
         status.innerHTML =
             "✅ You are at the meeting point.";
 
-        button.disabled = false;
+        button.disabled =
+            false;
 
     } else {
 
@@ -2031,7 +2515,8 @@ function updateReturnStatus() {
             + Math.round(distance)
             + "m from the meeting point.";
 
-        button.disabled = true;
+        button.disabled =
+            true;
 
     }
 
@@ -2065,8 +2550,10 @@ function finishHunt() {
             meetingPoint.lon
         );
 
+
     if (
-        distance > returnRadius
+        distance >
+        returnRadius
     ) {
 
         alert(
@@ -2077,53 +2564,73 @@ function finishHunt() {
 
     }
 
+
     const finalScore =
         calculateScore();
 
     const finalActivities =
         activities.filter(
             activity =>
-                activitiesState[activity.id]
-                    .status === "COMPLETED"
+                activitiesState[
+                    activity.id
+                ].status ===
+                "COMPLETED"
         ).length;
 
     const finalPenalty =
         calculateLatePenalty();
 
+
     hideAllScreens();
 
     document
-        .getElementById("finishScreen")
+        .getElementById(
+            "finishScreen"
+        )
         .classList.remove("hidden");
 
+
     document
-        .getElementById("finalScore")
+        .getElementById(
+            "finalScore"
+        )
         .textContent =
         finalScore;
 
     document
-        .getElementById("finalActivities")
+        .getElementById(
+            "finalActivities"
+        )
         .textContent =
         finalActivities;
 
     document
-        .getElementById("finalPenalty")
+        .getElementById(
+            "finalPenalty"
+        )
         .textContent =
         finalPenalty;
 
+
     if (timerInterval) {
 
-        clearInterval(timerInterval);
+        clearInterval(
+            timerInterval
+        );
 
     }
 
-    if (gpsWatchId !== null) {
+
+    if (
+        gpsWatchId !== null
+    ) {
 
         navigator.geolocation.clearWatch(
             gpsWatchId
         );
 
     }
+
 
     localStorage.removeItem(
         "forestHuntGame"
@@ -2133,7 +2640,7 @@ function finishHunt() {
 
 
 /* =========================================================
-   TEST MODE LOCATION
+   TEST LOCATION
 ========================================================= */
 
 function simulateActivityLocation(
@@ -2157,13 +2664,17 @@ function simulateActivityLocation(
 
     if (!activity) return;
 
+
     testPosition = {
 
-        lat: activity.lat,
+        lat:
+            activity.lat,
 
-        lon: activity.lon
+        lon:
+            activity.lon
 
     };
+
 
     updateGPSStatus();
 
@@ -2184,13 +2695,17 @@ function simulateStartLocation() {
 
     }
 
+
     testPosition = {
 
-        lat: meetingPoint.lat,
+        lat:
+            meetingPoint.lat,
 
-        lon: meetingPoint.lon
+        lon:
+            meetingPoint.lon
 
     };
+
 
     updateGPSStatus();
 
@@ -2200,10 +2715,12 @@ function simulateStartLocation() {
 
 
 /* =========================================================
-   TEST MODE TIME
+   TEST TIME
 ========================================================= */
 
-function changeTestTime(seconds) {
+function changeTestTime(
+    seconds
+) {
 
     if (!testMode) {
 
@@ -2225,7 +2742,9 @@ function changeTestTime(seconds) {
 }
 
 
-function jumpTestTime(minutes) {
+function jumpTestTime(
+    minutes
+) {
 
     if (!testMode) {
 
@@ -2249,7 +2768,8 @@ function jumpTestTime(minutes) {
 
 function resetTestTime() {
 
-    testTimeOffsetSeconds = 0;
+    testTimeOffsetSeconds =
+        0;
 
     saveGame();
 
@@ -2269,16 +2789,20 @@ function resetTestTime() {
             "forestHuntTestMode"
         );
 
+
     if (
-        storedTestMode === "true"
+        storedTestMode ===
+        "true"
     ) {
 
         testMode = true;
 
     }
 
+
     const activeGame =
         loadGame();
+
 
     if (
         activeGame &&
