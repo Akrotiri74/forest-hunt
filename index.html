@@ -1,1106 +1,1749 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forest Hunt</title>
 
-    <title>Forest Hunt</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f1f5f1;
+      color: #222;
+    }
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f3f1e8;
-            color: #222;
-        }
+    header {
+      background: #244b2a;
+      color: white;
+      padding: 16px;
+      text-align: center;
+    }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 5px;
-        }
+    header h1 {
+      margin: 0 0 5px 0;
+    }
 
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 25px;
-        }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 15px;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
 
-        .status {
-            padding: 12px;
-            border-radius: 8px;
-            background: #eee;
-            margin-top: 10px;
-        }
+    .scoreboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      text-align: center;
+    }
 
-        .gps-good {
-            background: #dff2df;
-        }
+    .score-box {
+      background: #eef4ee;
+      padding: 10px;
+      border-radius: 8px;
+    }
 
-        .gps-warning {
-            background: #fff1cc;
-        }
+    .score-value {
+      font-size: 24px;
+      font-weight: bold;
+    }
 
-        .inside {
-            background: #d9f2d9;
-            border: 2px solid #4c9a4c;
-        }
+    .timer {
+      font-size: 34px;
+      font-weight: bold;
+      text-align: center;
+      margin: 8px 0;
+    }
 
-        .outside {
-            background: #f5dddd;
-            border: 2px solid #c66;
-        }
+    .timer.warning {
+      color: #c87500;
+    }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            background: #356859;
-            color: white;
-        }
+    .timer.late {
+      color: #c62828;
+    }
 
-        button:disabled {
-            background: #aaa;
-            cursor: not-allowed;
-        }
+    button {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #2f6b38;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
 
-        .restart-button {
-            background: #777;
-        }
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
 
-        .challenge-number {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 5px;
-        }
+    .activity {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
 
-        .challenge-title {
-            font-size: 26px;
-            margin: 5px 0 10px;
-        }
+    .activity h3 {
+      margin-top: 0;
+    }
 
-        .distance {
-            font-size: 22px;
-            font-weight: bold;
-            margin: 15px 0;
-        }
+    .points {
+      display: inline-block;
+      background: #e8f1e8;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
 
-        .photo-area {
-            display: none;
-        }
+    .starter {
+      border: 3px solid #d49b28;
+    }
 
-        .success {
-            background: #dff2df;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
+    .locked {
+      opacity: 0.5;
+    }
 
-        .completed {
-            opacity: 0.65;
-        }
+    .completed {
+      background: #edf7ed;
+      border-color: #66a66b;
+    }
 
-        .locked {
-            color: #888;
-        }
+    .pending {
+      background: #fff8e5;
+      border-color: #e0b44c;
+    }
 
-        #photoPreview {
-            max-width: 100%;
-            margin-top: 15px;
-            border-radius: 8px;
-            display: none;
-        }
+    .rejected {
+      background: #fff0f0;
+      border-color: #d66;
+    }
 
-        #completion {
-            display: none;
-            text-align: center;
-        }
+    .status {
+      font-weight: bold;
+      margin: 8px 0;
+    }
 
-        .big-tick {
-            font-size: 60px;
-        }
+    .gps {
+      font-size: 14px;
+      line-height: 1.5;
+    }
 
-        .saved-message {
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
-        }
-    </style>
+    .message {
+      padding: 10px;
+      background: #eef4ff;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .success {
+      background: #e8f6e9;
+    }
+
+    .warning-box {
+      background: #fff3cd;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .late-box {
+      background: #fdeaea;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      margin: 6px 0 10px 0;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    img.preview {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .finish-button {
+      background: #8a3030;
+    }
+  </style>
 </head>
 
 <body>
 
-    <h1>🌲 Forest Hunt</h1>
-    <div class="subtitle">Explore. Discover. Photograph.</div>
+<header>
+  <h1>🌲 Forest Hunt</h1>
+  <div>60 Minute Team Challenge</div>
+</header>
+
+<div class="container">
+
+  <!-- START SCREEN -->
+  <div id="startScreen" class="panel">
+
+    <h2>Start the Hunt</h2>
+
+    <p>
+      Choose your team. Your first activity will send you in a
+      particular direction. Complete it to unlock the rest of the hunt.
+    </p>
+
+    <label for="teamSelect"><strong>Team</strong></label>
+
+    <select id="teamSelect">
+      <option value="team1">Team 1</option>
+      <option value="team2">Team 2</option>
+      <option value="team3">Team 3</option>
+    </select>
+
+    <button onclick="startGame()">Start 60 Minute Hunt</button>
+
+  </div>
 
 
-    <!-- GPS STATUS -->
+  <!-- GAME -->
+  <div id="gameScreen" class="hidden">
 
-    <div class="card">
+    <div class="panel">
 
-        <h2>📍 Your Location</h2>
+      <div class="scoreboard">
 
-        <div id="gpsStatus" class="status">
-            Waiting for GPS...
+        <div class="score-box">
+          <div>Score</div>
+          <div id="score" class="score-value">0</div>
         </div>
 
-        <button onclick="getLocation()">
-            Update My Location
-        </button>
+        <div class="score-box">
+          <div>Activities</div>
+          <div id="completedCount" class="score-value">0</div>
+        </div>
+
+        <div class="score-box">
+          <div>Late penalty</div>
+          <div id="penalty" class="score-value">0</div>
+        </div>
+
+      </div>
+
+      <div id="timer" class="timer">
+        60:00
+      </div>
+
+      <div id="timerMessage" class="small" style="text-align:center;">
+        Your target is to return within 60 minutes.
+      </div>
 
     </div>
 
 
-    <!-- CURRENT CHALLENGE -->
+    <!-- GPS -->
+    <div class="panel">
 
-    <div id="currentChallengeCard" class="card">
+      <h2>📍 Your Location</h2>
 
-        <div class="challenge-number" id="challengeNumber">
-            Challenge 1 of 3
-        </div>
+      <div id="gpsStatus" class="gps">
+        Waiting for GPS...
+      </div>
 
-        <div class="challenge-title" id="challengeTitle">
-            The Playing Field
-        </div>
-
-        <p id="challengeDescription">
-            Make your way to the search area around this location.
-        </p>
-
-        <div id="distanceDisplay" class="distance">
-            Distance: waiting for GPS...
-        </div>
-
-        <div id="areaStatus" class="status">
-            Waiting for your location...
-        </div>
-
-
-        <!-- PHOTO AREA -->
-
-        <div id="photoArea" class="photo-area">
-
-            <div class="success">
-
-                <strong>🎯 You're in the search area!</strong>
-
-                <p>
-                    Now find the correct location or feature
-                    and photograph it.
-                </p>
-
-            </div>
-
-            <input
-                type="file"
-                id="photoInput"
-                accept="image/*"
-                capture="environment"
-                style="display:none"
-                onchange="photoSelected()"
-            >
-
-            <button onclick="takePhoto()">
-                📷 Take Photograph
-            </button>
-
-            <img id="photoPreview">
-
-            <button
-                id="submitButton"
-                onclick="submitPhoto()"
-                disabled
-            >
-                Submit Photograph
-            </button>
-
-            <div id="photoMessage"></div>
-
-        </div>
+      <button onclick="getLocation()">
+        Update Location
+      </button>
 
     </div>
 
 
-    <!-- PROGRESS -->
+    <!-- STARTER -->
+    <div id="starterPanel" class="panel">
 
-    <div class="card">
+      <h2>🚩 Mandatory First Activity</h2>
 
-        <h2>Progress</h2>
-
-        <div id="progress1">
-            ⬜ Challenge 1 — The Playing Field
-        </div>
-
-        <div id="progress2" class="locked">
-            🔒 Challenge 2 — The Hall
-        </div>
-
-        <div id="progress3" class="locked">
-            🔒 Challenge 3 — The High Street
-        </div>
-
-        <div id="savedMessage" class="saved-message">
-        </div>
+      <div id="starterContent"></div>
 
     </div>
 
 
-    <!-- COMPLETION -->
+    <!-- ACTIVITIES -->
+    <div id="activitiesPanel" class="panel hidden">
 
-    <div id="completion" class="card">
+      <h2>🗺️ Hunt Activities</h2>
 
-        <div class="big-tick">🎉</div>
+      <div class="message">
+        <strong>All activities are now unlocked.</strong><br>
+        Choose which ones to attempt. You don't have to complete them
+        in any particular order.
+      </div>
 
-        <h2>Hunt Complete!</h2>
+      <div id="activityList"></div>
 
-        <p>
-            Congratulations! You've completed all three challenges.
-        </p>
+    </div>
+
+
+    <!-- RETURN -->
+    <div class="panel">
+
+      <h2>🏁 Return to Meeting Point</h2>
+
+      <p>
+        When you have finished hunting, return to the meeting point
+        and press the button below.
+      </p>
+
+      <div id="returnStatus"></div>
+
+      <button class="finish-button" onclick="finishGame()">
+        Return & Finish Hunt
+      </button>
 
     </div>
 
+  </div>
 
-    <!-- DEVELOPMENT CONTROLS -->
 
-    <div class="card">
+  <!-- FINISH SCREEN -->
+  <div id="finishScreen" class="hidden">
 
-        <h3>Development</h3>
+    <div class="panel">
 
-        <p>
-            Use this button to clear your saved progress
-            while testing the game.
-        </p>
+      <h2>🏁 Hunt Finished</h2>
 
-        <button
-            class="restart-button"
-            onclick="restartHunt()"
-        >
-            Restart Hunt
-        </button>
+      <div id="finalResult"></div>
 
     </div>
+
+  </div>
+
+</div>
 
 
 <script>
 
-    // ============================================================
-    // GAME SETTINGS
-    // ============================================================
+  /*
+   * ============================================================
+   * GAME SETTINGS
+   * ============================================================
+   */
 
-    const challengeRadius = 150;
+  const gameDurationMinutes = 60;
 
-    const progressStorageKey =
-        "forestHuntCurrentChallenge";
+  /*
+   * GPS search areas are deliberately generous.
+   * This is a prototype for woodland-style GPS accuracy.
+   */
+  const searchRadius = 150;
 
-
-    let currentChallenge = 0;
-
-    let playerLatitude = null;
-    let playerLongitude = null;
-    let playerAccuracy = null;
-
-    let selectedPhoto = null;
-
-
-    // ============================================================
-    // THREE REAL LOCATIONS
-    // ============================================================
-
-    const challenges = [
-
-        {
-            name: "The Playing Field",
-
-            description:
-                "Make your way to the search area around the playing field. Once you're close enough, explore the area and find the correct feature to photograph.",
-
-            latitude: 52.538761848398785,
-            longitude: 0.5901938775221194
-        },
-
-        {
-            name: "The Hall",
-
-            description:
-                "Make your way towards the hall. Once you're inside the search area, explore and find the correct feature to photograph.",
-
-            latitude: 52.54189431671765,
-            longitude: 0.5853905864119698
-        },
-
-        {
-            name: "The High Street",
-
-            description:
-                "Head towards the High Street. Once you're in the search area, find the correct feature and photograph it.",
-
-            latitude: 52.541854232784715,
-            longitude: 0.5890602942562545
-        }
-
-    ];
+  /*
+   * Radius for returning to the meeting point.
+   */
+  const returnRadius = 150;
 
 
-    // ============================================================
-    // LOAD SAVED PROGRESS
-    // ============================================================
+  /*
+   * Late penalty:
+   *
+   * 0 points if back within 60 minutes.
+   *
+   * After that:
+   * 5 points for every 2 minutes OR PART OF 2 MINUTES late.
+   *
+   * Examples:
+   * 60:00 = 0 penalty
+   * 60:01 = -5
+   * 62:00 = -5
+   * 62:01 = -10
+   */
+  const penaltyPerInterval = 5;
+  const penaltyIntervalSeconds = 120;
 
-    function loadProgress() {
 
-        const savedProgress =
-            localStorage.getItem(
-                progressStorageKey
-            );
+  /*
+   * ============================================================
+   * MEETING POINT
+   * ============================================================
+   *
+   * Playing Field supplied earlier.
+   */
+
+  const meetingPoint = {
+    lat: 52.538761848398785,
+    lon: 0.5901938775221194
+  };
 
 
-        if (savedProgress !== null) {
+  /*
+   * ============================================================
+   * ACTIVITIES
+   * ============================================================
+   *
+   * These are deliberately simple prototype activities.
+   *
+   * In the real game these would be loaded from a server.
+   */
 
-            const savedNumber =
-                parseInt(savedProgress, 10);
+  const activities = [
+
+    {
+      id: "hall-photo",
+      name: "The Hall Photograph",
+      type: "photo",
+      points: 20,
+
+      lat: 52.54189431671765,
+      lon: 0.5853905864119698,
+
+      instructions:
+        "Go to the Hall search area. Find the feature described by the hunt organiser and photograph it clearly.",
+
+      starterFor: ["team1"]
+    },
+
+    {
+      id: "hall-puzzle",
+      name: "Hall Puzzle",
+      type: "puzzle",
+      points: 15,
+
+      lat: 52.54189431671765,
+      lon: 0.5853905864119698,
+
+      instructions:
+        "Find the relevant item in the Hall search area. Use the information on that item together with the puzzle shown here to work out the answer.",
+
+      answer: "FOREST"
+    },
+
+    {
+      id: "highstreet-photo",
+      name: "High Street Photograph",
+      type: "photo",
+      points: 25,
+
+      lat: 52.541854232784715,
+      lon: 0.5890602942562545,
+
+      instructions:
+        "Find the hunt target in the High Street search area and take a photograph that clearly proves you found it.",
+
+      starterFor: ["team2"]
+    },
+
+    {
+      id: "highstreet-puzzle",
+      name: "High Street Puzzle",
+      type: "puzzle",
+      points: 10,
+
+      lat: 52.541854232784715,
+      lon: 0.5890602942562545,
+
+      instructions:
+        "Find the relevant physical item in the search area and use its information to solve the puzzle.",
+
+      answer: "TREE"
+    },
+
+    {
+      id: "field-photo",
+      name: "Meeting Point Photograph",
+      type: "photo",
+      points: 30,
+
+      lat: 52.538761848398785,
+      lon: 0.5901938775221194,
+
+      instructions:
+        "Find the specified feature around the meeting-point search area and photograph it clearly.",
+
+      starterFor: ["team3"]
+    },
+
+    {
+      id: "field-puzzle",
+      name: "Field Puzzle",
+      type: "puzzle",
+      points: 5,
+
+      lat: 52.538761848398785,
+      lon: 0.5901938775221194,
+
+      instructions:
+        "Find the relevant physical item and combine what you see with the information on your phone to solve the puzzle.",
+
+      answer: "GREEN"
+    }
+
+  ];
 
 
-            if (
-                !isNaN(savedNumber) &&
-                savedNumber >= 0 &&
-                savedNumber <= challenges.length
-            ) {
+  /*
+   * ============================================================
+   * GAME STATE
+   * ============================================================
+   */
 
-                currentChallenge =
-                    savedNumber;
+  let selectedTeam = null;
+  let starterActivity = null;
 
-            }
+  let gameStartedAt = null;
 
-        }
+  let currentLocation = null;
+
+  let activitiesState = {};
+
+  let timerInterval = null;
+
+
+  /*
+   * ============================================================
+   * STORAGE
+   * ============================================================
+   */
+
+  const storageKey = "forestHuntGame";
+
+
+  function saveGame() {
+
+    const state = {
+      selectedTeam,
+      gameStartedAt,
+      activitiesState
+    };
+
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify(state)
+    );
+  }
+
+
+  function loadGame() {
+
+    const saved = localStorage.getItem(storageKey);
+
+    if (!saved) {
+      return false;
+    }
+
+    try {
+
+      const state = JSON.parse(saved);
+
+      selectedTeam = state.selectedTeam;
+      gameStartedAt = state.gameStartedAt;
+      activitiesState = state.activitiesState || {};
+
+      starterActivity = activities.find(
+        activity =>
+          activity.starterFor &&
+          activity.starterFor.includes(selectedTeam)
+      );
+
+      return true;
+
+    } catch (error) {
+
+      console.error(error);
+
+      return false;
+    }
+  }
+
+
+  /*
+   * ============================================================
+   * START GAME
+   * ============================================================
+   */
+
+  function startGame() {
+
+    selectedTeam =
+      document.getElementById("teamSelect").value;
+
+    starterActivity = activities.find(
+      activity =>
+        activity.starterFor &&
+        activity.starterFor.includes(selectedTeam)
+    );
+
+    gameStartedAt = Date.now();
+
+    activitiesState = {};
+
+    activities.forEach(activity => {
+
+      activitiesState[activity.id] = {
+        status:
+          activity.id === starterActivity.id
+            ? "available"
+            : "locked",
+
+        scoreAwarded: false
+      };
+
+    });
+
+    saveGame();
+
+    showGameScreen();
+
+    renderStarter();
+
+    renderActivities();
+
+    startTimer();
+
+    getLocation();
+  }
+
+
+  /*
+   * ============================================================
+   * RESTORE GAME
+   * ============================================================
+   */
+
+  function restoreExistingGame() {
+
+    if (!loadGame()) {
+      return;
+    }
+
+    showGameScreen();
+
+    renderStarter();
+
+    renderActivities();
+
+    startTimer();
+
+    getLocation();
+  }
+
+
+  function showGameScreen() {
+
+    document
+      .getElementById("startScreen")
+      .classList.add("hidden");
+
+    document
+      .getElementById("gameScreen")
+      .classList.remove("hidden");
+
+  }
+
+
+  /*
+   * ============================================================
+   * TIMER
+   * ============================================================
+   */
+
+  function startTimer() {
+
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+
+    updateTimer();
+
+    timerInterval = setInterval(
+      updateTimer,
+      1000
+    );
+  }
+
+
+  function updateTimer() {
+
+    if (!gameStartedAt) {
+      return;
+    }
+
+    const elapsedSeconds =
+      Math.floor(
+        (Date.now() - gameStartedAt) / 1000
+      );
+
+    const remainingSeconds =
+      (gameDurationMinutes * 60) -
+      elapsedSeconds;
+
+    const timerElement =
+      document.getElementById("timer");
+
+    const messageElement =
+      document.getElementById("timerMessage");
+
+
+    if (remainingSeconds > 0) {
+
+      const minutes =
+        Math.floor(remainingSeconds / 60);
+
+      const seconds =
+        remainingSeconds % 60;
+
+      timerElement.textContent =
+        `${minutes}:${seconds
+          .toString()
+          .padStart(2, "0")}`;
+
+      timerElement.className = "timer";
+
+      if (remainingSeconds <= 600) {
+
+        timerElement.classList.add("warning");
+
+        messageElement.textContent =
+          "⚠️ Ten minutes or less. Think about your route back.";
+
+      } else {
+
+        messageElement.textContent =
+          "Your target is to return within 60 minutes.";
+      }
+
+    } else {
+
+      const lateSeconds =
+        Math.abs(remainingSeconds);
+
+      const lateMinutes =
+        Math.floor(lateSeconds / 60);
+
+      const seconds =
+        lateSeconds % 60;
+
+      timerElement.textContent =
+        `LATE ${lateMinutes}:${seconds
+          .toString()
+          .padStart(2, "0")}`;
+
+      timerElement.className =
+        "timer late";
+
+      const penalty =
+        calculateLatePenalty(lateSeconds);
+
+      messageElement.textContent =
+        `You are late. Current return penalty: -${penalty} points`;
 
     }
 
+    updateScoreDisplay();
+  }
 
-    // ============================================================
-    // SAVE PROGRESS
-    // ============================================================
 
-    function saveProgress() {
+  function calculateLatePenalty(lateSeconds) {
 
-        localStorage.setItem(
-            progressStorageKey,
-            currentChallenge.toString()
+    if (lateSeconds <= 0) {
+      return 0;
+    }
+
+    return Math.ceil(
+      lateSeconds / penaltyIntervalSeconds
+    ) * penaltyPerInterval;
+  }
+
+
+  /*
+   * ============================================================
+   * SCORE
+   * ============================================================
+   */
+
+  function calculateEarnedPoints() {
+
+    let total = 0;
+
+    activities.forEach(activity => {
+
+      const state =
+        activitiesState[activity.id];
+
+      if (
+        state &&
+        state.status === "completed" &&
+        state.scoreAwarded
+      ) {
+
+        total += activity.points;
+      }
+
+    });
+
+    return total;
+  }
+
+
+  function updateScoreDisplay() {
+
+    const earned =
+      calculateEarnedPoints();
+
+    let penalty = 0;
+
+    if (gameStartedAt) {
+
+      const elapsedSeconds =
+        Math.floor(
+          (Date.now() - gameStartedAt) / 1000
         );
 
-    }
-
-
-    // ============================================================
-    // GET GPS LOCATION
-    // ============================================================
-
-    function getLocation() {
-
-        if (!navigator.geolocation) {
-
-            document.getElementById("gpsStatus")
-                .innerHTML =
-                "❌ GPS is not supported by this browser.";
-
-            return;
-        }
-
-
-        document.getElementById("gpsStatus")
-            .innerHTML =
-            "📡 Getting your location...";
-
-
-        navigator.geolocation.getCurrentPosition(
-
-            function(position) {
-
-                playerLatitude =
-                    position.coords.latitude;
-
-                playerLongitude =
-                    position.coords.longitude;
-
-                playerAccuracy =
-                    position.coords.accuracy;
-
-
-                updateGPSDisplay();
-
-                checkCurrentChallenge();
-
-            },
-
-            function(error) {
-
-                document.getElementById("gpsStatus")
-                    .innerHTML =
-                    "❌ Unable to get your location. Please make sure location services are enabled.";
-
-            },
-
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 15000
-            }
-
+      const lateSeconds =
+        Math.max(
+          0,
+          elapsedSeconds -
+          (gameDurationMinutes * 60)
         );
 
+      penalty =
+        calculateLatePenalty(lateSeconds);
+    }
+
+    document.getElementById("score").textContent =
+      earned - penalty;
+
+    document.getElementById("penalty").textContent =
+      penalty === 0 ? "0" : `-${penalty}`;
+
+    const completed =
+      activities.filter(activity =>
+        activitiesState[activity.id] &&
+        activitiesState[activity.id].status === "completed"
+      ).length;
+
+    document.getElementById("completedCount").textContent =
+      completed;
+  }
+
+
+  /*
+   * ============================================================
+   * STARTER
+   * ============================================================
+   */
+
+  function renderStarter() {
+
+    const container =
+      document.getElementById("starterContent");
+
+    const state =
+      activitiesState[starterActivity.id];
+
+
+    if (state.status === "completed") {
+
+      container.innerHTML = `
+        <div class="activity completed">
+          <h3>${starterActivity.name}</h3>
+          <div class="status">✅ Starter completed</div>
+          <p>All hunt activities are now unlocked.</p>
+        </div>
+      `;
+
+      document
+        .getElementById("starterPanel")
+        .classList.remove("starter");
+
+      document
+        .getElementById("activitiesPanel")
+        .classList.remove("hidden");
+
+      return;
     }
 
 
-    // ============================================================
-    // GPS DISPLAY
-    // ============================================================
+    container.innerHTML = `
+      <div class="activity starter">
 
-    function updateGPSDisplay() {
+        <h3>${starterActivity.name}</h3>
 
-        const gpsStatus =
-            document.getElementById("gpsStatus");
+        <div class="points">
+          ${starterActivity.points} points
+        </div>
+
+        <p>
+          ${starterActivity.instructions}
+        </p>
+
+        <div id="starterDistance">
+          Checking location...
+        </div>
+
+        <div id="starterAction"></div>
+
+      </div>
+    `;
+
+    updateStarterLocation();
+  }
 
 
-        if (playerAccuracy <= 20) {
+  function updateStarterLocation() {
 
-            gpsStatus.className =
-                "status gps-good";
+    if (!currentLocation) {
+      return;
+    }
 
-        } else {
+    const distance =
+      distanceInMetres(
+        currentLocation.lat,
+        currentLocation.lon,
+        starterActivity.lat,
+        starterActivity.lon
+      );
 
-            gpsStatus.className =
-                "status gps-warning";
+    const distanceElement =
+      document.getElementById("starterDistance");
 
+    const actionElement =
+      document.getElementById("starterAction");
+
+    if (!distanceElement || !actionElement) {
+      return;
+    }
+
+
+    if (distance <= searchRadius) {
+
+      distanceElement.innerHTML =
+        `📍 You are ${Math.round(distance)}m from the search area.`;
+
+      actionElement.innerHTML = `
+        <p><strong>You're in the search area.</strong></p>
+
+        ${
+          starterActivity.type === "photo"
+            ? photoInterface(starterActivity)
+            : puzzleInterface(starterActivity)
+        }
+      `;
+
+    } else {
+
+      distanceElement.innerHTML =
+        `📍 You are approximately ${Math.round(distance)}m away.`;
+
+      actionElement.innerHTML = `
+        <p>
+          Move into the search area to attempt this activity.
+        </p>
+      `;
+    }
+  }
+
+
+  /*
+   * ============================================================
+   * ACTIVITIES
+   * ============================================================
+   */
+
+  function renderActivities() {
+
+    const list =
+      document.getElementById("activityList");
+
+    list.innerHTML = "";
+
+
+    const starterComplete =
+      activitiesState[starterActivity.id] &&
+      activitiesState[starterActivity.id].status === "completed";
+
+
+    if (!starterComplete) {
+
+      document
+        .getElementById("activitiesPanel")
+        .classList.add("hidden");
+
+      return;
+    }
+
+
+    document
+      .getElementById("activitiesPanel")
+      .classList.remove("hidden");
+
+
+    activities
+      .filter(activity =>
+        activity.id !== starterActivity.id
+      )
+      .forEach(activity => {
+
+        const state =
+          activitiesState[activity.id];
+
+        const div =
+          document.createElement("div");
+
+        div.className = "activity";
+
+
+        if (state.status === "completed") {
+          div.classList.add("completed");
+        }
+
+        if (state.status === "pending") {
+          div.classList.add("pending");
+        }
+
+        if (state.status === "rejected") {
+          div.classList.add("rejected");
         }
 
 
-        gpsStatus.innerHTML =
-            "📍 GPS location found<br>" +
-            "Accuracy: ±" +
-            Math.round(playerAccuracy) +
-            " metres";
+        let statusText = "";
 
+        if (state.status === "available") {
+          statusText = "Available";
+        }
+
+        if (state.status === "completed") {
+          statusText = "✅ Completed";
+        }
+
+        if (state.status === "pending") {
+          statusText = "⏳ Photo awaiting validation";
+        }
+
+        if (state.status === "rejected") {
+          statusText = "📷 Photo needs another attempt";
+        }
+
+
+        div.innerHTML = `
+
+          <h3>${activity.name}</h3>
+
+          <div class="points">
+            ${activity.points} points
+          </div>
+
+          <div class="status">
+            ${statusText}
+          </div>
+
+          <p>
+            ${activity.instructions}
+          </p>
+
+          <div id="distance-${activity.id}">
+            Checking location...
+          </div>
+
+          <div id="action-${activity.id}"></div>
+
+        `;
+
+
+        list.appendChild(div);
+
+        updateActivityLocation(activity);
+
+      });
+  }
+
+
+  function updateActivityLocation(activity) {
+
+    if (!currentLocation) {
+      return;
+    }
+
+    const state =
+      activitiesState[activity.id];
+
+    const distance =
+      distanceInMetres(
+        currentLocation.lat,
+        currentLocation.lon,
+        activity.lat,
+        activity.lon
+      );
+
+    const distanceElement =
+      document.getElementById(
+        `distance-${activity.id}`
+      );
+
+    const actionElement =
+      document.getElementById(
+        `action-${activity.id}`
+      );
+
+
+    if (!distanceElement || !actionElement) {
+      return;
     }
 
 
-    // ============================================================
-    // DISTANCE CALCULATION
-    // ============================================================
+    distanceElement.innerHTML =
+      `📍 Approximately ${Math.round(distance)}m from search area.`;
 
-    function distanceInMetres(
-        lat1,
-        lon1,
-        lat2,
-        lon2
+
+    if (
+      state.status === "completed" ||
+      state.status === "pending"
     ) {
 
-        const R = 6371000;
+      actionElement.innerHTML = "";
 
-
-        const dLat =
-            (lat2 - lat1) *
-            Math.PI / 180;
-
-
-        const dLon =
-            (lon2 - lon1) *
-            Math.PI / 180;
-
-
-        const a =
-            Math.sin(dLat / 2) *
-            Math.sin(dLat / 2) +
-
-            Math.cos(lat1 * Math.PI / 180) *
-            Math.cos(lat2 * Math.PI / 180) *
-
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-
-
-        const c =
-            2 *
-            Math.atan2(
-                Math.sqrt(a),
-                Math.sqrt(1 - a)
-            );
-
-
-        return R * c;
-
+      return;
     }
 
 
-    // ============================================================
-    // CHECK CURRENT CHALLENGE
-    // ============================================================
+    if (distance <= searchRadius) {
 
-    function checkCurrentChallenge() {
+      actionElement.innerHTML =
+        activity.type === "photo"
+          ? photoInterface(activity)
+          : puzzleInterface(activity);
 
-        if (
-            currentChallenge >=
-            challenges.length
-        ) {
+    } else {
 
-            return;
+      actionElement.innerHTML =
+        `<p>Move into the search area to attempt this activity.</p>`;
+    }
 
-        }
-
-
-        if (
-            playerLatitude === null ||
-            playerLongitude === null
-        ) {
-
-            return;
-
-        }
+  }
 
 
-        const challenge =
-            challenges[currentChallenge];
+  /*
+   * ============================================================
+   * PHOTO ACTIVITY
+   * ============================================================
+   */
+
+  function photoInterface(activity) {
+
+    return `
+
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        id="photo-${activity.id}"
+      >
+
+      <button
+        onclick="submitPhoto('${activity.id}')"
+      >
+        Submit Photograph
+      </button>
+
+      <div class="small">
+        Your photograph will be checked by a hunt validator.
+      </div>
+    `;
+  }
 
 
-        const distance =
-            distanceInMetres(
+  function submitPhoto(activityId) {
 
-                playerLatitude,
-                playerLongitude,
+    const input =
+      document.getElementById(
+        `photo-${activityId}`
+      );
 
-                challenge.latitude,
-                challenge.longitude
+    if (!input || !input.files.length) {
 
-            );
+      alert(
+        "Please take or choose a photograph first."
+      );
 
-
-        document.getElementById("distanceDisplay")
-            .innerHTML =
-            "📏 " +
-            Math.round(distance) +
-            " metres away";
-
-
-        const areaStatus =
-            document.getElementById("areaStatus");
-
-
-        if (distance <= challengeRadius) {
-
-            areaStatus.className =
-                "status inside";
-
-
-            areaStatus.innerHTML =
-                "✅ You are inside the search area";
-
-
-            document.getElementById("photoArea")
-                .style.display =
-                "block";
-
-        } else {
-
-            areaStatus.className =
-                "status outside";
-
-
-            areaStatus.innerHTML =
-                "🚶 Keep moving towards the target.<br>" +
-                "Search area begins within " +
-                challengeRadius +
-                " metres";
-
-
-            document.getElementById("photoArea")
-                .style.display =
-                "none";
-
-        }
-
+      return;
     }
 
 
-    // ============================================================
-    // DISPLAY CURRENT CHALLENGE
-    // ============================================================
+    /*
+     * In this prototype we simulate the remote human
+     * validator with a short delay.
+     *
+     * The important thing is that the game state is
+     * PENDING before approval.
+     */
 
-    function displayCurrentChallenge() {
+    activitiesState[activityId].status =
+      "pending";
 
-        if (
-            currentChallenge >=
-            challenges.length
-        ) {
+    saveGame();
 
-            showCompletion();
+    renderActivities();
 
-            return;
+    /*
+     * Simulated validator.
+     *
+     * Later this will be replaced by:
+     *
+     * photo upload → server → validator →
+     * approved/rejected → player's phone
+     */
 
-        }
+    setTimeout(() => {
 
+      approvePhoto(activityId);
 
-        const challenge =
-            challenges[currentChallenge];
+    }, 3000);
 
-
-        document.getElementById("challengeNumber")
-            .innerHTML =
-            "Challenge " +
-            (currentChallenge + 1) +
-            " of " +
-            challenges.length;
-
-
-        document.getElementById("challengeTitle")
-            .innerHTML =
-            challenge.name;
+  }
 
 
-        document.getElementById("challengeDescription")
-            .innerHTML =
-            challenge.description;
+  function approvePhoto(activityId) {
+
+    const state =
+      activitiesState[activityId];
+
+    if (!state) {
+      return;
+    }
+
+    state.status =
+      "completed";
+
+    state.scoreAwarded =
+      true;
+
+    saveGame();
+
+    renderActivities();
+
+    updateScoreDisplay();
+
+    alert(
+      "📷 Photo approved! Points awarded."
+    );
+  }
 
 
-        document.getElementById("distanceDisplay")
-            .innerHTML =
-            "Distance: waiting for GPS...";
+  /*
+   * ============================================================
+   * PUZZLES
+   * ============================================================
+   */
+
+  function puzzleInterface(activity) {
+
+    return `
+
+      <input
+        type="text"
+        id="answer-${activity.id}"
+        placeholder="Enter your answer"
+      >
+
+      <button
+        onclick="submitPuzzle('${activity.id}')"
+      >
+        Submit Answer
+      </button>
+
+    `;
+  }
 
 
-        document.getElementById("areaStatus")
-            .className =
-            "status";
+  function submitPuzzle(activityId) {
 
+    const activity =
+      activities.find(
+        item => item.id === activityId
+      );
 
-        document.getElementById("areaStatus")
-            .innerHTML =
-            "Waiting for your location...";
+    const input =
+      document.getElementById(
+        `answer-${activityId}`
+      );
 
-
-        document.getElementById("photoArea")
-            .style.display =
-            "none";
-
-
-        document.getElementById("photoPreview")
-            .style.display =
-            "none";
-
-
-        document.getElementById("photoInput")
-            .value = "";
-
-
-        document.getElementById("submitButton")
-            .disabled = true;
-
-
-        document.getElementById("photoMessage")
-            .innerHTML = "";
-
-
-        updateProgressDisplay();
-
+    if (!input) {
+      return;
     }
 
 
-    // ============================================================
-    // UPDATE PROGRESS DISPLAY
-    // ============================================================
-
-    function updateProgressDisplay() {
-
-        const progress1 =
-            document.getElementById("progress1");
-
-        const progress2 =
-            document.getElementById("progress2");
-
-        const progress3 =
-            document.getElementById("progress3");
+    const answer =
+      input.value
+        .trim()
+        .toUpperCase();
 
 
-        // Challenge 1
+    if (answer === activity.answer) {
 
-        if (currentChallenge > 0) {
+      activitiesState[activityId].status =
+        "completed";
 
-            progress1.innerHTML =
-                "✅ Challenge 1 — The Playing Field";
+      activitiesState[activityId].scoreAwarded =
+        true;
 
-            progress1.className =
-                "completed";
+      saveGame();
 
-        } else {
+      renderActivities();
 
-            progress1.innerHTML =
-                "⬜ Challenge 1 — The Playing Field";
+      updateScoreDisplay();
 
-            progress1.className = "";
+      alert(
+        `Correct! +${activity.points} points`
+      );
 
-        }
+    } else {
 
+      alert(
+        "Not correct — have another look at the physical item and try again."
+      );
+    }
 
-        // Challenge 2
-
-        if (currentChallenge > 1) {
-
-            progress2.innerHTML =
-                "✅ Challenge 2 — The Hall";
-
-            progress2.className =
-                "completed";
-
-        } else if (currentChallenge === 1) {
-
-            progress2.innerHTML =
-                "⬜ Challenge 2 — The Hall";
-
-            progress2.className = "";
-
-        } else {
-
-            progress2.innerHTML =
-                "🔒 Challenge 2 — The Hall";
-
-            progress2.className =
-                "locked";
-
-        }
+  }
 
 
-        // Challenge 3
+  /*
+   * ============================================================
+   * GPS
+   * ============================================================
+   */
 
-        if (currentChallenge > 2) {
+  function getLocation() {
 
-            progress3.innerHTML =
-                "✅ Challenge 3 — The High Street";
+    if (!navigator.geolocation) {
 
-            progress3.className =
-                "completed";
+      document.getElementById(
+        "gpsStatus"
+      ).textContent =
+        "GPS is not available on this device.";
 
-        } else if (currentChallenge === 2) {
-
-            progress3.innerHTML =
-                "⬜ Challenge 3 — The High Street";
-
-            progress3.className = "";
-
-        } else {
-
-            progress3.innerHTML =
-                "🔒 Challenge 3 — The High Street";
-
-            progress3.className =
-                "locked";
-
-        }
-
-
-        if (currentChallenge > 0) {
-
-            document.getElementById("savedMessage")
-                .innerHTML =
-                "💾 Your progress is saved on this device.";
-
-        } else {
-
-            document.getElementById("savedMessage")
-                .innerHTML = "";
-
-        }
-
+      return;
     }
 
 
-    // ============================================================
-    // TAKE PHOTO
-    // ============================================================
+    document.getElementById(
+      "gpsStatus"
+    ).textContent =
+      "Getting your location...";
 
-    function takePhoto() {
 
-        document.getElementById("photoInput")
-            .click();
+    navigator.geolocation.getCurrentPosition(
 
-    }
+      position => {
 
+        currentLocation = {
 
-    // ============================================================
-    // PHOTO SELECTED
-    // ============================================================
+          lat:
+            position.coords.latitude,
 
-    function photoSelected() {
+          lon:
+            position.coords.longitude,
 
-        const input =
-            document.getElementById("photoInput");
+          accuracy:
+            position.coords.accuracy
 
-
-        if (
-            !input.files ||
-            input.files.length === 0
-        ) {
-
-            return;
-
-        }
-
-
-        selectedPhoto =
-            input.files[0];
-
-
-        const preview =
-            document.getElementById("photoPreview");
-
-
-        preview.src =
-            URL.createObjectURL(selectedPhoto);
-
-
-        preview.style.display =
-            "block";
-
-
-        document.getElementById("submitButton")
-            .disabled = false;
-
-
-        document.getElementById("photoMessage")
-            .innerHTML =
-            "Photo ready to submit.";
-
-    }
-
-
-    // ============================================================
-    // SUBMIT PHOTO
-    // ============================================================
-
-    function submitPhoto() {
-
-        if (!selectedPhoto) {
-
-            return;
-
-        }
-
-
-        if (
-            playerLatitude === null ||
-            playerLongitude === null
-        ) {
-
-            alert(
-                "We need your location before the photo can be submitted."
-            );
-
-            return;
-
-        }
-
-
-        const challenge =
-            challenges[currentChallenge];
-
-
-        const distance =
-            distanceInMetres(
-
-                playerLatitude,
-                playerLongitude,
-
-                challenge.latitude,
-                challenge.longitude
-
-            );
-
-
-        if (distance > challengeRadius) {
-
-            alert(
-                "You are now outside the search area. " +
-                "Please return closer to the target before submitting."
-            );
-
-
-            checkCurrentChallenge();
-
-            return;
-
-        }
-
-
-        // --------------------------------------------------------
-        // TEMPORARY:
-        // For now photographs are accepted immediately.
-        //
-        // Later this will become:
-        //
-        // photo → upload → remote human validation
-        // --------------------------------------------------------
-
-
-        document.getElementById("photoMessage")
-            .innerHTML =
-            "✅ Photograph accepted!";
-
-
-        document.getElementById("photoArea")
-            .style.display =
-            "none";
-
-
-        markChallengeComplete();
-
-    }
-
-
-    // ============================================================
-    // COMPLETE CURRENT CHALLENGE
-    // ============================================================
-
-    function markChallengeComplete() {
-
-        currentChallenge++;
-
-
-        // Save immediately
-
-        saveProgress();
-
-
-        if (
-            currentChallenge >=
-            challenges.length
-        ) {
-
-            showCompletion();
-
-            return;
-
-        }
-
-
-        displayCurrentChallenge();
-
-
-        // Check whether the player is already
-        // close enough to the next target.
-
-        checkCurrentChallenge();
-
-    }
-
-
-    // ============================================================
-    // COMPLETION SCREEN
-    // ============================================================
-
-    function showCompletion() {
-
-        document.getElementById(
-            "currentChallengeCard"
-        ).style.display =
-            "none";
+        };
 
 
         document.getElementById(
-            "completion"
-        ).style.display =
-            "block";
+          "gpsStatus"
+        ).innerHTML = `
+
+          <strong>GPS working</strong><br>
+
+          Accuracy:
+          approximately ${Math.round(
+            currentLocation.accuracy
+          )}m<br>
+
+          Coordinates:
+          ${currentLocation.lat.toFixed(6)},
+          ${currentLocation.lon.toFixed(6)}
+
+        `;
 
 
-        updateProgressDisplay();
+        updateStarterLocation();
 
-    }
+        renderActivities();
 
+        updateReturnStatus();
 
-    // ============================================================
-    // RESTART HUNT
-    // ============================================================
+      },
 
-    function restartHunt() {
-
-        const confirmed =
-            confirm(
-                "Are you sure you want to restart the hunt? " +
-                "Your saved progress will be cleared."
-            );
-
-
-        if (!confirmed) {
-
-            return;
-
-        }
-
-
-        localStorage.removeItem(
-            progressStorageKey
-        );
-
-
-        currentChallenge = 0;
-
+      error => {
 
         document.getElementById(
-            "currentChallengeCard"
-        ).style.display =
-            "block";
+          "gpsStatus"
+        ).textContent =
+          "Unable to obtain GPS location: " +
+          error.message;
 
+      },
 
-        document.getElementById(
-            "completion"
-        ).style.display =
-            "none";
-
-
-        displayCurrentChallenge();
-
-
-        if (
-            playerLatitude !== null
-        ) {
-
-            checkCurrentChallenge();
-
-        }
-
-    }
-
-
-    // ============================================================
-    // AUTOMATIC GPS REFRESH
-    // ============================================================
-
-    setInterval(
-
-        function() {
-
-            getLocation();
-
-        },
-
-        5000
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 15000
+      }
 
     );
 
+  }
 
-    // ============================================================
-    // STARTUP
-    // ============================================================
 
-    loadProgress();
+  /*
+   * Automatically refresh GPS every 5 seconds.
+   */
 
-    displayCurrentChallenge();
+  setInterval(() => {
+
+    if (
+      !document
+        .getElementById("gameScreen")
+        .classList.contains("hidden")
+    ) {
+
+      getLocation();
+
+    }
+
+  }, 5000);
+
+
+  /*
+   * ============================================================
+   * RETURN TO START
+   * ============================================================
+   */
+
+  function updateReturnStatus() {
+
+    if (!currentLocation) {
+      return;
+    }
+
+
+    const distance =
+      distanceInMetres(
+        currentLocation.lat,
+        currentLocation.lon,
+        meetingPoint.lat,
+        meetingPoint.lon
+      );
+
+
+    const status =
+      document.getElementById(
+        "returnStatus"
+      );
+
+
+    if (distance <= returnRadius) {
+
+      status.innerHTML = `
+
+        <div class="message success">
+
+          <strong>🏁 You are at the meeting point.</strong>
+
+          <br>
+
+          Approximately ${Math.round(distance)}m away.
+
+        </div>
+
+      `;
+
+    } else {
+
+      status.innerHTML = `
+
+        <div class="message">
+
+          You are approximately
+          <strong>${Math.round(distance)}m</strong>
+          from the meeting point.
+
+          <br><br>
+
+          Return to the meeting point before finishing.
+
+        </div>
+
+      `;
+    }
+
+  }
+
+
+  /*
+   * ============================================================
+   * FINISH GAME
+   * ============================================================
+   */
+
+  function finishGame() {
+
+    if (!currentLocation) {
+
+      alert(
+        "We need your GPS location before you can finish."
+      );
+
+      getLocation();
+
+      return;
+    }
+
+
+    const distance =
+      distanceInMetres(
+        currentLocation.lat,
+        currentLocation.lon,
+        meetingPoint.lat,
+        meetingPoint.lon
+      );
+
+
+    if (distance > returnRadius) {
+
+      alert(
+        `You are still approximately ${Math.round(distance)}m from the meeting point.`
+      );
+
+      return;
+    }
+
+
+    const elapsedSeconds =
+      Math.floor(
+        (Date.now() - gameStartedAt) / 1000
+      );
+
+
+    const lateSeconds =
+      Math.max(
+        0,
+        elapsedSeconds -
+        (gameDurationMinutes * 60)
+      );
+
+
+    const earned =
+      calculateEarnedPoints();
+
+
+    const penalty =
+      calculateLatePenalty(lateSeconds);
+
+
+    const finalScore =
+      earned - penalty;
+
+
+    clearInterval(timerInterval);
+
+    localStorage.removeItem(storageKey);
+
+
+    document
+      .getElementById("gameScreen")
+      .classList.add("hidden");
+
+    document
+      .getElementById("finishScreen")
+      .classList.remove("hidden");
+
+
+    let timeMessage = "";
+
+    if (lateSeconds === 0) {
+
+      timeMessage =
+        "<strong>🎉 You returned within the 60 minute target!</strong>";
+
+    } else {
+
+      const lateMinutes =
+        Math.floor(lateSeconds / 60);
+
+      const lateRemainingSeconds =
+        lateSeconds % 60;
+
+      timeMessage = `
+
+        <div class="late-box">
+
+          <strong>⏰ You returned late.</strong>
+
+          <br><br>
+
+          Late by:
+          ${lateMinutes}m
+          ${lateRemainingSeconds}s
+
+          <br>
+
+          Time penalty:
+          <strong>-${penalty} points</strong>
+
+        </div>
+
+      `;
+    }
+
+
+    document.getElementById(
+      "finalResult"
+    ).innerHTML = `
+
+      ${timeMessage}
+
+      <h3>Final Score</h3>
+
+      <div style="
+        font-size:48px;
+        font-weight:bold;
+        text-align:center;
+        margin:20px 0;
+      ">
+        ${finalScore}
+      </div>
+
+      <p>
+        Activity points:
+        <strong>${earned}</strong>
+      </p>
+
+      <p>
+        Late penalty:
+        <strong>-${penalty}</strong>
+      </p>
+
+      <p>
+        <strong>Final score: ${finalScore}</strong>
+      </p>
+
+      <p>
+        Thanks for playing!
+      </p>
+
+    `;
+
+  }
+
+
+  /*
+   * ============================================================
+   * DISTANCE CALCULATION
+   * ============================================================
+   */
+
+  function distanceInMetres(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+  ) {
+
+    const earthRadius = 6371000;
+
+    const lat1Radians =
+      lat1 * Math.PI / 180;
+
+    const lat2Radians =
+      lat2 * Math.PI / 180;
+
+    const deltaLat =
+      (lat2 - lat1) *
+      Math.PI / 180;
+
+    const deltaLon =
+      (lon2 - lon1) *
+      Math.PI / 180;
+
+
+    const a =
+      Math.sin(deltaLat / 2) *
+      Math.sin(deltaLat / 2) +
+
+      Math.cos(lat1Radians) *
+      Math.cos(lat2Radians) *
+
+      Math.sin(deltaLon / 2) *
+      Math.sin(deltaLon / 2);
+
+
+    const c =
+      2 *
+      Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
+
+
+    return earthRadius * c;
+  }
+
+
+  /*
+   * ============================================================
+   * AUTOMATICALLY RESTORE GAME AFTER PAGE REFRESH
+   * ============================================================
+   */
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      if (loadGame()) {
+
+        showGameScreen();
+
+        renderStarter();
+
+        renderActivities();
+
+        startTimer();
+
+        getLocation();
+
+      }
+
+    }
+  );
 
 </script>
 
