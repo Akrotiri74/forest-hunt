@@ -57,6 +57,14 @@ button.danger {
     background: #9b3333;
 }
 
+button.test-location {
+    background: #4f6375;
+}
+
+button.time-button {
+    background: #7b5a2e;
+}
+
 button:disabled {
     background: #aaa;
     cursor: not-allowed;
@@ -105,12 +113,27 @@ button:disabled {
     background: #f6dddd;
 }
 
+.status.test {
+    background: #e4edf5;
+}
+
 .big-timer {
     font-size: 36px;
     font-weight: bold;
     text-align: center;
     padding: 12px;
     background: #1f3828;
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.test-banner {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    padding: 12px;
+    background: #76551e;
     color: white;
     border-radius: 10px;
     margin-bottom: 15px;
@@ -172,6 +195,36 @@ hr {
     border: 0;
     border-top: 1px solid #ddd;
     margin: 20px 0;
+}
+
+.test-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.test-grid button {
+    margin: 0;
+}
+
+.test-section {
+    margin-top: 15px;
+}
+
+.test-section h3 {
+    margin-bottom: 8px;
+}
+
+.test-location-current {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.test-time {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 10px 0;
 }
 </style>
 </head>
@@ -261,9 +314,153 @@ hr {
     <!-- GAME -->
     <div id="gameScreen" class="hidden">
 
+        <div id="testBanner" class="test-banner hidden">
+            🧪 TEST MODE
+        </div>
+
         <div class="big-timer" id="timer">
             60:00
         </div>
+
+        <!-- TEST MODE PANEL -->
+        <div id="testPanel" class="card hidden">
+
+            <h2>🧪 Test Mode Controls</h2>
+
+            <div class="status test">
+
+                <div class="test-location-current">
+                    Simulated location:
+                    <span id="testLocationName">
+                        Hall
+                    </span>
+                </div>
+
+                <div class="small">
+                    Real phone GPS is not being used while
+                    Test Mode is active.
+                </div>
+
+            </div>
+
+
+            <div class="test-section">
+
+                <h3>📍 Simulate Location</h3>
+
+                <button
+                    class="test-location"
+                    onclick="setTestLocation('playingField')">
+
+                    🏁 Playing Field / Meeting Point
+
+                </button>
+
+                <button
+                    class="test-location"
+                    onclick="setTestLocation('hall')">
+
+                    🏛 Hall
+
+                </button>
+
+                <button
+                    class="test-location"
+                    onclick="setTestLocation('highStreet')">
+
+                    🏘 High Street
+
+                </button>
+
+                <button
+                    class="secondary"
+                    onclick="resetTestLocation()">
+
+                    Reset Simulated Location
+
+                </button>
+
+            </div>
+
+
+            <div class="test-section">
+
+                <h3>⏱ Simulate Time</h3>
+
+                <div class="test-time">
+                    Test elapsed time:
+                    <span id="testElapsed">
+                        0:00
+                    </span>
+                </div>
+
+                <div class="test-grid">
+
+                    <button
+                        class="time-button"
+                        onclick="advanceTestTime(60)">
+
+                        +1 minute
+
+                    </button>
+
+                    <button
+                        class="time-button"
+                        onclick="advanceTestTime(300)">
+
+                        +5 minutes
+
+                    </button>
+
+                    <button
+                        class="time-button"
+                        onclick="advanceTestTime(600)">
+
+                        +10 minutes
+
+                    </button>
+
+                    <button
+                        class="secondary"
+                        onclick="resetTestTime()">
+
+                        Reset Time
+
+                    </button>
+
+                </div>
+
+                <button
+                    class="warning"
+                    onclick="advanceTestTime(3600)">
+
+                    ⏰ Jump to 60 minutes
+
+                </button>
+
+                <button
+                    class="danger"
+                    onclick="advanceTestTime(3660)">
+
+                    ⏰ Jump to 61 minutes
+
+                </button>
+
+            </div>
+
+
+            <div class="test-section">
+
+                <div
+                    id="testDistance"
+                    class="status">
+                    Distance to meeting point: 0m
+                </div>
+
+            </div>
+
+        </div>
+
 
         <div class="card">
 
@@ -275,8 +472,12 @@ hr {
                 Find and complete your starter challenge.
             </div>
 
-            <button class="secondary" onclick="showValidator()">
+            <button
+                class="secondary"
+                onclick="showValidator()">
+
                 📷 VALIDATOR VIEW
+
             </button>
 
         </div>
@@ -305,8 +506,12 @@ hr {
 
         <div class="card">
 
-            <button class="secondary" onclick="returnToGame()">
+            <button
+                class="secondary"
+                onclick="returnToGame()">
+
                 ← Back to Hunt
+
             </button>
 
             <h2 id="activityTitle"></h2>
@@ -327,14 +532,22 @@ hr {
 
         <div class="card">
 
-            <button class="secondary" onclick="returnFromValidator()">
+            <button
+                class="secondary"
+                onclick="returnFromValidator()">
+
                 ← Back
+
             </button>
 
             <h1>📷 Validator View</h1>
 
-            <div id="validatorStatus" class="status">
+            <div
+                id="validatorStatus"
+                class="status">
+
                 Checking submissions...
+
             </div>
 
             <div id="validatorList"></div>
@@ -352,7 +565,8 @@ hr {
             <h1>🏁 Hunt Finished</h1>
 
             <div class="score">
-                Final Score: <span id="finalScore">0</span>
+                Final Score:
+                <span id="finalScore">0</span>
             </div>
 
             <div id="finishMessage" class="status"></div>
@@ -469,7 +683,7 @@ const activities = [
 
     {
         id: "street-photo",
-        dbId: 2,
+        dbId: null,
 
         title: "High Street Photograph",
         type: "PHOTO",
@@ -501,7 +715,7 @@ const activities = [
 
     {
         id: "field-photo",
-        dbId: 3,
+        dbId: null,
 
         title: "Meeting Point Photograph",
         type: "PHOTO",
@@ -551,6 +765,8 @@ function getActivityByDatabaseId(databaseActivityId) {
 
     return activities.find(
         activity =>
+            activity.dbId !== null &&
+            activity.dbId !== undefined &&
             Number(activity.dbId) ===
             Number(databaseActivityId)
     );
@@ -604,6 +820,8 @@ let testMode = false;
 
 let testTimeOffsetSeconds = 0;
 
+let testLocationKey = "hall";
+
 let previousScreen = "home";
 
 let validatorRefreshInterval = null;
@@ -651,6 +869,11 @@ function saveState() {
     localStorage.setItem(
         "forestHunt_testTimeOffsetSeconds",
         testTimeOffsetSeconds
+    );
+
+    localStorage.setItem(
+        "forestHunt_testLocationKey",
+        testLocationKey || "hall"
     );
 
     localStorage.setItem(
@@ -714,6 +937,19 @@ function loadState() {
         ) || 0;
 
 
+    testLocationKey =
+        localStorage.getItem(
+            "forestHunt_testLocationKey"
+        ) || "hall";
+
+
+    if (!locations[testLocationKey]) {
+
+        testLocationKey = "hall";
+
+    }
+
+
     try {
 
         activeSubmissionIds =
@@ -751,6 +987,8 @@ function resetGameState() {
     testMode = false;
 
     testTimeOffsetSeconds = 0;
+
+    testLocationKey = "hall";
 
     activeSubmissionIds = {};
 
@@ -798,6 +1036,10 @@ function resetGameState() {
     );
 
     localStorage.removeItem(
+        "forestHunt_testLocationKey"
+    );
+
+    localStorage.removeItem(
         "forestHunt_activeSubmissionIds"
     );
 
@@ -839,11 +1081,6 @@ function showScreen(id) {
 
 function selectTeam(team) {
 
-    /*
-     * Selecting a team from the home screen
-     * always starts a completely fresh hunt.
-     */
-
     resetGameState();
 
     selectedTeam = team;
@@ -866,10 +1103,6 @@ function selectTeam(team) {
 
 function enterTestMode() {
 
-    /*
-     * Test Mode also starts from a clean game.
-     */
-
     resetGameState();
 
     testMode = true;
@@ -878,12 +1111,18 @@ function enterTestMode() {
 
     testTimeOffsetSeconds = 0;
 
+    /*
+     * Team 1's starter is at the Hall,
+     * so start the simulated player there.
+     */
+    testLocationKey = "hall";
+
     saveState();
 
     document.getElementById(
         "briefingTeam"
     ).textContent =
-        "Team 1 — TEST MODE";
+        "Team 1 — 🧪 TEST MODE";
 
     showScreen(
         "briefingScreen"
@@ -893,11 +1132,6 @@ function enterTestMode() {
 
 
 function backToHome() {
-
-    /*
-     * This is now a genuine
-     * "start a new hunt" action.
-     */
 
     resetGameState();
 
@@ -914,10 +1148,6 @@ function backToHome() {
 
 function showGameScreen() {
 
-    /*
-     * Only create a start time if one doesn't already exist.
-     */
-
     if (!gameStartedAt) {
 
         gameStartedAt =
@@ -931,6 +1161,9 @@ function showGameScreen() {
     showScreen(
         "gameScreen"
     );
+
+
+    updateTestPanel();
 
     renderActivities();
 
@@ -954,6 +1187,282 @@ function showGameScreen() {
 
 
     startSubmissionPolling();
+
+}
+
+
+/* ============================================================
+   TEST MODE
+   ============================================================ */
+
+function setTestLocation(
+    locationKey
+) {
+
+    if (!testMode) {
+        return;
+    }
+
+
+    if (!locations[locationKey]) {
+        return;
+    }
+
+
+    testLocationKey =
+        locationKey;
+
+
+    saveState();
+
+    updateTestPanel();
+
+    updateTimer();
+
+
+    const location =
+        locations[locationKey];
+
+
+    const status =
+        document.getElementById(
+            "gameStatus"
+        );
+
+
+    if (status) {
+
+        status.className =
+            "status test";
+
+        status.innerHTML =
+            `
+            🧪 Test location set to
+            <strong>
+                ${escapeHtml(
+                    location.name
+                )}
+            </strong>.
+            `;
+
+    }
+
+}
+
+
+function resetTestLocation() {
+
+    if (!testMode) {
+        return;
+    }
+
+
+    testLocationKey =
+        "hall";
+
+
+    saveState();
+
+    updateTestPanel();
+
+}
+
+
+function getTestLocation() {
+
+    if (
+        !testMode ||
+        !locations[testLocationKey]
+    ) {
+
+        return null;
+
+    }
+
+
+    return locations[testLocationKey];
+
+}
+
+
+function advanceTestTime(
+    seconds
+) {
+
+    if (!testMode) {
+
+        return;
+
+    }
+
+
+    testTimeOffsetSeconds +=
+        Number(seconds) || 0;
+
+
+    saveState();
+
+    updateTimer();
+
+    updateTestPanel();
+
+
+    const elapsed =
+        testTimeOffsetSeconds;
+
+
+    if (
+        elapsed >=
+        gameDurationMinutes * 60
+    ) {
+
+        const status =
+            document.getElementById(
+                "gameStatus"
+            );
+
+
+        if (status) {
+
+            status.className =
+                "status error";
+
+            status.textContent =
+                "🧪 Test time is over. Return to the meeting point.";
+
+        }
+
+    }
+
+}
+
+
+function resetTestTime() {
+
+    if (!testMode) {
+        return;
+    }
+
+
+    testTimeOffsetSeconds = 0;
+
+    saveState();
+
+    updateTimer();
+
+    updateTestPanel();
+
+}
+
+
+function formatElapsedTime(
+    totalSeconds
+) {
+
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
+
+    const seconds =
+        totalSeconds % 60;
+
+
+    return (
+        minutes +
+        ":" +
+        String(seconds).padStart(
+            2,
+            "0"
+        )
+    );
+
+}
+
+
+function updateTestPanel() {
+
+    const panel =
+        document.getElementById(
+            "testPanel"
+        );
+
+    const banner =
+        document.getElementById(
+            "testBanner"
+        );
+
+
+    if (!panel || !banner) {
+        return;
+    }
+
+
+    if (!testMode) {
+
+        panel.classList.add(
+            "hidden"
+        );
+
+        banner.classList.add(
+            "hidden"
+        );
+
+        return;
+
+    }
+
+
+    panel.classList.remove(
+        "hidden"
+    );
+
+    banner.classList.remove(
+        "hidden"
+    );
+
+
+    const location =
+        getTestLocation();
+
+
+    document.getElementById(
+        "testLocationName"
+    ).textContent =
+        location
+        ? location.name
+        : "Unknown";
+
+
+    document.getElementById(
+        "testElapsed"
+    ).textContent =
+        formatElapsedTime(
+            testTimeOffsetSeconds
+        );
+
+
+    if (location) {
+
+        const distance =
+            distanceInMetres(
+                location.lat,
+                location.lon,
+                locations.playingField.lat,
+                locations.playingField.lon
+            );
+
+
+        document.getElementById(
+            "testDistance"
+        ).textContent =
+            "Distance to meeting point: "
+            +
+            Math.round(distance)
+            +
+            "m";
+
+    }
 
 }
 
@@ -1042,6 +1551,18 @@ function updateTimer() {
             2,
             "0"
         );
+
+
+    if (testMode) {
+
+        document.getElementById(
+            "testElapsed"
+        ).textContent =
+            formatElapsedTime(
+                testTimeOffsetSeconds
+            );
+
+    }
 
 
     if (remaining <= 0) {
@@ -1819,15 +2340,18 @@ async function submitPhoto(
         setTimeout(
             () => {
 
+                const activityScreen =
+                    document.getElementById(
+                        "activityScreen"
+                    );
+
+
                 if (
-                    document
-                        .getElementById(
-                            "activityScreen"
-                        )
-                        .classList
-                        .contains(
-                            "hidden"
-                        )
+                    !activityScreen
+                    ||
+                    activityScreen.classList.contains(
+                        "hidden"
+                    )
                 ) {
 
                     return;
@@ -1835,16 +2359,26 @@ async function submitPhoto(
                 }
 
 
-                status.innerHTML +=
-                    `
-                    <button
-                        class="secondary"
-                        onclick="returnToGame()">
+                const currentStatus =
+                    document.getElementById(
+                        "photoStatus"
+                    );
 
-                        Continue Hunting
 
-                    </button>
-                    `;
+                if (currentStatus) {
+
+                    currentStatus.innerHTML +=
+                        `
+                        <button
+                            class="secondary"
+                            onclick="returnToGame()">
+
+                            Continue Hunting
+
+                        </button>
+                        `;
+
+                }
 
             },
             500
@@ -2003,11 +2537,6 @@ async function checkSubmissionStatuses() {
 
                 }
 
-
-                /*
-                 * Ignore old submissions if a newer
-                 * submission has already replaced them.
-                 */
 
                 if (
                     String(
@@ -2582,6 +3111,8 @@ function returnToGame() {
         "gameScreen"
     );
 
+    updateTestPanel();
+
     renderActivities();
 
     startSubmissionPolling();
@@ -2594,6 +3125,50 @@ function returnToGame() {
    ============================================================ */
 
 function getCurrentPosition() {
+
+    /*
+     * TEST MODE:
+     *
+     * Return the selected simulated location
+     * instead of asking the phone for GPS.
+     */
+
+    if (testMode) {
+
+        const location =
+            getTestLocation();
+
+
+        if (!location) {
+
+            return Promise.reject(
+                new Error(
+                    "No simulated test location selected."
+                )
+            );
+
+        }
+
+
+        return Promise.resolve({
+
+            coords: {
+
+                latitude:
+                    location.lat,
+
+                longitude:
+                    location.lon,
+
+                accuracy:
+                    1
+
+            }
+
+        });
+
+    }
+
 
     return new Promise(
         (
@@ -2723,6 +3298,10 @@ async function finishHunt() {
 
 
     status.textContent =
+        testMode
+        ?
+        "Checking simulated location..."
+        :
         "Checking your location...";
 
 
@@ -2751,11 +3330,17 @@ async function finishHunt() {
 
 
             status.textContent =
+                testMode
+                ?
+                "🧪 Simulated location is approximately "
+                +
+                Math.round(distance)
+                +
+                "m from the meeting point. Simulate the Playing Field location before finishing."
+                :
                 "You are approximately "
                 +
-                Math.round(
-                    distance
-                )
+                Math.round(distance)
                 +
                 "m from the meeting point. Return closer before finishing.";
 
@@ -2851,8 +3436,20 @@ async function finishHunt() {
         ).innerHTML =
             `
 
-            You returned to the
-            meeting point.
+            ${
+                testMode
+                ?
+                `
+                🧪 Test Mode:
+                simulated return to the
+                meeting point.
+                `
+                :
+                `
+                You returned to the
+                meeting point.
+                `
+            }
 
             ${
                 penalty > 0
@@ -2963,6 +3560,8 @@ function returnFromValidator() {
         showScreen(
             "gameScreen"
         );
+
+        updateTestPanel();
 
         renderActivities();
 
@@ -3549,14 +4148,7 @@ loadState();
 
 
 /*
- * IMPORTANT:
- *
  * If an active hunt exists, restore it.
- *
- * If the user deliberately used
- * "Return to Start", resetGameState()
- * has removed these values, so the
- * home screen will appear instead.
  */
 
 if (
@@ -3570,8 +4162,9 @@ if (
     );
 
 
-    renderActivities();
+    updateTestPanel();
 
+    renderActivities();
 
     updateTimer();
 
