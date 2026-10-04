@@ -182,8 +182,11 @@ hr {
 
     <!-- HOME / TEAM SELECTION -->
     <div id="homeScreen">
+
         <div class="card">
+
             <h1>🌲 Forest Hunt</h1>
+
             <p>Choose your team to begin.</p>
 
             <button class="team-button" onclick="selectTeam(1)">
@@ -207,7 +210,9 @@ hr {
             <button class="secondary" onclick="showValidator()">
                 📷 Validator View
             </button>
+
         </div>
+
     </div>
 
 
@@ -215,6 +220,7 @@ hr {
     <div id="briefingScreen" class="hidden">
 
         <div class="card">
+
             <h1>🌲 Forest Hunt</h1>
 
             <h2 id="briefingTeam"></h2>
@@ -246,6 +252,7 @@ hr {
             <button class="secondary" onclick="backToHome()">
                 Back
             </button>
+
         </div>
 
     </div>
@@ -259,6 +266,7 @@ hr {
         </div>
 
         <div class="card">
+
             <div class="score">
                 Score: <span id="score">0</span>
             </div>
@@ -270,11 +278,13 @@ hr {
             <button class="secondary" onclick="showValidator()">
                 📷 VALIDATOR VIEW
             </button>
+
         </div>
 
         <div id="activitiesContainer"></div>
 
         <div class="card">
+
             <h3>🏁 Finish</h3>
 
             <p>
@@ -284,6 +294,7 @@ hr {
             <button onclick="finishHunt()">
                 FINISH HUNT
             </button>
+
         </div>
 
     </div>
@@ -422,75 +433,172 @@ const locations = {
    ACTIVITIES
    ============================================================ */
 
+/*
+ * IMPORTANT:
+ *
+ * id = JavaScript/game ID
+ *
+ * dbId = Supabase activity_id
+ *
+ * Supabase activity_id is an INTEGER.
+ *
+ * At the moment we know:
+ *
+ *     Hall Photograph = 1
+ *
+ * We have deliberately left the other photo activities
+ * without a dbId until their database IDs are established.
+ */
+
 const activities = [
 
     {
         id: "hall-photo",
+        dbId: 1,
+
         title: "Hall Photograph",
         type: "PHOTO",
         points: 20,
+
         location: locations.hall,
+
         description:
             "Find the designated target at the Hall and photograph it.",
+
         starterTeam: 1
     },
 
     {
         id: "hall-puzzle",
+        dbId: null,
+
         title: "Hall Puzzle",
         type: "PUZZLE",
         points: 15,
+
         location: locations.hall,
+
         description:
             "Find the clue at the Hall and solve the puzzle.",
+
         answer: "FOREST"
     },
 
     {
         id: "street-photo",
+        dbId: null,
+
         title: "High Street Photograph",
         type: "PHOTO",
         points: 25,
+
         location: locations.highStreet,
+
         description:
             "Find the designated target on the High Street and photograph it.",
+
         starterTeam: 2
     },
 
     {
         id: "street-puzzle",
+        dbId: null,
+
         title: "High Street Puzzle",
         type: "PUZZLE",
         points: 10,
+
         location: locations.highStreet,
+
         description:
             "Find the clue on the High Street and solve the puzzle.",
+
         answer: "TREE"
     },
 
     {
         id: "field-photo",
+        dbId: null,
+
         title: "Meeting Point Photograph",
         type: "PHOTO",
         points: 30,
+
         location: locations.playingField,
+
         description:
             "Find the designated target at the Playing Field and photograph it.",
+
         starterTeam: 3
     },
 
     {
         id: "field-puzzle",
+        dbId: null,
+
         title: "Field Puzzle",
         type: "PUZZLE",
         points: 5,
+
         location: locations.playingField,
+
         description:
             "Find the clue at the Playing Field and solve the puzzle.",
+
         answer: "GREEN"
     }
 
 ];
+
+
+/* ============================================================
+   DATABASE / GAME ID CONVERSION
+   ============================================================ */
+
+function getActivityByGameId(activityId) {
+
+    return activities.find(
+        activity => activity.id === activityId
+    );
+
+}
+
+
+function getActivityByDatabaseId(databaseActivityId) {
+
+    return activities.find(
+        activity =>
+            Number(activity.dbId) ===
+            Number(databaseActivityId)
+    );
+
+}
+
+
+function getDatabaseActivityId(activityId) {
+
+    const activity =
+        getActivityByGameId(activityId);
+
+    if (!activity) {
+        return null;
+    }
+
+    return activity.dbId;
+}
+
+
+function getGameActivityId(databaseActivityId) {
+
+    const activity =
+        getActivityByDatabaseId(
+            databaseActivityId
+        );
+
+    return activity
+        ? activity.id
+        : null;
+}
 
 
 /* ============================================================
@@ -521,12 +629,9 @@ let submissionPollingInterval = null;
 
 
 /*
- * The player can have more than one submission over the
- * course of the game, so keep track of the individual
- * Supabase submission IDs.
- *
- * activityId -> submission ID
+ * activityId -> Supabase submission ID
  */
+
 let activeSubmissionIds = {};
 
 
@@ -553,12 +658,16 @@ function saveState() {
 
     localStorage.setItem(
         "forestHunt_starterCompleted",
-        starterCompleted ? "true" : "false"
+        starterCompleted
+            ? "true"
+            : "false"
     );
 
     localStorage.setItem(
         "forestHunt_testMode",
-        testMode ? "true" : "false"
+        testMode
+            ? "true"
+            : "false"
     );
 
     localStorage.setItem(
@@ -568,7 +677,9 @@ function saveState() {
 
     localStorage.setItem(
         "forestHunt_activeSubmissionIds",
-        JSON.stringify(activeSubmissionIds)
+        JSON.stringify(
+            activeSubmissionIds
+        )
     );
 
 }
@@ -578,12 +689,16 @@ function loadState() {
 
     selectedTeam =
         parseInt(
-            localStorage.getItem("forestHunt_selectedTeam")
+            localStorage.getItem(
+                "forestHunt_selectedTeam"
+            )
         ) || null;
 
     gameStartedAt =
-        localStorage.getItem("forestHunt_gameStartedAt")
-        || null;
+        localStorage.getItem(
+            "forestHunt_gameStartedAt"
+        ) || null;
+
 
     try {
 
@@ -600,15 +715,18 @@ function loadState() {
 
     }
 
+
     starterCompleted =
         localStorage.getItem(
             "forestHunt_starterCompleted"
         ) === "true";
 
+
     testMode =
         localStorage.getItem(
             "forestHunt_testMode"
         ) === "true";
+
 
     testTimeOffsetSeconds =
         parseInt(
@@ -616,6 +734,7 @@ function loadState() {
                 "forestHunt_testTimeOffsetSeconds"
             )
         ) || 0;
+
 
     try {
 
@@ -642,8 +761,13 @@ function loadState() {
 function hideAllScreens() {
 
     document
-        .querySelectorAll(".container > div")
-        .forEach(el => el.classList.add("hidden"));
+        .querySelectorAll(
+            ".container > div"
+        )
+        .forEach(
+            el =>
+                el.classList.add("hidden")
+        );
 
 }
 
@@ -676,7 +800,9 @@ function selectTeam(team) {
     ).textContent =
         "Team " + team;
 
-    showScreen("briefingScreen");
+    showScreen(
+        "briefingScreen"
+    );
 
 }
 
@@ -696,7 +822,9 @@ function enterTestMode() {
     ).textContent =
         "Team 1 — TEST MODE";
 
-    showScreen("briefingScreen");
+    showScreen(
+        "briefingScreen"
+    );
 
 }
 
@@ -707,7 +835,9 @@ function backToHome() {
 
     stopValidatorRefresh();
 
-    showScreen("homeScreen");
+    showScreen(
+        "homeScreen"
+    );
 
 }
 
@@ -720,8 +850,8 @@ function showGameScreen() {
 
     /*
      * Only create a start time if one doesn't already exist.
-     * This means returning to the game doesn't restart the clock.
      */
+
     if (!gameStartedAt) {
 
         gameStartedAt =
@@ -731,18 +861,31 @@ function showGameScreen() {
 
     }
 
-    showScreen("gameScreen");
+
+    showScreen(
+        "gameScreen"
+    );
 
     renderActivities();
 
     updateTimer();
 
+
     if (timerInterval) {
-        clearInterval(timerInterval);
+
+        clearInterval(
+            timerInterval
+        );
+
     }
 
+
     timerInterval =
-        setInterval(updateTimer, 1000);
+        setInterval(
+            updateTimer,
+            1000
+        );
+
 
     startSubmissionPolling();
 
@@ -758,7 +901,9 @@ function getCurrentTime() {
     if (testMode) {
 
         return new Date(
-            new Date(gameStartedAt).getTime()
+            new Date(
+                gameStartedAt
+            ).getTime()
             +
             testTimeOffsetSeconds * 1000
         );
@@ -776,40 +921,61 @@ function updateTimer() {
         return;
     }
 
+
     const start =
-        new Date(gameStartedAt);
+        new Date(
+            gameStartedAt
+        );
 
     const now =
         getCurrentTime();
 
+
     let elapsed =
         Math.floor(
-            (now - start) / 1000
+            (
+                now - start
+            ) / 1000
         );
+
 
     if (elapsed < 0) {
         elapsed = 0;
     }
 
+
     const remaining =
         Math.max(
             0,
-            gameDurationMinutes * 60 - elapsed
+            gameDurationMinutes * 60
+            -
+            elapsed
         );
 
+
     const minutes =
-        Math.floor(remaining / 60);
+        Math.floor(
+            remaining / 60
+        );
 
     const seconds =
         remaining % 60;
 
+
     document.getElementById(
         "timer"
     ).textContent =
-        String(minutes).padStart(2, "0")
-        + ":"
+        String(minutes).padStart(
+            2,
+            "0"
+        )
         +
-        String(seconds).padStart(2, "0");
+        ":"
+        +
+        String(seconds).padStart(
+            2,
+            "0"
+        );
 
 
     if (remaining <= 0) {
@@ -828,35 +994,60 @@ function updateTimer() {
    ACTIVITIES
    ============================================================ */
 
-function getActivityState(activityId) {
+function getActivityState(
+    activityId
+) {
 
-    if (!activitiesState[activityId]) {
+    if (
+        !activitiesState[
+            activityId
+        ]
+    ) {
 
-        activitiesState[activityId] = {
+        activitiesState[
+            activityId
+        ] = {
+
             status: "LOCKED",
+
             pointsAwarded: 0,
-            submissionId: null
+
+            submissionId: null,
+
+            rejectionReason: ""
+
         };
 
     }
 
-    return activitiesState[activityId];
+
+    return activitiesState[
+        activityId
+    ];
 
 }
 
 
 function isStarter(activity) {
 
-    return activity.starterTeam === selectedTeam;
+    return (
+        activity.starterTeam ===
+        selectedTeam
+    );
 
 }
 
 
 function isUnlocked(activity) {
 
-    if (isStarter(activity)) {
+    if (
+        isStarter(activity)
+    ) {
+
         return true;
+
     }
+
 
     return starterCompleted;
 
@@ -870,129 +1061,231 @@ function renderActivities() {
             "activitiesContainer"
         );
 
+
     container.innerHTML = "";
+
 
     let totalScore = 0;
 
-    activities.forEach(activity => {
 
-        const state =
-            getActivityState(activity.id);
+    activities.forEach(
+        activity => {
 
-        totalScore +=
-            state.pointsAwarded || 0;
-
-        const div =
-            document.createElement("div");
-
-        div.className =
-            "card activity";
-
-        if (state.status === "APPROVED") {
-            div.classList.add("completed");
-        }
-
-        if (state.status === "PENDING") {
-            div.classList.add("pending");
-        }
-
-        if (state.status === "REJECTED") {
-            div.classList.add("rejected");
-        }
+            const state =
+                getActivityState(
+                    activity.id
+                );
 
 
-        let statusText = "";
-
-        if (state.status === "APPROVED") {
-
-            statusText =
-                `<div class="status success">
-                    ✅ Approved — ${state.pointsAwarded} points
-                </div>`;
-
-        } else if (state.status === "PENDING") {
-
-            statusText =
-                `<div class="status pending">
-                    📷 Photo submitted — awaiting organiser approval
-                </div>`;
-
-        } else if (state.status === "REJECTED") {
-
-            statusText =
-                `<div class="status error">
-                    ❌ Photo rejected
-                    ${
-                        state.rejectionReason
-                            ? "<br><strong>Reason:</strong> "
-                              + escapeHtml(state.rejectionReason)
-                            : ""
-                    }
-                </div>`;
-
-        } else if (state.status === "COMPLETED") {
-
-            statusText =
-                `<div class="status success">
-                    ✅ Completed — ${state.pointsAwarded} points
-                </div>`;
-
-        } else if (!isUnlocked(activity)) {
-
-            statusText =
-                `<div class="status">
-                    🔒 Complete your starter challenge first.
-                </div>`;
-
-        }
+            totalScore +=
+                state.pointsAwarded || 0;
 
 
-        const buttonDisabled =
-            !isUnlocked(activity)
-            ||
-            state.status === "PENDING"
-            ||
-            state.status === "APPROVED"
-            ||
-            state.status === "COMPLETED";
+            const div =
+                document.createElement(
+                    "div"
+                );
 
 
-        div.innerHTML = `
+            div.className =
+                "card activity";
 
-            <h3>${escapeHtml(activity.title)}</h3>
 
-            <p>
-                ${activity.type}
-                · ${activity.points} points
-                · ${escapeHtml(activity.location.name)}
-            </p>
+            if (
+                state.status ===
+                "APPROVED"
+            ) {
 
-            ${statusText}
+                div.classList.add(
+                    "completed"
+                );
 
-            ${
-                !buttonDisabled
-                ?
-                `<button onclick="openActivity('${activity.id}')">
-                    ${
-                        state.status === "REJECTED"
-                        ? "Try Again"
-                        : "Open Challenge"
-                    }
-                </button>`
-                :
-                ""
             }
 
-        `;
 
-        container.appendChild(div);
+            if (
+                state.status ===
+                "PENDING"
+            ) {
 
-    });
+                div.classList.add(
+                    "pending"
+                );
+
+            }
+
+
+            if (
+                state.status ===
+                "REJECTED"
+            ) {
+
+                div.classList.add(
+                    "rejected"
+                );
+
+            }
+
+
+            let statusText = "";
+
+
+            if (
+                state.status ===
+                "APPROVED"
+            ) {
+
+                statusText =
+                    `
+                    <div class="status success">
+                        ✅ Approved —
+                        ${state.pointsAwarded}
+                        points
+                    </div>
+                    `;
+
+            }
+
+            else if (
+                state.status ===
+                "PENDING"
+            ) {
+
+                statusText =
+                    `
+                    <div class="status pending">
+                        📷 Photo submitted —
+                        awaiting organiser approval
+                    </div>
+                    `;
+
+            }
+
+            else if (
+                state.status ===
+                "REJECTED"
+            ) {
+
+                statusText =
+                    `
+                    <div class="status error">
+                        ❌ Photo rejected
+
+                        ${
+                            state.rejectionReason
+                            ?
+                            "<br><strong>Reason:</strong> "
+                            +
+                            escapeHtml(
+                                state.rejectionReason
+                            )
+                            :
+                            ""
+                        }
+
+                    </div>
+                    `;
+
+            }
+
+            else if (
+                state.status ===
+                "COMPLETED"
+            ) {
+
+                statusText =
+                    `
+                    <div class="status success">
+                        ✅ Completed —
+                        ${state.pointsAwarded}
+                        points
+                    </div>
+                    `;
+
+            }
+
+            else if (
+                !isUnlocked(activity)
+            ) {
+
+                statusText =
+                    `
+                    <div class="status">
+                        🔒 Complete your starter
+                        challenge first.
+                    </div>
+                    `;
+
+            }
+
+
+            const buttonDisabled =
+                !isUnlocked(activity)
+                ||
+                state.status === "PENDING"
+                ||
+                state.status === "APPROVED"
+                ||
+                state.status === "COMPLETED";
+
+
+            div.innerHTML = `
+
+                <h3>
+                    ${escapeHtml(
+                        activity.title
+                    )}
+                </h3>
+
+                <p>
+                    ${activity.type}
+                    ·
+                    ${activity.points} points
+                    ·
+                    ${escapeHtml(
+                        activity.location.name
+                    )}
+                </p>
+
+                ${statusText}
+
+                ${
+                    !buttonDisabled
+                    ?
+                    `
+                    <button
+                        onclick="openActivity('${activity.id}')">
+
+                        ${
+                            state.status ===
+                            "REJECTED"
+                            ?
+                            "Try Again"
+                            :
+                            "Open Challenge"
+                        }
+
+                    </button>
+                    `
+                    :
+                    ""
+                }
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+        }
+    );
 
 
     document.getElementById(
         "score"
-    ).textContent = totalScore;
+    ).textContent =
+        totalScore;
 
 }
 
@@ -1001,63 +1294,90 @@ function renderActivities() {
    ACTIVITY OPEN
    ============================================================ */
 
-function openActivity(activityId) {
+function openActivity(
+    activityId
+) {
 
     const activity =
-        activities.find(
-            a => a.id === activityId
+        getActivityByGameId(
+            activityId
         );
+
 
     if (!activity) {
         return;
     }
 
-    if (!isUnlocked(activity)) {
+
+    if (
+        !isUnlocked(activity)
+    ) {
         return;
     }
 
+
     currentActivityId =
         activityId;
+
 
     document.getElementById(
         "activityTitle"
     ).textContent =
         activity.title;
 
+
     document.getElementById(
         "activityDescription"
     ).textContent =
         activity.description;
 
+
     document.getElementById(
         "activityLocation"
     ).textContent =
-        "📍 " + activity.location.name;
+        "📍 "
+        +
+        activity.location.name;
 
-    renderActivityContent(activity);
 
-    showScreen("activityScreen");
+    renderActivityContent(
+        activity
+    );
+
+
+    showScreen(
+        "activityScreen"
+    );
 
 }
 
 
-function renderActivityContent(activity) {
+function renderActivityContent(
+    activity
+) {
 
     const container =
         document.getElementById(
             "activityContent"
         );
 
+
     container.innerHTML = "";
 
-    if (activity.type === "PHOTO") {
+
+    if (
+        activity.type ===
+        "PHOTO"
+    ) {
 
         renderPhotoActivity(
             activity,
             container
         );
 
-    } else {
+    }
+
+    else {
 
         renderPuzzleActivity(
             activity,
@@ -1079,10 +1399,54 @@ function renderPhotoActivity(
 ) {
 
     const state =
-        getActivityState(activity.id);
+        getActivityState(
+            activity.id
+        );
+
 
     const wrapper =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
+
+    /*
+     * We cannot submit a photo to Supabase
+     * until we know the integer database ID.
+     */
+
+    if (
+        activity.dbId === null
+        ||
+        activity.dbId === undefined
+    ) {
+
+        wrapper.innerHTML = `
+
+            <div class="status pending">
+
+                📷 This photo challenge is not
+                yet connected to its Supabase
+                activity ID.
+
+                <br><br>
+
+                The organiser needs to configure
+                this activity before photographs
+                can be submitted.
+
+            </div>
+
+        `;
+
+        container.appendChild(
+            wrapper
+        );
+
+        return;
+
+    }
+
 
     wrapper.innerHTML = `
 
@@ -1098,31 +1462,54 @@ function renderPhotoActivity(
             capture="environment"
         >
 
-        <button onclick="submitPhoto('${activity.id}')">
+        <button
+            onclick="submitPhoto('${activity.id}')">
+
             📷 Submit Photograph
+
         </button>
 
         <div id="photoStatus"></div>
 
     `;
 
-    container.appendChild(wrapper);
 
-    if (state.status === "REJECTED") {
+    container.appendChild(
+        wrapper
+    );
+
+
+    if (
+        state.status ===
+        "REJECTED"
+    ) {
 
         document.getElementById(
             "photoStatus"
         ).innerHTML = `
+
             <div class="status error">
-                ❌ Your previous photograph was rejected.
+
+                ❌ Your previous photograph
+                was rejected.
+
                 ${
                     state.rejectionReason
-                    ? "<br><strong>Reason:</strong> "
-                      + escapeHtml(state.rejectionReason)
-                    : ""
+                    ?
+                    "<br><strong>Reason:</strong> "
+                    +
+                    escapeHtml(
+                        state.rejectionReason
+                    )
+                    :
+                    ""
                 }
-                <br>Please take another photograph.
+
+                <br>
+                Please take another photograph.
+
             </div>
+
         `;
 
     }
@@ -1134,66 +1521,143 @@ function renderPhotoActivity(
    PHOTO SUBMISSION
    ============================================================ */
 
-async function submitPhoto(activityId) {
+async function submitPhoto(
+    activityId
+) {
+
+    const activity =
+        getActivityByGameId(
+            activityId
+        );
+
+
+    if (!activity) {
+        return;
+    }
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Use the INTEGER database ID,
+     * not the JavaScript text ID.
+     */
+
+    const databaseActivityId =
+        getDatabaseActivityId(
+            activityId
+        );
+
+
+    if (
+        databaseActivityId === null
+        ||
+        databaseActivityId === undefined
+    ) {
+
+        alert(
+            "This activity is not yet configured for photo submission."
+        );
+
+        return;
+
+    }
+
 
     const input =
         document.getElementById(
             "photoInput"
         );
 
+
     const status =
         document.getElementById(
             "photoStatus"
         );
 
-    if (!input || !input.files.length) {
+
+    if (
+        !input
+        ||
+        !input.files.length
+    ) {
 
         status.innerHTML =
-            `<div class="status error">
-                Please take or choose a photograph first.
-            </div>`;
+            `
+            <div class="status error">
+
+                Please take or choose
+                a photograph first.
+
+            </div>
+            `;
 
         return;
+
     }
+
 
     const file =
         input.files[0];
 
+
     status.innerHTML =
-        `<div class="status pending">
+        `
+        <div class="status pending">
+
             Uploading photograph...
-        </div>`;
+
+        </div>
+        `;
 
 
     try {
 
         /*
-         * Use a unique path for every submission.
+         * Unique filename for every submission.
          */
+
         const fileExtension =
-            getFileExtension(file.name);
+            getFileExtension(
+                file.name
+            );
+
 
         const uniqueName =
             Date.now()
-            + "-"
-            + Math.random()
+            +
+            "-"
+            +
+            Math.random()
                 .toString(36)
-                .substring(2, 10)
-            + "."
-            + fileExtension;
+                .substring(
+                    2,
+                    10
+                )
+            +
+            "."
+            +
+            fileExtension;
+
 
         const filePath =
-            "team-" +
-            selectedTeam +
-            "/" +
-            activityId +
-            "/" +
+            "team-"
+            +
+            selectedTeam
+            +
+            "/"
+            +
+            activityId
+            +
+            "/"
+            +
             uniqueName;
 
 
         /*
          * Upload image to Supabase Storage.
          */
+
         const uploadResult =
             await supabaseClient
                 .storage
@@ -1202,30 +1666,53 @@ async function submitPhoto(activityId) {
                     filePath,
                     file,
                     {
-                        contentType: file.type,
-                        upsert: false
+                        contentType:
+                            file.type,
+
+                        upsert:
+                            false
                     }
                 );
 
 
-        if (uploadResult.error) {
+        if (
+            uploadResult.error
+        ) {
+
             throw uploadResult.error;
+
         }
 
 
         /*
-         * Create submission record.
+         * Create database submission.
+         *
+         * IMPORTANT:
+         *
+         * activity_id receives the INTEGER
+         * database ID.
+         *
+         * For Hall Photograph this is:
+         *
+         *     1
+         *
+         * NOT:
+         *
+         *     "hall-photo"
          */
+
         const insertResult =
             await supabaseClient
-                .from("photo_submissions")
+                .from(
+                    "photo_submissions"
+                )
                 .insert({
 
                     team_number:
                         selectedTeam,
 
                     activity_id:
-                        activityId,
+                        databaseActivityId,
 
                     file_path:
                         filePath,
@@ -1238,8 +1725,12 @@ async function submitPhoto(activityId) {
                 .single();
 
 
-        if (insertResult.error) {
+        if (
+            insertResult.error
+        ) {
+
             throw insertResult.error;
+
         }
 
 
@@ -1248,82 +1739,126 @@ async function submitPhoto(activityId) {
 
 
         /*
-         * Store submission ID locally.
-         *
-         * This is the ID we will poll for approval.
+         * Remember the Supabase submission ID.
          */
-        activeSubmissionIds[activityId] =
+
+        activeSubmissionIds[
+            activityId
+        ] =
             submission.id;
 
 
         const state =
-            getActivityState(activityId);
+            getActivityState(
+                activityId
+            );
+
 
         state.status =
             "PENDING";
 
+
         state.submissionId =
             submission.id;
 
+
         state.rejectionReason =
             "";
+
 
         saveState();
 
 
         status.innerHTML =
-            `<div class="status pending">
-                📷 Photo submitted — awaiting organiser approval.
+            `
+            <div class="status pending">
+
+                📷 Photo submitted —
+                awaiting organiser approval.
+
                 <br><br>
-                You can continue hunting while it is checked.
-            </div>`;
+
+                You can continue hunting
+                while it is checked.
+
+            </div>
+            `;
 
 
         renderActivities();
 
+
         /*
-         * Start / restart polling immediately.
+         * Start polling immediately.
          */
+
         startSubmissionPolling();
 
 
         /*
-         * Give the player the option of going back
-         * immediately rather than waiting here.
+         * Add Continue Hunting button.
          */
-        setTimeout(() => {
 
-            if (
-                document.getElementById(
-                    "activityScreen"
-                ).classList.contains("hidden")
-            ) {
-                return;
-            }
+        setTimeout(
+            () => {
 
-            status.innerHTML +=
-                `<button
-                    class="secondary"
-                    onclick="returnToGame()">
-                    Continue Hunting
-                </button>`;
+                if (
+                    document
+                        .getElementById(
+                            "activityScreen"
+                        )
+                        .classList
+                        .contains(
+                            "hidden"
+                        )
+                ) {
 
-        }, 500);
+                    return;
+
+                }
 
 
-    } catch (error) {
+                status.innerHTML +=
+                    `
+                    <button
+                        class="secondary"
+                        onclick="returnToGame()">
+
+                        Continue Hunting
+
+                    </button>
+                    `;
+
+            },
+            500
+        );
+
+
+    }
+
+    catch (error) {
 
         console.error(
             "Photo submission error:",
             error
         );
 
+
         status.innerHTML =
-            `<div class="status error">
+            `
+            <div class="status error">
+
                 ❌ Photo submission failed.
+
                 <br><br>
-                ${escapeHtml(error.message || String(error))}
-            </div>`;
+
+                ${escapeHtml(
+                    error.message ||
+                    String(error)
+                )}
+
+            </div>
+            `;
 
     }
 
@@ -1336,18 +1871,26 @@ async function submitPhoto(activityId) {
 
 function startSubmissionPolling() {
 
-    if (submissionPollingInterval) {
+    if (
+        submissionPollingInterval
+    ) {
+
         return;
+
     }
+
 
     /*
      * Check immediately.
      */
+
     checkSubmissionStatuses();
 
+
     /*
-     * Then check every 5 seconds.
+     * Then every 5 seconds.
      */
+
     submissionPollingInterval =
         setInterval(
             checkSubmissionStatuses,
@@ -1359,13 +1902,16 @@ function startSubmissionPolling() {
 
 function stopSubmissionPolling() {
 
-    if (submissionPollingInterval) {
+    if (
+        submissionPollingInterval
+    ) {
 
         clearInterval(
             submissionPollingInterval
         );
 
-        submissionPollingInterval = null;
+        submissionPollingInterval =
+            null;
 
     }
 
@@ -1377,10 +1923,16 @@ async function checkSubmissionStatuses() {
     const submissionIds =
         Object.values(
             activeSubmissionIds
-        ).filter(Boolean);
+        )
+        .filter(Boolean);
 
-    if (!submissionIds.length) {
+
+    if (
+        !submissionIds.length
+    ) {
+
         return;
+
     }
 
 
@@ -1388,7 +1940,9 @@ async function checkSubmissionStatuses() {
 
         const result =
             await supabaseClient
-                .from("photo_submissions")
+                .from(
+                    "photo_submissions"
+                )
                 .select(
                     "id, activity_id, status, rejection_reason, reviewed_at"
                 )
@@ -1398,7 +1952,9 @@ async function checkSubmissionStatuses() {
                 );
 
 
-        if (result.error) {
+        if (
+            result.error
+        ) {
 
             console.error(
                 "Submission status check error:",
@@ -1406,6 +1962,7 @@ async function checkSubmissionStatuses() {
             );
 
             return;
+
         }
 
 
@@ -1413,119 +1970,165 @@ async function checkSubmissionStatuses() {
             result.data || [];
 
 
-        let changed = false;
+        let changed =
+            false;
 
 
-        submissions.forEach(submission => {
+        submissions.forEach(
+            submission => {
 
-            const activityId =
-                submission.activity_id;
+                /*
+                 * Convert database integer
+                 * back into JavaScript activity ID.
+                 *
+                 * Example:
+                 *
+                 *     1
+                 *
+                 * becomes:
+                 *
+                 *     "hall-photo"
+                 */
 
-            const state =
-                getActivityState(activityId);
-
-
-            /*
-             * APPROVED
-             */
-            if (
-                submission.status === "APPROVED"
-                &&
-                state.status !== "APPROVED"
-            ) {
-
-                const activity =
-                    activities.find(
-                        a => a.id === activityId
+                const activityId =
+                    getGameActivityId(
+                        submission.activity_id
                     );
 
-                if (!activity) {
+
+                if (!activityId) {
+
+                    console.error(
+                        "Unknown database activity ID:",
+                        submission.activity_id
+                    );
+
                     return;
-                }
-
-
-                state.status =
-                    "APPROVED";
-
-                /*
-                 * Only award the points once.
-                 */
-                if (
-                    !state.pointsAwarded
-                    ||
-                    state.pointsAwarded === 0
-                ) {
-
-                    state.pointsAwarded =
-                        activity.points;
 
                 }
 
 
-                state.rejectionReason =
-                    "";
-
-                changed = true;
+                const state =
+                    getActivityState(
+                        activityId
+                    );
 
 
                 /*
-                 * If this was the starter,
-                 * unlock the rest of the hunt.
+                 * APPROVED
                  */
+
                 if (
-                    activity.starterTeam === selectedTeam
+                    submission.status ===
+                    "APPROVED"
+                    &&
+                    state.status !==
+                    "APPROVED"
                 ) {
 
-                    starterCompleted =
+                    const activity =
+                        getActivityByGameId(
+                            activityId
+                        );
+
+
+                    if (!activity) {
+                        return;
+                    }
+
+
+                    state.status =
+                        "APPROVED";
+
+
+                    /*
+                     * Award points only once.
+                     */
+
+                    if (
+                        !state.pointsAwarded
+                        ||
+                        state.pointsAwarded === 0
+                    ) {
+
+                        state.pointsAwarded =
+                            activity.points;
+
+                    }
+
+
+                    state.rejectionReason =
+                        "";
+
+
+                    changed =
                         true;
 
+
+                    /*
+                     * If this was the starter,
+                     * unlock the rest.
+                     */
+
+                    if (
+                        activity.starterTeam ===
+                        selectedTeam
+                    ) {
+
+                        starterCompleted =
+                            true;
+
+                    }
+
+
+                    showPlayerApproval(
+                        activity
+                    );
+
                 }
 
 
                 /*
-                 * Tell the player immediately if
-                 * they are currently looking at the
-                 * activity.
+                 * REJECTED
                  */
-                showPlayerApproval(
-                    activity
-                );
+
+                else if (
+                    submission.status ===
+                    "REJECTED"
+                    &&
+                    state.status !==
+                    "REJECTED"
+                ) {
+
+                    state.status =
+                        "REJECTED";
+
+
+                    state.pointsAwarded =
+                        0;
+
+
+                    state.rejectionReason =
+                        submission.rejection_reason
+                        ||
+                        "";
+
+
+                    changed =
+                        true;
+
+
+                    showPlayerRejection(
+                        getActivityByGameId(
+                            activityId
+                        ),
+                        state.rejectionReason
+                    );
+
+                }
 
             }
-
-
-            /*
-             * REJECTED
-             */
-            else if (
-                submission.status === "REJECTED"
-                &&
-                state.status !== "REJECTED"
-            ) {
-
-                state.status =
-                    "REJECTED";
-
-                state.pointsAwarded =
-                    0;
-
-                state.rejectionReason =
-                    submission.rejection_reason
-                    || "";
-
-                changed = true;
-
-
-                showPlayerRejection(
-                    activities.find(
-                        a => a.id === activityId
-                    ),
-                    state.rejectionReason
-                );
-
-            }
-
-        });
+        );
 
 
         if (changed) {
@@ -1536,8 +2139,9 @@ async function checkSubmissionStatuses() {
 
         }
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
         console.error(
             "Polling error:",
@@ -1553,7 +2157,9 @@ async function checkSubmissionStatuses() {
    PLAYER FEEDBACK
    ============================================================ */
 
-function showPlayerApproval(activity) {
+function showPlayerApproval(
+    activity
+) {
 
     if (!activity) {
         return;
@@ -1561,15 +2167,22 @@ function showPlayerApproval(activity) {
 
 
     /*
-     * If the player is currently viewing this activity,
-     * update its status immediately.
+     * If player is currently viewing
+     * this activity, update it immediately.
      */
+
     if (
-        currentActivityId === activity.id
+        currentActivityId ===
+        activity.id
         &&
         !document
-            .getElementById("activityScreen")
-            .classList.contains("hidden")
+            .getElementById(
+                "activityScreen"
+            )
+            .classList
+            .contains(
+                "hidden"
+            )
     ) {
 
         const container =
@@ -1577,22 +2190,33 @@ function showPlayerApproval(activity) {
                 "activityContent"
             );
 
+
         container.innerHTML = `
 
             <div class="status success">
-                <h3>✅ Photo Approved!</h3>
+
+                <h3>
+                    ✅ Photo Approved!
+                </h3>
 
                 <p>
-                    The organiser has approved your photograph.
+                    The organiser has approved
+                    your photograph.
                 </p>
 
                 <strong>
-                    +${activity.points} points
+                    +${activity.points}
+                    points
                 </strong>
+
             </div>
 
-            <button onclick="returnToGame()">
+
+            <button
+                onclick="returnToGame()">
+
                 Continue Hunting
+
             </button>
 
         `;
@@ -1600,20 +2224,27 @@ function showPlayerApproval(activity) {
     }
 
 
-    /*
-     * If they're on the game screen, update the
-     * main status as well.
-     */
     const gameStatus =
         document.getElementById(
             "gameStatus"
         );
 
+
     if (gameStatus) {
 
         gameStatus.innerHTML =
-            `✅ <strong>${escapeHtml(activity.title)}</strong>
-             approved — +${activity.points} points!`;
+            `
+            ✅
+            <strong>
+                ${escapeHtml(
+                    activity.title
+                )}
+            </strong>
+            approved —
+            +${activity.points}
+            points!
+            `;
+
 
         gameStatus.className =
             "status success";
@@ -1634,11 +2265,17 @@ function showPlayerRejection(
 
 
     if (
-        currentActivityId === activity.id
+        currentActivityId ===
+        activity.id
         &&
         !document
-            .getElementById("activityScreen")
-            .classList.contains("hidden")
+            .getElementById(
+                "activityScreen"
+            )
+            .classList
+            .contains(
+                "hidden"
+            )
     ) {
 
         const container =
@@ -1646,38 +2283,56 @@ function showPlayerRejection(
                 "activityContent"
             );
 
+
         container.innerHTML = `
 
             <div class="status error">
 
-                <h3>❌ Photo Rejected</h3>
+                <h3>
+                    ❌ Photo Rejected
+                </h3>
 
                 ${
                     reason
                     ?
-                    `<p>
-                        <strong>Reason:</strong>
-                        ${escapeHtml(reason)}
-                    </p>`
+                    `
+                    <p>
+                        <strong>
+                            Reason:
+                        </strong>
+
+                        ${escapeHtml(
+                            reason
+                        )}
+                    </p>
+                    `
                     :
                     ""
                 }
 
                 <p>
-                    Please take another photograph
-                    and submit it again.
+                    Please take another
+                    photograph and submit
+                    it again.
                 </p>
 
             </div>
 
-            <button onclick="renderActivityAgain('${activity.id}')">
+
+            <button
+                onclick="renderActivityAgain('${activity.id}')">
+
                 📷 Try Again
+
             </button>
+
 
             <button
                 class="secondary"
                 onclick="returnToGame()">
+
                 Continue Hunting
+
             </button>
 
         `;
@@ -1690,11 +2345,21 @@ function showPlayerRejection(
             "gameStatus"
         );
 
+
     if (gameStatus) {
 
         gameStatus.innerHTML =
-            `❌ <strong>${escapeHtml(activity.title)}</strong>
-             was rejected. You can try again.`;
+            `
+            ❌
+            <strong>
+                ${escapeHtml(
+                    activity.title
+                )}
+            </strong>
+            was rejected.
+            You can try again.
+            `;
+
 
         gameStatus.className =
             "status error";
@@ -1704,36 +2369,48 @@ function showPlayerRejection(
 }
 
 
-function renderActivityAgain(activityId) {
+function renderActivityAgain(
+    activityId
+) {
 
     currentActivityId =
         activityId;
 
+
     const activity =
-        activities.find(
-            a => a.id === activityId
+        getActivityByGameId(
+            activityId
         );
+
 
     if (!activity) {
         return;
     }
+
 
     document.getElementById(
         "activityTitle"
     ).textContent =
         activity.title;
 
+
     document.getElementById(
         "activityDescription"
     ).textContent =
         activity.description;
 
+
     document.getElementById(
         "activityLocation"
     ).textContent =
-        "📍 " + activity.location.name;
+        "📍 "
+        +
+        activity.location.name;
 
-    renderActivityContent(activity);
+
+    renderActivityContent(
+        activity
+    );
 
 }
 
@@ -1750,7 +2427,8 @@ function renderPuzzleActivity(
     container.innerHTML = `
 
         <p>
-            Find the physical clue and enter your answer below.
+            Find the physical clue and
+            enter your answer below.
         </p>
 
         <input
@@ -1760,8 +2438,11 @@ function renderPuzzleActivity(
             autocomplete="off"
         >
 
-        <button onclick="submitPuzzle('${activity.id}')">
+        <button
+            onclick="submitPuzzle('${activity.id}')">
+
             Submit Answer
+
         </button>
 
         <div id="puzzleStatus"></div>
@@ -1771,26 +2452,32 @@ function renderPuzzleActivity(
 }
 
 
-function submitPuzzle(activityId) {
+function submitPuzzle(
+    activityId
+) {
 
     const activity =
-        activities.find(
-            a => a.id === activityId
+        getActivityByGameId(
+            activityId
         );
+
 
     if (!activity) {
         return;
     }
+
 
     const input =
         document.getElementById(
             "puzzleAnswer"
         );
 
+
     const status =
         document.getElementById(
             "puzzleStatus"
         );
+
 
     const answer =
         input.value
@@ -1801,11 +2488,16 @@ function submitPuzzle(activityId) {
     if (!answer) {
 
         status.innerHTML =
-            `<div class="status error">
+            `
+            <div class="status error">
+
                 Please enter an answer.
-            </div>`;
+
+            </div>
+            `;
 
         return;
+
     }
 
 
@@ -1815,22 +2507,29 @@ function submitPuzzle(activityId) {
     ) {
 
         const state =
-            getActivityState(activityId);
+            getActivityState(
+                activityId
+            );
+
 
         state.status =
             "COMPLETED";
 
+
         state.pointsAwarded =
             activity.points;
 
+
         state.rejectionReason =
             "";
+
 
         saveState();
 
 
         if (
-            activity.starterTeam === selectedTeam
+            activity.starterTeam ===
+            selectedTeam
         ) {
 
             starterCompleted =
@@ -1842,21 +2541,35 @@ function submitPuzzle(activityId) {
 
 
         status.innerHTML =
-            `<div class="status success">
+            `
+            <div class="status success">
+
                 ✅ Correct!
+
                 <br><br>
-                +${activity.points} points
-            </div>`;
+
+                +${activity.points}
+                points
+
+            </div>
+            `;
 
 
         renderActivities();
 
-    } else {
+    }
+
+    else {
 
         status.innerHTML =
-            `<div class="status error">
-                ❌ Incorrect. Try again.
-            </div>`;
+            `
+            <div class="status error">
+
+                ❌ Incorrect.
+                Try again.
+
+            </div>
+            `;
 
     }
 
@@ -1869,7 +2582,9 @@ function submitPuzzle(activityId) {
 
 function returnToGame() {
 
-    showScreen("gameScreen");
+    showScreen(
+        "gameScreen"
+    );
 
     renderActivities();
 
@@ -1885,9 +2600,14 @@ function returnToGame() {
 function getCurrentPosition() {
 
     return new Promise(
-        (resolve, reject) => {
+        (
+            resolve,
+            reject
+        ) => {
 
-            if (!navigator.geolocation) {
+            if (
+                !navigator.geolocation
+            ) {
 
                 reject(
                     new Error(
@@ -1896,6 +2616,7 @@ function getCurrentPosition() {
                 );
 
                 return;
+
             }
 
 
@@ -1903,9 +2624,14 @@ function getCurrentPosition() {
                 resolve,
                 reject,
                 {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 10000
+                    enableHighAccuracy:
+                        true,
+
+                    timeout:
+                        10000,
+
+                    maximumAge:
+                        10000
                 }
             );
 
@@ -1922,26 +2648,54 @@ function distanceInMetres(
     lon2
 ) {
 
-    const R = 6371000;
+    const R =
+        6371000;
+
 
     const toRad =
         degrees =>
-            degrees * Math.PI / 180;
+            degrees *
+            Math.PI /
+            180;
+
 
     const dLat =
-        toRad(lat2 - lat1);
+        toRad(
+            lat2 - lat1
+        );
+
 
     const dLon =
-        toRad(lon2 - lon1);
+        toRad(
+            lon2 - lon1
+        );
+
 
     const a =
-        Math.sin(dLat / 2) *
-        Math.sin(dLat / 2)
+        Math.sin(
+            dLat / 2
+        )
+        *
+        Math.sin(
+            dLat / 2
+        )
         +
-        Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+        Math.cos(
+            toRad(lat1)
+        )
+        *
+        Math.cos(
+            toRad(lat2)
+        )
+        *
+        Math.sin(
+            dLon / 2
+        )
+        *
+        Math.sin(
+            dLon / 2
+        );
+
 
     const c =
         2 *
@@ -1949,6 +2703,7 @@ function distanceInMetres(
             Math.sqrt(a),
             Math.sqrt(1 - a)
         );
+
 
     return R * c;
 
@@ -1966,8 +2721,10 @@ async function finishHunt() {
             "gameStatus"
         );
 
+
     status.className =
         "status pending";
+
 
     status.textContent =
         "Checking your location...";
@@ -1978,6 +2735,7 @@ async function finishHunt() {
         const position =
             await getCurrentPosition();
 
+
         const distance =
             distanceInMetres(
                 position.coords.latitude,
@@ -1987,17 +2745,24 @@ async function finishHunt() {
             );
 
 
-        if (distance > returnRadius) {
+        if (
+            distance >
+            returnRadius
+        ) {
 
             status.className =
                 "status error";
 
+
             status.textContent =
                 "You are approximately "
                 +
-                Math.round(distance)
+                Math.round(
+                    distance
+                )
                 +
                 "m from the meeting point. Return closer before finishing.";
+
 
             return;
 
@@ -2005,28 +2770,36 @@ async function finishHunt() {
 
 
         const start =
-            new Date(gameStartedAt);
+            new Date(
+                gameStartedAt
+            );
+
 
         const now =
             getCurrentTime();
+
 
         const elapsedSeconds =
             Math.max(
                 0,
                 Math.floor(
-                    (now - start) / 1000
+                    (
+                        now - start
+                    ) / 1000
                 )
             );
 
 
         const allowedSeconds =
-            gameDurationMinutes * 60;
+            gameDurationMinutes *
+            60;
 
 
         const lateSeconds =
             Math.max(
                 0,
-                elapsedSeconds - allowedSeconds
+                elapsedSeconds -
+                allowedSeconds
             );
 
 
@@ -2042,23 +2815,32 @@ async function finishHunt() {
             penaltyPerInterval;
 
 
-        let totalScore = 0;
+        let totalScore =
+            0;
 
-        activities.forEach(activity => {
 
-            const state =
-                getActivityState(activity.id);
+        activities.forEach(
+            activity => {
 
-            totalScore +=
-                state.pointsAwarded || 0;
+                const state =
+                    getActivityState(
+                        activity.id
+                    );
 
-        });
+
+                totalScore +=
+                    state.pointsAwarded ||
+                    0;
+
+            }
+        );
 
 
         const finalScore =
             Math.max(
                 0,
-                totalScore - penalty
+                totalScore -
+                penalty
             );
 
 
@@ -2072,17 +2854,26 @@ async function finishHunt() {
             "finishMessage"
         ).innerHTML =
             `
-            You returned to the meeting point.
+
+            You returned to the
+            meeting point.
 
             ${
                 penalty > 0
                 ?
-                `<br><br>
-                 Time penalty: -${penalty} points`
+                `
+                <br><br>
+                Time penalty:
+                -${penalty}
+                points
+                `
                 :
-                `<br><br>
-                 No time penalty.`
+                `
+                <br><br>
+                No time penalty.
+                `
             }
+
             `;
 
 
@@ -2092,25 +2883,34 @@ async function finishHunt() {
                 timerInterval
             );
 
-            timerInterval = null;
+            timerInterval =
+                null;
 
         }
 
 
         stopSubmissionPolling();
 
-        showScreen("finishScreen");
 
+        showScreen(
+            "finishScreen"
+        );
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         status.className =
             "status error";
 
+
         status.textContent =
             "Unable to obtain your location. Please try again.";
 
-        console.error(error);
+
+        console.error(
+            error
+        );
 
     }
 
@@ -2125,16 +2925,29 @@ function showValidator() {
 
     previousScreen =
         document
-            .getElementById("gameScreen")
-            .classList.contains("hidden")
-            ? "home"
-            : "game";
+            .getElementById(
+                "gameScreen"
+            )
+            .classList
+            .contains(
+                "hidden"
+            )
+            ?
+            "home"
+            :
+            "game";
+
 
     stopSubmissionPolling();
 
-    showScreen("validatorScreen");
+
+    showScreen(
+        "validatorScreen"
+    );
+
 
     loadValidatorSubmissions();
+
 
     startValidatorRefresh();
 
@@ -2145,17 +2958,27 @@ function returnFromValidator() {
 
     stopValidatorRefresh();
 
-    if (previousScreen === "game") {
 
-        showScreen("gameScreen");
+    if (
+        previousScreen ===
+        "game"
+    ) {
+
+        showScreen(
+            "gameScreen"
+        );
 
         renderActivities();
 
         startSubmissionPolling();
 
-    } else {
+    }
 
-        showScreen("homeScreen");
+    else {
+
+        showScreen(
+            "homeScreen"
+        );
 
     }
 
@@ -2168,9 +2991,14 @@ function returnFromValidator() {
 
 function startValidatorRefresh() {
 
-    if (validatorRefreshInterval) {
+    if (
+        validatorRefreshInterval
+    ) {
+
         return;
+
     }
+
 
     validatorRefreshInterval =
         setInterval(
@@ -2183,18 +3011,25 @@ function startValidatorRefresh() {
 
 function stopValidatorRefresh() {
 
-    if (validatorRefreshInterval) {
+    if (
+        validatorRefreshInterval
+    ) {
 
         clearInterval(
             validatorRefreshInterval
         );
 
-        validatorRefreshInterval = null;
+        validatorRefreshInterval =
+            null;
 
     }
 
 }
 
+
+/* ============================================================
+   LOAD VALIDATOR SUBMISSIONS
+   ============================================================ */
 
 async function loadValidatorSubmissions() {
 
@@ -2202,6 +3037,7 @@ async function loadValidatorSubmissions() {
         document.getElementById(
             "validatorList"
         );
+
 
     const status =
         document.getElementById(
@@ -2213,19 +3049,29 @@ async function loadValidatorSubmissions() {
 
         const result =
             await supabaseClient
-                .from("photo_submissions")
+                .from(
+                    "photo_submissions"
+                )
                 .select("*")
-                .eq("status", "PENDING")
+                .eq(
+                    "status",
+                    "PENDING"
+                )
                 .order(
                     "submitted_at",
                     {
-                        ascending: true
+                        ascending:
+                            true
                     }
                 );
 
 
-        if (result.error) {
+        if (
+            result.error
+        ) {
+
             throw result.error;
+
         }
 
 
@@ -2233,15 +3079,21 @@ async function loadValidatorSubmissions() {
             result.data || [];
 
 
-        if (!submissions.length) {
+        if (
+            !submissions.length
+        ) {
 
             status.className =
                 "status success";
 
+
             status.textContent =
                 "There are no photos awaiting approval.";
 
-            list.innerHTML = "";
+
+            list.innerHTML =
+                "";
+
 
             return;
 
@@ -2251,17 +3103,25 @@ async function loadValidatorSubmissions() {
         status.className =
             "status pending";
 
+
         status.textContent =
             submissions.length
             +
             " photo"
             +
-            (submissions.length === 1 ? "" : "s")
+            (
+                submissions.length === 1
+                ?
+                ""
+                :
+                "s"
+            )
             +
             " awaiting approval.";
 
 
-        list.innerHTML = "";
+        list.innerHTML =
+            "";
 
 
         for (
@@ -2276,16 +3136,19 @@ async function loadValidatorSubmissions() {
 
         }
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
         console.error(
             "Validator error:",
             error
         );
 
+
         status.className =
             "status error";
+
 
         status.textContent =
             "Unable to load submissions.";
@@ -2305,13 +3168,17 @@ async function renderValidatorSubmission(
 ) {
 
     const card =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     card.className =
         "card";
 
 
-    let imageUrl = null;
+    let imageUrl =
+        null;
 
 
     try {
@@ -2319,21 +3186,27 @@ async function renderValidatorSubmission(
         const signed =
             await supabaseClient
                 .storage
-                .from("hunt-photos")
+                .from(
+                    "hunt-photos"
+                )
                 .createSignedUrl(
                     submission.file_path,
                     3600
                 );
 
 
-        if (!signed.error) {
+        if (
+            !signed.error
+        ) {
 
             imageUrl =
                 signed.data.signedUrl;
 
         }
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
             "Signed URL error:",
@@ -2343,69 +3216,114 @@ async function renderValidatorSubmission(
     }
 
 
+    /*
+     * IMPORTANT:
+     *
+     * Supabase stores the integer ID.
+     * Convert it back to the game activity.
+     */
+
     const activity =
-        activities.find(
-            a =>
-                a.id ===
-                submission.activity_id
+        getActivityByDatabaseId(
+            submission.activity_id
         );
 
 
     card.innerHTML = `
 
         <h3>
-            ${activity
-                ? escapeHtml(activity.title)
-                : escapeHtml(submission.activity_id)}
+
+            ${
+                activity
+                ?
+                escapeHtml(
+                    activity.title
+                )
+                :
+                "Unknown Activity"
+            }
+
         </h3>
 
+
         <p>
-            <strong>Team:</strong>
-            ${escapeHtml(String(submission.team_number))}
+
+            <strong>
+                Team:
+            </strong>
+
+            ${escapeHtml(
+                String(
+                    submission.team_number
+                )
+            )}
+
         </p>
+
 
         ${
             submission.submitted_at
             ?
-            `<p class="small">
+            `
+            <p class="small">
+
                 Submitted:
-                ${new Date(
-                    submission.submitted_at
-                ).toLocaleString()}
-            </p>`
+                ${
+                    new Date(
+                        submission.submitted_at
+                    ).toLocaleString()
+                }
+
+            </p>
+            `
             :
             ""
         }
 
+
         ${
             imageUrl
             ?
-            `<img
+            `
+            <img
                 class="validator-photo"
                 src="${imageUrl}"
                 alt="Submitted photograph"
-            >`
+            >
+            `
             :
-            `<div class="status error">
+            `
+            <div class="status error">
+
                 Unable to load photograph.
-            </div>`
+
+            </div>
+            `
         }
+
 
         <button
             onclick="approveSubmission('${submission.id}')">
+
             ✅ APPROVE
+
         </button>
+
 
         <button
             class="danger"
             onclick="rejectSubmission('${submission.id}')">
+
             ❌ REJECT
+
         </button>
 
     `;
 
 
-    list.appendChild(card);
+    list.appendChild(
+        card
+    );
 
 }
 
@@ -2433,7 +3351,9 @@ async function approveSubmission(
 
         const result =
             await supabaseClient
-                .from("photo_submissions")
+                .from(
+                    "photo_submissions"
+                )
                 .update({
 
                     status:
@@ -2452,20 +3372,26 @@ async function approveSubmission(
                 );
 
 
-        if (result.error) {
+        if (
+            result.error
+        ) {
+
             throw result.error;
+
         }
 
 
         loadValidatorSubmissions();
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
         console.error(
             "Approval error:",
             error
         );
+
 
         alert(
             "Unable to approve submission: "
@@ -2492,8 +3418,12 @@ async function rejectSubmission(
         );
 
 
-    if (reason === null) {
+    if (
+        reason === null
+    ) {
+
         return;
+
     }
 
 
@@ -2501,7 +3431,9 @@ async function rejectSubmission(
 
         const result =
             await supabaseClient
-                .from("photo_submissions")
+                .from(
+                    "photo_submissions"
+                )
                 .update({
 
                     status:
@@ -2520,20 +3452,26 @@ async function rejectSubmission(
                 );
 
 
-        if (result.error) {
+        if (
+            result.error
+        ) {
+
             throw result.error;
+
         }
 
 
         loadValidatorSubmissions();
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
         console.error(
             "Rejection error:",
             error
         );
+
 
         alert(
             "Unable to reject submission: "
@@ -2550,36 +3488,66 @@ async function rejectSubmission(
    UTILITIES
    ============================================================ */
 
-function getFileExtension(filename) {
+function getFileExtension(
+    filename
+) {
 
     const parts =
         filename.split(".");
 
-    if (parts.length < 2) {
+
+    if (
+        parts.length < 2
+    ) {
+
         return "jpg";
+
     }
 
+
     const extension =
-        parts.pop()
+        parts
+            .pop()
             .toLowerCase()
             .replace(
                 /[^a-z0-9]/g,
                 ""
             );
 
-    return extension || "jpg";
+
+    return extension ||
+        "jpg";
 
 }
 
 
-function escapeHtml(value) {
+function escapeHtml(
+    value
+) {
 
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(
+        value
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
 
@@ -2592,20 +3560,26 @@ loadState();
 
 
 /*
- * If there is an active game when the page is reopened,
- * restore the game screen.
+ * If there is an active game when
+ * the page is reopened, restore it.
  */
+
 if (
     selectedTeam
     &&
     gameStartedAt
 ) {
 
-    showScreen("gameScreen");
+    showScreen(
+        "gameScreen"
+    );
+
 
     renderActivities();
 
+
     updateTimer();
+
 
     timerInterval =
         setInterval(
@@ -2613,11 +3587,16 @@ if (
             1000
         );
 
+
     startSubmissionPolling();
 
-} else {
+}
 
-    showScreen("homeScreen");
+else {
+
+    showScreen(
+        "homeScreen"
+    );
 
 }
 
