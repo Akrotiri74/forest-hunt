@@ -56,10 +56,6 @@
         background: #666;
     }
 
-    button.warning {
-        background: #b57900;
-    }
-
     button.danger {
         background: #a33;
     }
@@ -189,11 +185,6 @@
         color: #245c2a;
     }
 
-    .late {
-        color: #a33;
-        font-weight: bold;
-    }
-
     .photo-status {
         padding: 10px;
         margin: 8px 0;
@@ -210,16 +201,7 @@
     .photo-status.pending {
         background: #fff4c7;
         color: #765e00;
-    }
-
-    .photo-status.approved {
-        background: #e4f4e4;
-        color: #23752b;
-    }
-
-    .photo-status.rejected {
-        background: #f9e1e1;
-        color: #a33;
+        font-weight: bold;
     }
 </style>
 </head>
@@ -232,6 +214,7 @@
     <p>Explore. Solve. Photograph. Score.</p>
 
     <!-- START SCREEN -->
+
     <div id="startScreen" class="card">
 
         <h2>Start Game</h2>
@@ -255,14 +238,15 @@
         </label>
 
         <p class="info">
-            Test Mode lets you simulate movement and time without physically
-            travelling around the hunt area.
+            Test Mode lets you simulate movement and time without
+            physically travelling around the hunt area.
         </p>
 
     </div>
 
 
     <!-- GAME SCREEN -->
+
     <div id="gameScreen" class="hidden">
 
         <div class="card">
@@ -296,6 +280,7 @@
 
 
         <!-- GPS -->
+
         <div class="card">
 
             <h2>📍 Location</h2>
@@ -310,13 +295,13 @@
 
 
         <!-- TEST MODE -->
+
         <div id="testPanel" class="test-panel hidden">
 
             <h3>🧪 Test Mode</h3>
 
             <p>
-                Use these buttons to simulate your location and the passage
-                of time.
+                Use these buttons to simulate your location and time.
             </p>
 
             <h4>Simulate Location</h4>
@@ -364,7 +349,8 @@
         </div>
 
 
-        <!-- STARTER -->
+        <!-- STARTER CHALLENGE -->
+
         <div class="card">
 
             <h2>⭐ Starting Challenge</h2>
@@ -375,6 +361,7 @@
 
 
         <!-- ACTIVITIES -->
+
         <div id="activitiesSection" class="card hidden">
 
             <h2>🏆 Activities</h2>
@@ -390,6 +377,7 @@
 
 
         <!-- FINISH -->
+
         <div id="finishSection" class="card hidden">
 
             <h2>🏁 Finish</h2>
@@ -410,9 +398,11 @@
 
 
         <div class="card">
+
             <button class="secondary" onclick="restartGame()">
                 Restart Game
             </button>
+
         </div>
 
     </div>
@@ -423,20 +413,22 @@
 <script>
 
 /* ============================================================
-   GAME SETTINGS
+   SETTINGS
    ============================================================ */
 
 const gameDurationMinutes = 60;
 
 const searchRadius = 150;
+
 const returnRadius = 150;
 
 const penaltyPerInterval = 5;
+
 const penaltyIntervalSeconds = 120;
 
 
 /* ============================================================
-   LOCATIONS
+   MEETING POINT
    ============================================================ */
 
 const meetingPoint = {
@@ -515,7 +507,7 @@ const activities = [
 
 
 /* ============================================================
-   GAME STATE
+   STATE
    ============================================================ */
 
 let selectedTeam = null;
@@ -552,6 +544,8 @@ function selectTeam(team) {
 
     testTimeOffsetSeconds = 0;
 
+    currentLocation = null;
+
     activitiesState = {};
 
     selectedPhotoFiles = {};
@@ -565,12 +559,14 @@ function selectTeam(team) {
 
     });
 
-    const starter = activities.find(
-        activity => activity.starterFor === team
-    );
+    const starter =
+        getStarterActivity();
 
     if (starter) {
-        activitiesState[starter.id].status = "starter";
+
+        activitiesState[starter.id].status =
+            "starter";
+
     }
 
     saveGame();
@@ -581,7 +577,8 @@ function selectTeam(team) {
     document.getElementById("gameScreen")
         .classList.remove("hidden");
 
-    document.getElementById("teamTitle").textContent =
+    document.getElementById("teamTitle")
+        .textContent =
         "Team " + team;
 
     if (testMode) {
@@ -595,8 +592,6 @@ function selectTeam(team) {
 
     startTimer();
 
-    startGPS();
-
     renderStarter();
 
     renderActivities();
@@ -604,11 +599,26 @@ function selectTeam(team) {
     updateScoreboard();
 
     updateFinishSection();
+
+    startGPS();
 }
 
 
 /* ============================================================
-   SAVE / LOAD
+   GET STARTER
+   ============================================================ */
+
+function getStarterActivity() {
+
+    return activities.find(
+        activity =>
+            activity.starterFor === selectedTeam
+    );
+}
+
+
+/* ============================================================
+   SAVE
    ============================================================ */
 
 function saveGame() {
@@ -626,6 +636,10 @@ function saveGame() {
 }
 
 
+/* ============================================================
+   LOAD
+   ============================================================ */
+
 function loadGame() {
 
     const saved =
@@ -637,23 +651,32 @@ function loadGame() {
 
     try {
 
-        const game = JSON.parse(saved);
+        const game =
+            JSON.parse(saved);
 
-        if (!game.selectedTeam || !game.gameStartedAt) {
+        if (
+            !game.selectedTeam ||
+            !game.gameStartedAt
+        ) {
             return false;
         }
 
-        selectedTeam = game.selectedTeam;
+        selectedTeam =
+            game.selectedTeam;
 
-        gameStartedAt = game.gameStartedAt;
+        gameStartedAt =
+            game.gameStartedAt;
 
-        testMode = !!game.testMode;
+        testMode =
+            !!game.testMode;
 
         testTimeOffsetSeconds =
             game.testTimeOffsetSeconds || 0;
 
         activitiesState =
             game.activitiesState || {};
+
+        selectedPhotoFiles = {};
 
         activities.forEach(activity => {
 
@@ -674,7 +697,8 @@ function loadGame() {
         document.getElementById("gameScreen")
             .classList.remove("hidden");
 
-        document.getElementById("teamTitle").textContent =
+        document.getElementById("teamTitle")
+            .textContent =
             "Team " + selectedTeam;
 
         if (testMode) {
@@ -688,8 +712,6 @@ function loadGame() {
 
         startTimer();
 
-        startGPS();
-
         renderStarter();
 
         renderActivities();
@@ -697,6 +719,8 @@ function loadGame() {
         updateScoreboard();
 
         updateFinishSection();
+
+        startGPS();
 
         return true;
 
@@ -736,16 +760,18 @@ function startTimer() {
 
     updateTimer();
 
-    timerInterval = setInterval(
-        updateTimer,
-        1000
-    );
+    timerInterval =
+        setInterval(
+            updateTimer,
+            1000
+        );
 }
 
 
 function updateTimer() {
 
-    const elapsed = getElapsedSeconds();
+    const elapsed =
+        getElapsedSeconds();
 
     const remaining =
         Math.max(
@@ -777,8 +803,11 @@ function updateTimer() {
 
 function startGPS() {
 
-    if (testMode && currentLocation &&
-        currentLocation.simulated) {
+    if (
+        testMode &&
+        currentLocation &&
+        currentLocation.simulated
+    ) {
 
         updateLocationDisplay();
 
@@ -797,7 +826,11 @@ function startGPS() {
     getLocation();
 
     if (locationWatchId !== null) {
-        navigator.geolocation.clearWatch(locationWatchId);
+
+        navigator.geolocation.clearWatch(
+            locationWatchId
+        );
+
     }
 
     locationWatchId =
@@ -909,8 +942,11 @@ function distanceInMetres(
 
     const R = 6371000;
 
-    const phi1 = lat1 * Math.PI / 180;
-    const phi2 = lat2 * Math.PI / 180;
+    const phi1 =
+        lat1 * Math.PI / 180;
+
+    const phi2 =
+        lat2 * Math.PI / 180;
 
     const deltaPhi =
         (lat2 - lat1) * Math.PI / 180;
@@ -1001,7 +1037,7 @@ function updateLocationDisplay() {
         currentLocation.lon.toFixed(6) +
         (
             currentLocation.simulated
-                ? "  [TEST LOCATION]"
+                ? " [TEST LOCATION]"
                 : ""
         );
 
@@ -1013,66 +1049,69 @@ function updateLocationDisplay() {
 
     /*
        IMPORTANT:
-       We deliberately do NOT rebuild the activity cards here.
-
-       Rebuilding a <input type="file"> element while the camera
-       is being used can cause iPhone/Chrome to lose the selected
-       file when returning to the page.
+       GPS updates never rebuild the photo input.
+       They only update distances and challenge state.
     */
 
-    updateStarterLocationOnly();
+    updateStarterLocation();
 
-    updateActivityDistancesOnly();
+    updateActivityDistances();
+
+    updateUnlockedActivityInterfaces();
 
     updateFinishSection();
 }
 
 
 /* ============================================================
-   STARTER
+   STARTER RENDER
    ============================================================ */
-
-function getStarterActivity() {
-
-    return activities.find(
-        activity =>
-            activity.starterFor === selectedTeam
-    );
-}
-
 
 function renderStarter() {
 
-    const starter = getStarterActivity();
+    const starter =
+        getStarterActivity();
 
     const container =
-        document.getElementById("starterContent");
+        document.getElementById(
+            "starterContent"
+        );
 
     if (!starter) {
         return;
     }
 
-    const state =
-        activitiesState[starter.id];
-
     container.innerHTML = `
+
         <div>
+
             <h3>${starter.name}</h3>
+
             <p>
-                Worth <strong>${starter.points} points</strong>
+                Worth
+                <strong>${starter.points} points</strong>
             </p>
+
             <div id="starterLocationStatus"></div>
+
             <div id="starterAction"></div>
+
         </div>
+
     `;
 
-    updateStarterLocationOnly();
+    updateStarterLocation();
 }
 
 
-function updateStarterLocationOnly() {
+/* ============================================================
+   STARTER LOCATION / INTERFACE
+   ============================================================ */
 
-    const starter = getStarterActivity();
+function updateStarterLocation() {
+
+    const starter =
+        getStarterActivity();
 
     if (!starter) {
         return;
@@ -1095,21 +1134,24 @@ function updateStarterLocationOnly() {
         return;
     }
 
-    const distance =
-        distanceToActivity(starter);
+
+    /* COMPLETED */
 
     if (state.status === "completed") {
 
         locationStatus.innerHTML =
-            `<p class="success">
+            `
+            <p class="success">
                 Starting challenge completed ✓
-            </p>`;
+            </p>
+            `;
 
-        action.innerHTML = `
+        action.innerHTML =
+            `
             <p class="success">
                 +${starter.points} points
             </p>
-        `;
+            `;
 
         unlockActivities();
 
@@ -1117,74 +1159,117 @@ function updateStarterLocationOnly() {
     }
 
 
+    /* NO GPS */
+
+    const distance =
+        distanceToActivity(starter);
+
     if (distance === null) {
 
         locationStatus.innerHTML =
-            `<p class="info">
+            `
+            <p class="info">
                 Waiting for your location...
-            </p>`;
+            </p>
+            `;
 
         return;
     }
 
 
+    /* OUTSIDE SEARCH AREA */
+
     if (distance > searchRadius) {
 
         locationStatus.innerHTML =
-            `<p>
+            `
+            <p>
                 You are approximately
                 <strong>${Math.round(distance)}m</strong>
                 from the search area.
-            </p>`;
-
-        /*
-           Don't rebuild the action area if it already contains
-           a file input. This is important for photo stability.
-        */
-
-        if (!action.dataset.initialised) {
-            action.innerHTML = `
-                <p class="info">
-                    Move into the search area to unlock this challenge.
-                </p>
+            </p>
             `;
 
-            action.dataset.initialised = "true";
+        /*
+           IMPORTANT:
+           If the player is outside the area, don't permanently
+           initialise the action area.
+
+           This means that when Test Mode moves the player into
+           the area, the photo control will be created.
+        */
+
+        if (
+            !action.dataset.hasActiveControl
+        ) {
+
+            action.innerHTML =
+                `
+                <p class="info">
+                    Move into the search area to unlock
+                    this challenge.
+                </p>
+                `;
+
         }
 
         return;
     }
 
 
+    /* INSIDE SEARCH AREA */
+
     locationStatus.innerHTML =
-        `<p class="success">
+        `
+        <p class="success">
             You are in the search area ✓
-        </p>`;
+        </p>
+        `;
 
 
-    if (!action.dataset.initialised) {
+    /*
+       Only create the photo/puzzle interface if it isn't
+       already there.
+
+       This is the important protection against destroying
+       a selected photograph.
+    */
+
+    if (
+        !action.dataset.hasActiveControl
+    ) {
 
         renderStarterAction(starter);
 
-        action.dataset.initialised = "true";
+        action.dataset.hasActiveControl =
+            "true";
+
     }
+
 }
 
+
+/* ============================================================
+   STARTER ACTION
+   ============================================================ */
 
 function renderStarterAction(starter) {
 
     const action =
-        document.getElementById("starterAction");
+        document.getElementById(
+            "starterAction"
+        );
 
-    const state =
-        activitiesState[starter.id];
+    if (!action) {
+        return;
+    }
 
     if (starter.type === "PHOTO") {
 
-        action.innerHTML = createPhotoInterface(
-            starter,
-            true
-        );
+        action.innerHTML =
+            createPhotoInterface(
+                starter
+            );
 
         attachPhotoInput(starter);
 
@@ -1192,44 +1277,47 @@ function renderStarterAction(starter) {
 
         action.innerHTML =
             createPuzzleInterface(
-                starter,
-                true
+                starter
             );
 
     }
+
 }
 
 
 /* ============================================================
-   ACTIVITIES
+   UNLOCK ACTIVITIES
    ============================================================ */
 
 function unlockActivities() {
 
-    const section =
-        document.getElementById(
-            "activitiesSection"
-        );
-
-    section.classList.remove("hidden");
+    document.getElementById(
+        "activitiesSection"
+    ).classList.remove("hidden");
 
     renderActivities();
 }
 
 
+/* ============================================================
+   ACTIVITY RENDER
+   ============================================================ */
+
 function renderActivities() {
 
     const container =
-        document.getElementById("activities");
+        document.getElementById(
+            "activities"
+        );
 
     container.innerHTML = "";
 
     activities.forEach(activity => {
 
-        const starter =
-            activity.starterFor === selectedTeam;
-
-        if (starter) {
+        if (
+            activity.starterFor ===
+            selectedTeam
+        ) {
             return;
         }
 
@@ -1257,15 +1345,25 @@ function renderActivities() {
 
         container.appendChild(div);
 
-        if (activity.type === "PHOTO") {
+        if (
+            activity.type === "PHOTO" &&
+            isAtActivity(activity) &&
+            state.status !== "completed" &&
+            state.status !== "pending"
+        ) {
+
             attachPhotoInput(activity);
+
         }
 
     });
 
-    updateActivityDistancesOnly();
 }
 
+
+/* ============================================================
+   ACTIVITY HTML
+   ============================================================ */
 
 function createActivityHTML(activity) {
 
@@ -1287,21 +1385,28 @@ function createActivityHTML(activity) {
 
     let statusHTML = "";
 
-    if (state.status === "completed") {
+    if (
+        state.status === "completed"
+    ) {
 
-        statusHTML = `
+        statusHTML =
+            `
             <div class="status success">
                 Completed ✓ +${activity.points} points
             </div>
-        `;
+            `;
 
-    } else if (state.status === "pending") {
+    } else if (
+        state.status === "pending"
+    ) {
 
-        statusHTML = `
+        statusHTML =
+            `
             <div class="status">
-                Photo submitted — awaiting validation
+                Photograph submitted —
+                awaiting validation
             </div>
-        `;
+            `;
 
     }
 
@@ -1316,18 +1421,12 @@ function createActivityHTML(activity) {
         if (activity.type === "PHOTO") {
 
             actionHTML =
-                createPhotoInterface(
-                    activity,
-                    false
-                );
+                createPhotoInterface(activity);
 
         } else {
 
             actionHTML =
-                createPuzzleInterface(
-                    activity,
-                    false
-                );
+                createPuzzleInterface(activity);
 
         }
 
@@ -1336,13 +1435,16 @@ function createActivityHTML(activity) {
         state.status !== "pending"
     ) {
 
-        actionHTML = `
+        actionHTML =
+            `
             <p class="info">
-                Enter the search area to unlock this activity.
+                Enter the search area to unlock
+                this activity.
             </p>
-        `;
+            `;
 
     }
+
 
     return `
 
@@ -1359,9 +1461,10 @@ function createActivityHTML(activity) {
         </div>
 
         <p>
-            ${activity.type === "PHOTO"
-                ? "📷 Photograph challenge"
-                : "🧩 Puzzle challenge"
+            ${
+                activity.type === "PHOTO"
+                    ? "📷 Photograph challenge"
+                    : "🧩 Puzzle challenge"
             }
         </p>
 
@@ -1383,10 +1486,10 @@ function createActivityHTML(activity) {
 
 
 /* ============================================================
-   ACTIVITY DISTANCES
+   UPDATE ACTIVITY DISTANCES
    ============================================================ */
 
-function updateActivityDistancesOnly() {
+function updateActivityDistances() {
 
     activities.forEach(activity => {
 
@@ -1407,12 +1510,99 @@ function updateActivityDistancesOnly() {
             element.textContent =
                 "Waiting for GPS...";
 
+        } else {
+
+            element.textContent =
+                Math.round(distance) +
+                "m away";
+
+        }
+
+    });
+
+}
+
+
+/* ============================================================
+   CREATE NEW ACTIVITY INTERFACES
+   ============================================================ */
+
+function updateUnlockedActivityInterfaces() {
+
+    const starter =
+        getStarterActivity();
+
+    activities.forEach(activity => {
+
+        if (
+            activity.starterFor ===
+            selectedTeam
+        ) {
             return;
         }
 
-        element.textContent =
-            Math.round(distance) + "m away";
+        const state =
+            activitiesState[activity.id];
+
+        if (
+            state.status === "completed" ||
+            state.status === "pending"
+        ) {
+            return;
+        }
+
+        const action =
+            document.getElementById(
+                "action-" + activity.id
+            );
+
+        if (!action) {
+            return;
+        }
+
+        /*
+           If player has entered the search area and the
+           action currently only says "Enter the search area",
+           replace it with the real interface.
+        */
+
+        if (
+            isAtActivity(activity) &&
+            (
+                !action.dataset.hasActiveControl &&
+                (
+                    action.innerHTML.includes(
+                        "Enter the search area"
+                    ) ||
+                    action.innerHTML.trim() === ""
+                )
+            )
+        ) {
+
+            if (activity.type === "PHOTO") {
+
+                action.innerHTML =
+                    createPhotoInterface(activity);
+
+                action.dataset.hasActiveControl =
+                    "true";
+
+                attachPhotoInput(activity);
+
+            } else {
+
+                action.innerHTML =
+                    createPuzzleInterface(activity);
+
+                action.dataset.hasActiveControl =
+                    "true";
+
+            }
+
+        }
+
     });
+
 }
 
 
@@ -1420,22 +1610,17 @@ function updateActivityDistancesOnly() {
    PHOTO INTERFACE
    ============================================================ */
 
-function createPhotoInterface(
-    activity,
-    isStarter
-) {
+function createPhotoInterface(activity) {
 
     const existingFile =
         selectedPhotoFiles[activity.id];
 
-    const state =
-        activitiesState[activity.id];
-
-    let statusHTML = "";
+    let statusHTML;
 
     if (existingFile) {
 
-        statusHTML = `
+        statusHTML =
+            `
             <div
                 id="photo-status-${activity.id}"
                 class="photo-status selected"
@@ -1444,18 +1629,20 @@ function createPhotoInterface(
                 <br>
                 <small>${existingFile.name}</small>
             </div>
-        `;
+            `;
 
     } else {
 
-        statusHTML = `
+        statusHTML =
+            `
             <div
                 id="photo-status-${activity.id}"
                 class="photo-status"
             >
                 No photo selected
             </div>
-        `;
+            `;
+
     }
 
     return `
@@ -1488,6 +1675,10 @@ function createPhotoInterface(
 }
 
 
+/* ============================================================
+   PHOTO INPUT
+   ============================================================ */
+
 function attachPhotoInput(activity) {
 
     const input =
@@ -1498,6 +1689,17 @@ function attachPhotoInput(activity) {
     if (!input) {
         return;
     }
+
+    /*
+       Prevent attaching the same listener twice.
+    */
+
+    if (input.dataset.listenerAttached === "true") {
+        return;
+    }
+
+    input.dataset.listenerAttached =
+        "true";
 
     input.addEventListener(
         "change",
@@ -1512,9 +1714,7 @@ function attachPhotoInput(activity) {
             }
 
             /*
-               Store the File object immediately.
-               This means we don't rely on the DOM input
-               still containing the file later.
+               Store the File immediately.
             */
 
             selectedPhotoFiles[activity.id] =
@@ -1522,7 +1722,8 @@ function attachPhotoInput(activity) {
 
             const status =
                 document.getElementById(
-                    "photo-status-" + activity.id
+                    "photo-status-" +
+                    activity.id
                 );
 
             if (status) {
@@ -1536,18 +1737,25 @@ function attachPhotoInput(activity) {
                     <br>
                     <small>${file.name}</small>
                     `;
+
             }
 
         }
     );
+
 }
 
+
+/* ============================================================
+   SUBMIT PHOTO
+   ============================================================ */
 
 function submitPhoto(activityId) {
 
     const activity =
         activities.find(
-            item => item.id === activityId
+            item =>
+                item.id === activityId
         );
 
     if (!activity) {
@@ -1577,7 +1785,8 @@ function submitPhoto(activityId) {
 
     const status =
         document.getElementById(
-            "photo-status-" + activityId
+            "photo-status-" +
+            activityId
         );
 
     if (status) {
@@ -1595,11 +1804,7 @@ function submitPhoto(activityId) {
     }
 
     /*
-       Prototype simulation of remote human validation.
-
-       In the real game this would upload the photograph
-       to the server and a human validator would approve
-       or reject it.
+       Prototype simulation of remote validation.
     */
 
     setTimeout(
@@ -1611,19 +1816,19 @@ function submitPhoto(activityId) {
         3000
     );
 
-    updateScoreboard();
 }
 
 
 /* ============================================================
-   PHOTO APPROVAL
+   APPROVE PHOTO
    ============================================================ */
 
 function approvePhoto(activityId) {
 
     const activity =
         activities.find(
-            item => item.id === activityId
+            item =>
+                item.id === activityId
         );
 
     if (!activity) {
@@ -1633,17 +1838,68 @@ function approvePhoto(activityId) {
     const state =
         activitiesState[activityId];
 
-    state.status = "completed";
+    state.status =
+        "completed";
 
-    state.photoStatus = "approved";
+    state.photoStatus =
+        "approved";
 
     delete selectedPhotoFiles[activityId];
 
     saveGame();
 
-    renderStarter();
+    /*
+       Starter photos are handled specially so that the
+       activities section unlocks immediately.
+    */
 
-    renderActivities();
+    if (
+        activity.starterFor ===
+        selectedTeam
+    ) {
+
+        const starterAction =
+            document.getElementById(
+                "starterAction"
+            );
+
+        const starterStatus =
+            document.getElementById(
+                "starterLocationStatus"
+            );
+
+        if (starterStatus) {
+
+            starterStatus.innerHTML =
+                `
+                <p class="success">
+                    Starting challenge completed ✓
+                </p>
+                `;
+
+        }
+
+        if (starterAction) {
+
+            starterAction.innerHTML =
+                `
+                <p class="success">
+                    +${activity.points} points
+                </p>
+                `;
+
+            starterAction.dataset.hasActiveControl =
+                "false";
+
+        }
+
+        unlockActivities();
+
+    } else {
+
+        renderActivities();
+
+    }
 
     updateScoreboard();
 
@@ -1655,6 +1911,7 @@ function approvePhoto(activityId) {
         activity.points +
         " points."
     );
+
 }
 
 
@@ -1662,17 +1919,15 @@ function approvePhoto(activityId) {
    PUZZLES
    ============================================================ */
 
-function createPuzzleInterface(
-    activity,
-    isStarter
-) {
+function createPuzzleInterface(activity) {
 
     return `
 
         <div>
 
             <p>
-                Find the physical clue and solve the puzzle.
+                Find the physical clue and solve
+                the puzzle.
             </p>
 
             <input
@@ -1702,7 +1957,8 @@ function submitPuzzle(activityId) {
 
     const activity =
         activities.find(
-            item => item.id === activityId
+            item =>
+                item.id === activityId
         );
 
     if (!activity) {
@@ -1759,6 +2015,7 @@ function submitPuzzle(activityId) {
             `;
 
     }
+
 }
 
 
@@ -1805,7 +2062,8 @@ function getLatePenalty() {
     }
 
     return Math.ceil(
-        overtime / penaltyIntervalSeconds
+        overtime /
+        penaltyIntervalSeconds
     ) * penaltyPerInterval;
 }
 
@@ -1840,6 +2098,7 @@ function updateScoreboard() {
     document.getElementById("latePenalty")
         .textContent =
         getLatePenalty();
+
 }
 
 
@@ -1873,9 +2132,11 @@ function updateFinishSection() {
     if (!currentLocation) {
 
         status.innerHTML =
-            `<p class="info">
+            `
+            <p class="info">
                 Waiting for GPS...
-            </p>`;
+            </p>
+            `;
 
         button.disabled = true;
 
@@ -1922,9 +2183,15 @@ function updateFinishSection() {
             `;
 
         button.disabled = true;
+
     }
+
 }
 
+
+/* ============================================================
+   FINISH GAME
+   ============================================================ */
 
 function finishGame() {
 
@@ -1947,7 +2214,8 @@ function finishGame() {
         getActivityPoints();
 
     const finalScore =
-        activityPoints - latePenalty;
+        activityPoints -
+        latePenalty;
 
     let message =
         "GAME FINISHED\n\n" +
@@ -1960,7 +2228,10 @@ function finishGame() {
         "FINAL SCORE: " +
         finalScore;
 
-    if (elapsed <= gameDurationMinutes * 60) {
+    if (
+        elapsed <=
+        gameDurationMinutes * 60
+    ) {
 
         message +=
             "\n\nFinished within 60 minutes.";
@@ -1977,6 +2248,7 @@ function finishGame() {
             "m " +
             (overtime % 60) +
             "s.";
+
     }
 
     alert(message);
@@ -1990,7 +2262,9 @@ function finishGame() {
         );
 
         locationWatchId = null;
+
     }
+
 }
 
 
@@ -2013,7 +2287,8 @@ function buildTestLocationButtons() {
             document.createElement("button");
 
         button.textContent =
-            "Go to: " + activity.name;
+            "Go to: " +
+            activity.name;
 
         button.onclick =
             function() {
@@ -2027,6 +2302,7 @@ function buildTestLocationButtons() {
         container.appendChild(button);
 
     });
+
 }
 
 
@@ -2038,64 +2314,105 @@ function testMoveToActivity(activityId) {
 
     const activity =
         activities.find(
-            item => item.id === activityId
+            item =>
+                item.id === activityId
         );
 
     if (!activity) {
         return;
     }
 
+    /*
+       Test Mode takes control of the location.
+    */
+
     currentLocation = {
+
         lat: activity.lat,
+
         lon: activity.lon,
+
         simulated: true
+
     };
 
     updateLocationDisplay();
 
     /*
-       We only need to render the activity interface
-       when moving to a new location if it hasn't already
-       been rendered. For photo activities, this avoids
-       unnecessarily destroying the file input.
+       If this is the team's starter, make sure the
+       starter interface is created now that we are
+       inside its search area.
     */
 
-    const state =
-        activitiesState[activity.id];
-
     if (
-        state.status !== "completed" &&
-        state.status !== "pending"
+        activity.starterFor ===
+        selectedTeam
     ) {
 
-        const action =
-            document.getElementById(
-                "action-" + activity.id
-            );
+        updateStarterLocation();
+
+    }
+
+    /*
+       If this is a normal activity, create its interface
+       if necessary.
+    */
+
+    if (
+        activity.starterFor !==
+        selectedTeam
+    ) {
+
+        const state =
+            activitiesState[activity.id];
 
         if (
-            action &&
-            !action.innerHTML.trim() &&
+            state.status !== "completed" &&
+            state.status !== "pending" &&
             isAtActivity(activity)
         ) {
 
-            if (activity.type === "PHOTO") {
+            const action =
+                document.getElementById(
+                    "action-" + activity.id
+                );
 
-                action.innerHTML =
-                    createPhotoInterface(
-                        activity,
-                        false
-                    );
+            if (action) {
 
-                attachPhotoInput(activity);
+                if (
+                    !action.dataset.hasActiveControl
+                ) {
 
-            } else {
+                    if (
+                        activity.type ===
+                        "PHOTO"
+                    ) {
 
-                action.innerHTML =
-                    createPuzzleInterface(
-                        activity,
-                        false
-                    );
+                        action.innerHTML =
+                            createPhotoInterface(
+                                activity
+                            );
+
+                        action.dataset.hasActiveControl =
+                            "true";
+
+                        attachPhotoInput(
+                            activity
+                        );
+
+                    } else {
+
+                        action.innerHTML =
+                            createPuzzleInterface(
+                                activity
+                            );
+
+                        action.dataset.hasActiveControl =
+                            "true";
+
+                    }
+
+                }
 
             }
 
@@ -2103,7 +2420,8 @@ function testMoveToActivity(activityId) {
 
     }
 
-    updateStarterLocationOnly();
+    updateFinishSection();
+
 }
 
 
@@ -2114,14 +2432,19 @@ function testMoveToMeetingPoint() {
     }
 
     currentLocation = {
+
         lat: meetingPoint.lat,
+
         lon: meetingPoint.lon,
+
         simulated: true
+
     };
 
     updateLocationDisplay();
 
     updateFinishSection();
+
 }
 
 
@@ -2131,11 +2454,13 @@ function addTestTime(seconds) {
         return;
     }
 
-    testTimeOffsetSeconds += seconds;
+    testTimeOffsetSeconds +=
+        seconds;
 
     saveGame();
 
     updateTimer();
+
 }
 
 
@@ -2146,18 +2471,25 @@ function jumpTestTime(targetSeconds) {
     }
 
     const realElapsed =
-        (Date.now() - gameStartedAt) / 1000;
+        (Date.now() - gameStartedAt) /
+        1000;
 
     testTimeOffsetSeconds =
-        targetSeconds - realElapsed;
+        targetSeconds -
+        realElapsed;
 
-    if (testTimeOffsetSeconds < 0) {
+    if (
+        testTimeOffsetSeconds < 0
+    ) {
+
         testTimeOffsetSeconds = 0;
+
     }
 
     saveGame();
 
     updateTimer();
+
 }
 
 
@@ -2168,7 +2500,9 @@ function resetTestGame() {
             "Reset the entire test game?"
         )
     ) {
+
         return;
+
     }
 
     localStorage.removeItem(
@@ -2176,6 +2510,7 @@ function resetTestGame() {
     );
 
     location.reload();
+
 }
 
 
@@ -2190,7 +2525,9 @@ function restartGame() {
             "Are you sure you want to restart the game?"
         )
     ) {
+
         return;
+
     }
 
     localStorage.removeItem(
@@ -2206,6 +2543,7 @@ function restartGame() {
     }
 
     location.reload();
+
 }
 
 
