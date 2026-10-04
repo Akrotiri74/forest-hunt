@@ -38,6 +38,11 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
+    .test-panel {
+      background: #fff3cd;
+      border: 2px solid #d49b28;
+    }
+
     .scoreboard {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -83,6 +88,18 @@
       margin-top: 8px;
     }
 
+    button.secondary {
+      background: #666;
+    }
+
+    button.test-button {
+      background: #8a6500;
+    }
+
+    button.danger {
+      background: #8a3030;
+    }
+
     button:disabled {
       background: #aaa;
       cursor: not-allowed;
@@ -110,10 +127,6 @@
 
     .starter {
       border: 3px solid #d49b28;
-    }
-
-    .locked {
-      opacity: 0.5;
     }
 
     .completed {
@@ -186,19 +199,9 @@
       display: none;
     }
 
-    img.preview {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-top: 8px;
-    }
-
     .small {
       font-size: 13px;
       color: #666;
-    }
-
-    .finish-button {
-      background: #8a3030;
     }
   </style>
 </head>
@@ -230,7 +233,19 @@
       <option value="team3">Team 3</option>
     </select>
 
-    <button onclick="startGame()">Start 60 Minute Hunt</button>
+    <label>
+      <input type="checkbox" id="testModeCheckbox">
+      <strong>Enable Test Mode</strong>
+    </label>
+
+    <p class="small">
+      Test Mode allows you to simulate movement and elapsed time.
+      Do not enable this for a real game.
+    </p>
+
+    <button onclick="startGame()">
+      Start 60 Minute Hunt
+    </button>
 
   </div>
 
@@ -238,6 +253,74 @@
   <!-- GAME -->
   <div id="gameScreen" class="hidden">
 
+    <!-- TEST MODE -->
+    <div id="testPanel" class="panel test-panel hidden">
+
+      <h2>🧪 TEST MODE</h2>
+
+      <p>
+        You are using simulated GPS. Selecting a location instantly
+        moves the player there.
+      </p>
+
+      <button
+        class="test-button"
+        onclick="testMoveToMeetingPoint()">
+        📍 Move to Meeting Point
+      </button>
+
+      <div id="testActivityButtons"></div>
+
+      <hr style="margin-top:16px;">
+
+      <h3>Simulate Time</h3>
+
+      <button
+        class="test-button"
+        onclick="testAddTime(60)">
+        +1 minute
+      </button>
+
+      <button
+        class="test-button"
+        onclick="testAddTime(300)">
+        +5 minutes
+      </button>
+
+      <button
+        class="test-button"
+        onclick="testAddTime(600)">
+        +10 minutes
+      </button>
+
+      <button
+        class="test-button"
+        onclick="testAddTime(1200)">
+        +20 minutes
+      </button>
+
+      <button
+        class="test-button"
+        onclick="testSetTimeToLate()">
+        ⏰ Jump to 61 minutes
+      </button>
+
+      <button
+        class="test-button"
+        onclick="testSetTimeToVeryLate()">
+        ⏰ Jump to 70 minutes
+      </button>
+
+      <button
+        class="danger"
+        onclick="resetGame()">
+        Reset Test Game
+      </button>
+
+    </div>
+
+
+    <!-- SCORE -->
     <div class="panel">
 
       <div class="scoreboard">
@@ -263,7 +346,10 @@
         60:00
       </div>
 
-      <div id="timerMessage" class="small" style="text-align:center;">
+      <div
+        id="timerMessage"
+        class="small"
+        style="text-align:center;">
         Your target is to return within 60 minutes.
       </div>
 
@@ -317,14 +403,11 @@
 
       <h2>🏁 Return to Meeting Point</h2>
 
-      <p>
-        When you have finished hunting, return to the meeting point
-        and press the button below.
-      </p>
-
       <div id="returnStatus"></div>
 
-      <button class="finish-button" onclick="finishGame()">
+      <button
+        style="background:#8a3030;"
+        onclick="finishGame()">
         Return & Finish Hunt
       </button>
 
@@ -333,7 +416,7 @@
   </div>
 
 
-  <!-- FINISH SCREEN -->
+  <!-- FINISH -->
   <div id="finishScreen" class="hidden">
 
     <div class="panel">
@@ -341,6 +424,10 @@
       <h2>🏁 Hunt Finished</h2>
 
       <div id="finalResult"></div>
+
+      <button onclick="location.reload()">
+        Start Another Test
+      </button>
 
     </div>
 
@@ -359,33 +446,12 @@
 
   const gameDurationMinutes = 60;
 
-  /*
-   * GPS search areas are deliberately generous.
-   * This is a prototype for woodland-style GPS accuracy.
-   */
   const searchRadius = 150;
 
-  /*
-   * Radius for returning to the meeting point.
-   */
   const returnRadius = 150;
 
-
-  /*
-   * Late penalty:
-   *
-   * 0 points if back within 60 minutes.
-   *
-   * After that:
-   * 5 points for every 2 minutes OR PART OF 2 MINUTES late.
-   *
-   * Examples:
-   * 60:00 = 0 penalty
-   * 60:01 = -5
-   * 62:00 = -5
-   * 62:01 = -10
-   */
   const penaltyPerInterval = 5;
+
   const penaltyIntervalSeconds = 120;
 
 
@@ -393,8 +459,6 @@
    * ============================================================
    * MEETING POINT
    * ============================================================
-   *
-   * Playing Field supplied earlier.
    */
 
   const meetingPoint = {
@@ -407,10 +471,6 @@
    * ============================================================
    * ACTIVITIES
    * ============================================================
-   *
-   * These are deliberately simple prototype activities.
-   *
-   * In the real game these would be loaded from a server.
    */
 
   const activities = [
@@ -515,6 +575,7 @@
    */
 
   let selectedTeam = null;
+
   let starterActivity = null;
 
   let gameStartedAt = null;
@@ -525,22 +586,39 @@
 
   let timerInterval = null;
 
+  let testMode = false;
+
+  /*
+   * Number of seconds to ADD to the real elapsed time
+   * while Test Mode is active.
+   */
+  let testTimeOffsetSeconds = 0;
+
+
+  const storageKey =
+    "forestHuntGame";
+
 
   /*
    * ============================================================
-   * STORAGE
+   * SAVE / LOAD
    * ============================================================
    */
-
-  const storageKey = "forestHuntGame";
-
 
   function saveGame() {
 
     const state = {
+
       selectedTeam,
+
       gameStartedAt,
-      activitiesState
+
+      activitiesState,
+
+      testMode,
+
+      testTimeOffsetSeconds
+
     };
 
     localStorage.setItem(
@@ -552,7 +630,8 @@
 
   function loadGame() {
 
-    const saved = localStorage.getItem(storageKey);
+    const saved =
+      localStorage.getItem(storageKey);
 
     if (!saved) {
       return false;
@@ -560,17 +639,33 @@
 
     try {
 
-      const state = JSON.parse(saved);
+      const state =
+        JSON.parse(saved);
 
-      selectedTeam = state.selectedTeam;
-      gameStartedAt = state.gameStartedAt;
-      activitiesState = state.activitiesState || {};
+      selectedTeam =
+        state.selectedTeam;
 
-      starterActivity = activities.find(
-        activity =>
-          activity.starterFor &&
-          activity.starterFor.includes(selectedTeam)
-      );
+      gameStartedAt =
+        state.gameStartedAt;
+
+      activitiesState =
+        state.activitiesState || {};
+
+      testMode =
+        state.testMode || false;
+
+      testTimeOffsetSeconds =
+        state.testTimeOffsetSeconds || 0;
+
+
+      starterActivity =
+        activities.find(
+          activity =>
+            activity.starterFor &&
+            activity.starterFor.includes(
+              selectedTeam
+            )
+        );
 
       return true;
 
@@ -585,37 +680,65 @@
 
   /*
    * ============================================================
-   * START GAME
+   * START
    * ============================================================
    */
 
   function startGame() {
 
     selectedTeam =
-      document.getElementById("teamSelect").value;
+      document.getElementById(
+        "teamSelect"
+      ).value;
 
-    starterActivity = activities.find(
-      activity =>
-        activity.starterFor &&
-        activity.starterFor.includes(selectedTeam)
-    );
+    testMode =
+      document.getElementById(
+        "testModeCheckbox"
+      ).checked;
 
-    gameStartedAt = Date.now();
+
+    starterActivity =
+      activities.find(
+        activity =>
+          activity.starterFor &&
+          activity.starterFor.includes(
+            selectedTeam
+          )
+      );
+
+
+    gameStartedAt =
+      Date.now();
+
+
+    testTimeOffsetSeconds =
+      0;
+
 
     activitiesState = {};
 
-    activities.forEach(activity => {
 
-      activitiesState[activity.id] = {
-        status:
-          activity.id === starterActivity.id
-            ? "available"
-            : "locked",
+    activities.forEach(
+      activity => {
 
-        scoreAwarded: false
-      };
+        activitiesState[
+          activity.id
+        ] = {
 
-    });
+          status:
+            activity.id ===
+            starterActivity.id
+              ? "available"
+              : "locked",
+
+          scoreAwarded:
+            false
+
+        };
+
+      }
+    );
+
 
     saveGame();
 
@@ -625,29 +748,7 @@
 
     renderActivities();
 
-    startTimer();
-
-    getLocation();
-  }
-
-
-  /*
-   * ============================================================
-   * RESTORE GAME
-   * ============================================================
-   */
-
-  function restoreExistingGame() {
-
-    if (!loadGame()) {
-      return;
-    }
-
-    showGameScreen();
-
-    renderStarter();
-
-    renderActivities();
+    renderTestPanel();
 
     startTimer();
 
@@ -670,22 +771,287 @@
 
   /*
    * ============================================================
+   * TEST MODE
+   * ============================================================
+   */
+
+  function renderTestPanel() {
+
+    const panel =
+      document.getElementById(
+        "testPanel"
+      );
+
+    if (!testMode) {
+
+      panel.classList.add("hidden");
+
+      return;
+    }
+
+
+    panel.classList.remove("hidden");
+
+
+    const container =
+      document.getElementById(
+        "testActivityButtons"
+      );
+
+
+    container.innerHTML =
+      "<h3>Simulate Location</h3>";
+
+
+    activities.forEach(
+      activity => {
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+        button.className =
+          "test-button";
+
+        button.textContent =
+          `📍 Go to: ${activity.name}`;
+
+        button.onclick =
+          () => testMoveToActivity(
+            activity.id
+          );
+
+        container.appendChild(
+          button
+        );
+
+      }
+    );
+
+  }
+
+
+  function testMoveToActivity(
+    activityId
+  ) {
+
+    if (!testMode) {
+      return;
+    }
+
+
+    const activity =
+      activities.find(
+        item =>
+          item.id === activityId
+      );
+
+
+    if (!activity) {
+      return;
+    }
+
+
+    currentLocation = {
+
+      lat: activity.lat,
+
+      lon: activity.lon,
+
+      accuracy: 5,
+
+      simulated: true
+
+    };
+
+
+    updateLocationDisplay();
+
+    renderStarter();
+
+    renderActivities();
+
+    updateReturnStatus();
+
+  }
+
+
+  function testMoveToMeetingPoint() {
+
+    if (!testMode) {
+      return;
+    }
+
+
+    currentLocation = {
+
+      lat: meetingPoint.lat,
+
+      lon: meetingPoint.lon,
+
+      accuracy: 5,
+
+      simulated: true
+
+    };
+
+
+    updateLocationDisplay();
+
+    renderStarter();
+
+    renderActivities();
+
+    updateReturnStatus();
+
+  }
+
+
+  /*
+   * Add simulated elapsed time.
+   */
+
+  function testAddTime(
+    seconds
+  ) {
+
+    if (!testMode) {
+      return;
+    }
+
+
+    testTimeOffsetSeconds +=
+      seconds;
+
+
+    saveGame();
+
+    updateTimer();
+
+  }
+
+
+  /*
+   * Jump to exactly 61 minutes.
+   */
+
+  function testSetTimeToLate() {
+
+    if (!testMode) {
+      return;
+    }
+
+
+    testTimeOffsetSeconds =
+      (61 * 60);
+
+
+    saveGame();
+
+    updateTimer();
+
+  }
+
+
+  /*
+   * Jump to exactly 70 minutes.
+   */
+
+  function testSetTimeToVeryLate() {
+
+    if (!testMode) {
+      return;
+    }
+
+
+    testTimeOffsetSeconds =
+      (70 * 60);
+
+
+    saveGame();
+
+    updateTimer();
+
+  }
+
+
+  /*
+   * Reset everything.
+   */
+
+  function resetGame() {
+
+    if (
+      !confirm(
+        "Reset this test game and start again?"
+      )
+    ) {
+
+      return;
+    }
+
+
+    clearInterval(
+      timerInterval
+    );
+
+    localStorage.removeItem(
+      storageKey
+    );
+
+    location.reload();
+
+  }
+
+
+  /*
+   * ============================================================
    * TIMER
    * ============================================================
    */
 
+  function getElapsedSeconds() {
+
+    if (!gameStartedAt) {
+      return 0;
+    }
+
+
+    const realElapsed =
+      Math.floor(
+        (Date.now() -
+          gameStartedAt) / 1000
+      );
+
+
+    return (
+      realElapsed +
+      testTimeOffsetSeconds
+    );
+
+  }
+
+
   function startTimer() {
 
     if (timerInterval) {
-      clearInterval(timerInterval);
+
+      clearInterval(
+        timerInterval
+      );
     }
+
 
     updateTimer();
 
-    timerInterval = setInterval(
-      updateTimer,
-      1000
-    );
+
+    timerInterval =
+      setInterval(
+        updateTimer,
+        1000
+      );
+
   }
 
 
@@ -695,40 +1061,58 @@
       return;
     }
 
+
     const elapsedSeconds =
-      Math.floor(
-        (Date.now() - gameStartedAt) / 1000
-      );
+      getElapsedSeconds();
+
 
     const remainingSeconds =
-      (gameDurationMinutes * 60) -
+      (60 * 60) -
       elapsedSeconds;
 
+
     const timerElement =
-      document.getElementById("timer");
+      document.getElementById(
+        "timer"
+      );
+
 
     const messageElement =
-      document.getElementById("timerMessage");
+      document.getElementById(
+        "timerMessage"
+      );
 
 
     if (remainingSeconds > 0) {
 
       const minutes =
-        Math.floor(remainingSeconds / 60);
+        Math.floor(
+          remainingSeconds / 60
+        );
+
 
       const seconds =
         remainingSeconds % 60;
+
 
       timerElement.textContent =
         `${minutes}:${seconds
           .toString()
           .padStart(2, "0")}`;
 
-      timerElement.className = "timer";
 
-      if (remainingSeconds <= 600) {
+      timerElement.className =
+        "timer";
 
-        timerElement.classList.add("warning");
+
+      if (
+        remainingSeconds <= 600
+      ) {
+
+        timerElement.classList.add(
+          "warning"
+        );
+
 
         messageElement.textContent =
           "⚠️ Ten minutes or less. Think about your route back.";
@@ -737,48 +1121,74 @@
 
         messageElement.textContent =
           "Your target is to return within 60 minutes.";
+
       }
+
 
     } else {
 
       const lateSeconds =
-        Math.abs(remainingSeconds);
+        Math.abs(
+          remainingSeconds
+        );
+
 
       const lateMinutes =
-        Math.floor(lateSeconds / 60);
+        Math.floor(
+          lateSeconds / 60
+        );
+
 
       const seconds =
         lateSeconds % 60;
+
+
+      const penalty =
+        calculateLatePenalty(
+          lateSeconds
+        );
+
 
       timerElement.textContent =
         `LATE ${lateMinutes}:${seconds
           .toString()
           .padStart(2, "0")}`;
 
+
       timerElement.className =
         "timer late";
 
-      const penalty =
-        calculateLatePenalty(lateSeconds);
 
       messageElement.textContent =
         `You are late. Current return penalty: -${penalty} points`;
 
     }
 
+
     updateScoreDisplay();
+
   }
 
 
-  function calculateLatePenalty(lateSeconds) {
+  function calculateLatePenalty(
+    lateSeconds
+  ) {
 
-    if (lateSeconds <= 0) {
+    if (
+      lateSeconds <= 0
+    ) {
       return 0;
     }
 
-    return Math.ceil(
-      lateSeconds / penaltyIntervalSeconds
-    ) * penaltyPerInterval;
+
+    return (
+      Math.ceil(
+        lateSeconds /
+        penaltyIntervalSeconds
+      ) *
+      penaltyPerInterval
+    );
+
   }
 
 
@@ -792,23 +1202,34 @@
 
     let total = 0;
 
-    activities.forEach(activity => {
 
-      const state =
-        activitiesState[activity.id];
+    activities.forEach(
+      activity => {
 
-      if (
-        state &&
-        state.status === "completed" &&
-        state.scoreAwarded
-      ) {
+        const state =
+          activitiesState[
+            activity.id
+          ];
 
-        total += activity.points;
+
+        if (
+          state &&
+          state.status ===
+            "completed" &&
+          state.scoreAwarded
+        ) {
+
+          total +=
+            activity.points;
+
+        }
+
       }
+    );
 
-    });
 
     return total;
+
   }
 
 
@@ -817,40 +1238,56 @@
     const earned =
       calculateEarnedPoints();
 
-    let penalty = 0;
 
-    if (gameStartedAt) {
+    const elapsedSeconds =
+      getElapsedSeconds();
 
-      const elapsedSeconds =
-        Math.floor(
-          (Date.now() - gameStartedAt) / 1000
-        );
 
-      const lateSeconds =
-        Math.max(
-          0,
-          elapsedSeconds -
-          (gameDurationMinutes * 60)
-        );
+    const lateSeconds =
+      Math.max(
+        0,
+        elapsedSeconds -
+        (60 * 60)
+      );
 
-      penalty =
-        calculateLatePenalty(lateSeconds);
-    }
 
-    document.getElementById("score").textContent =
+    const penalty =
+      calculateLatePenalty(
+        lateSeconds
+      );
+
+
+    document.getElementById(
+      "score"
+    ).textContent =
       earned - penalty;
 
-    document.getElementById("penalty").textContent =
-      penalty === 0 ? "0" : `-${penalty}`;
+
+    document.getElementById(
+      "penalty"
+    ).textContent =
+      penalty === 0
+        ? "0"
+        : `-${penalty}`;
+
 
     const completed =
-      activities.filter(activity =>
-        activitiesState[activity.id] &&
-        activitiesState[activity.id].status === "completed"
+      activities.filter(
+        activity =>
+          activitiesState[
+            activity.id
+          ] &&
+          activitiesState[
+            activity.id
+          ].status === "completed"
       ).length;
 
-    document.getElementById("completedCount").textContent =
+
+    document.getElementById(
+      "completedCount"
+    ).textContent =
       completed;
+
   }
 
 
@@ -863,38 +1300,63 @@
   function renderStarter() {
 
     const container =
-      document.getElementById("starterContent");
+      document.getElementById(
+        "starterContent"
+      );
+
 
     const state =
-      activitiesState[starterActivity.id];
+      activitiesState[
+        starterActivity.id
+      ];
 
 
-    if (state.status === "completed") {
+    if (
+      state.status ===
+      "completed"
+    ) {
 
       container.innerHTML = `
+
         <div class="activity completed">
-          <h3>${starterActivity.name}</h3>
-          <div class="status">✅ Starter completed</div>
-          <p>All hunt activities are now unlocked.</p>
+
+          <h3>
+            ${starterActivity.name}
+          </h3>
+
+          <div class="status">
+            ✅ Starter completed
+          </div>
+
+          <p>
+            All hunt activities are now unlocked.
+          </p>
+
         </div>
+
       `;
 
-      document
-        .getElementById("starterPanel")
-        .classList.remove("starter");
 
       document
-        .getElementById("activitiesPanel")
-        .classList.remove("hidden");
+        .getElementById(
+          "activitiesPanel"
+        )
+        .classList.remove(
+          "hidden"
+        );
+
 
       return;
     }
 
 
     container.innerHTML = `
+
       <div class="activity starter">
 
-        <h3>${starterActivity.name}</h3>
+        <h3>
+          ${starterActivity.name}
+        </h3>
 
         <div class="points">
           ${starterActivity.points} points
@@ -911,9 +1373,12 @@
         <div id="starterAction"></div>
 
       </div>
+
     `;
 
+
     updateStarterLocation();
+
   }
 
 
@@ -923,6 +1388,7 @@
       return;
     }
 
+
     const distance =
       distanceInMetres(
         currentLocation.lat,
@@ -931,31 +1397,51 @@
         starterActivity.lon
       );
 
+
     const distanceElement =
-      document.getElementById("starterDistance");
+      document.getElementById(
+        "starterDistance"
+      );
+
 
     const actionElement =
-      document.getElementById("starterAction");
+      document.getElementById(
+        "starterAction"
+      );
 
-    if (!distanceElement || !actionElement) {
+
+    if (
+      !distanceElement ||
+      !actionElement
+    ) {
+
       return;
+
     }
 
 
-    if (distance <= searchRadius) {
+    if (
+      distance <=
+      searchRadius
+    ) {
 
       distanceElement.innerHTML =
         `📍 You are ${Math.round(distance)}m from the search area.`;
 
-      actionElement.innerHTML = `
-        <p><strong>You're in the search area.</strong></p>
 
-        ${
-          starterActivity.type === "photo"
-            ? photoInterface(starterActivity)
-            : puzzleInterface(starterActivity)
-        }
-      `;
+      actionElement.innerHTML =
+
+        starterActivity.type ===
+        "photo"
+
+          ? photoInterface(
+              starterActivity
+            )
+
+          : puzzleInterface(
+              starterActivity
+            );
+
 
     } else {
 
@@ -967,7 +1453,9 @@
           Move into the search area to attempt this activity.
         </p>
       `;
+
     }
+
   }
 
 
@@ -980,119 +1468,211 @@
   function renderActivities() {
 
     const list =
-      document.getElementById("activityList");
+      document.getElementById(
+        "activityList"
+      );
+
 
     list.innerHTML = "";
 
 
     const starterComplete =
-      activitiesState[starterActivity.id] &&
-      activitiesState[starterActivity.id].status === "completed";
+      activitiesState[
+        starterActivity.id
+      ] &&
+      activitiesState[
+        starterActivity.id
+      ].status === "completed";
 
 
     if (!starterComplete) {
 
       document
-        .getElementById("activitiesPanel")
-        .classList.add("hidden");
+        .getElementById(
+          "activitiesPanel"
+        )
+        .classList.add(
+          "hidden"
+        );
 
       return;
     }
 
 
     document
-      .getElementById("activitiesPanel")
-      .classList.remove("hidden");
+      .getElementById(
+        "activitiesPanel"
+      )
+      .classList.remove(
+        "hidden"
+      );
 
 
     activities
-      .filter(activity =>
-        activity.id !== starterActivity.id
+      .filter(
+        activity =>
+          activity.id !==
+          starterActivity.id
       )
-      .forEach(activity => {
+      .forEach(
+        activity => {
 
-        const state =
-          activitiesState[activity.id];
-
-        const div =
-          document.createElement("div");
-
-        div.className = "activity";
+          const state =
+            activitiesState[
+              activity.id
+            ];
 
 
-        if (state.status === "completed") {
-          div.classList.add("completed");
+          const div =
+            document.createElement(
+              "div"
+            );
+
+
+          div.className =
+            "activity";
+
+
+          if (
+            state.status ===
+            "completed"
+          ) {
+
+            div.classList.add(
+              "completed"
+            );
+
+          }
+
+
+          if (
+            state.status ===
+            "pending"
+          ) {
+
+            div.classList.add(
+              "pending"
+            );
+
+          }
+
+
+          if (
+            state.status ===
+            "rejected"
+          ) {
+
+            div.classList.add(
+              "rejected"
+            );
+
+          }
+
+
+          let statusText =
+            "";
+
+
+          if (
+            state.status ===
+            "available"
+          ) {
+
+            statusText =
+              "Available";
+
+          }
+
+
+          if (
+            state.status ===
+            "completed"
+          ) {
+
+            statusText =
+              "✅ Completed";
+
+          }
+
+
+          if (
+            state.status ===
+            "pending"
+          ) {
+
+            statusText =
+              "⏳ Photo awaiting validation";
+
+          }
+
+
+          if (
+            state.status ===
+            "rejected"
+          ) {
+
+            statusText =
+              "📷 Photo needs another attempt";
+
+          }
+
+
+          div.innerHTML = `
+
+            <h3>
+              ${activity.name}
+            </h3>
+
+            <div class="points">
+              ${activity.points} points
+            </div>
+
+            <div class="status">
+              ${statusText}
+            </div>
+
+            <p>
+              ${activity.instructions}
+            </p>
+
+            <div id="distance-${activity.id}">
+              Checking location...
+            </div>
+
+            <div id="action-${activity.id}"></div>
+
+          `;
+
+
+          list.appendChild(
+            div
+          );
+
+
+          updateActivityLocation(
+            activity
+          );
+
         }
+      );
 
-        if (state.status === "pending") {
-          div.classList.add("pending");
-        }
-
-        if (state.status === "rejected") {
-          div.classList.add("rejected");
-        }
-
-
-        let statusText = "";
-
-        if (state.status === "available") {
-          statusText = "Available";
-        }
-
-        if (state.status === "completed") {
-          statusText = "✅ Completed";
-        }
-
-        if (state.status === "pending") {
-          statusText = "⏳ Photo awaiting validation";
-        }
-
-        if (state.status === "rejected") {
-          statusText = "📷 Photo needs another attempt";
-        }
-
-
-        div.innerHTML = `
-
-          <h3>${activity.name}</h3>
-
-          <div class="points">
-            ${activity.points} points
-          </div>
-
-          <div class="status">
-            ${statusText}
-          </div>
-
-          <p>
-            ${activity.instructions}
-          </p>
-
-          <div id="distance-${activity.id}">
-            Checking location...
-          </div>
-
-          <div id="action-${activity.id}"></div>
-
-        `;
-
-
-        list.appendChild(div);
-
-        updateActivityLocation(activity);
-
-      });
   }
 
 
-  function updateActivityLocation(activity) {
+  function updateActivityLocation(
+    activity
+  ) {
 
     if (!currentLocation) {
       return;
     }
 
+
     const state =
-      activitiesState[activity.id];
+      activitiesState[
+        activity.id
+      ];
+
 
     const distance =
       distanceInMetres(
@@ -1102,10 +1682,12 @@
         activity.lon
       );
 
+
     const distanceElement =
       document.getElementById(
         `distance-${activity.id}`
       );
+
 
     const actionElement =
       document.getElementById(
@@ -1113,7 +1695,11 @@
       );
 
 
-    if (!distanceElement || !actionElement) {
+    if (
+      !distanceElement ||
+      !actionElement
+    ) {
+
       return;
     }
 
@@ -1123,27 +1709,42 @@
 
 
     if (
-      state.status === "completed" ||
-      state.status === "pending"
+      state.status ===
+        "completed" ||
+      state.status ===
+        "pending"
     ) {
 
-      actionElement.innerHTML = "";
+      actionElement.innerHTML =
+        "";
 
       return;
     }
 
 
-    if (distance <= searchRadius) {
+    if (
+      distance <=
+      searchRadius
+    ) {
 
       actionElement.innerHTML =
-        activity.type === "photo"
-          ? photoInterface(activity)
-          : puzzleInterface(activity);
+
+        activity.type ===
+        "photo"
+
+          ? photoInterface(
+              activity
+            )
+
+          : puzzleInterface(
+              activity
+            );
 
     } else {
 
       actionElement.innerHTML =
         `<p>Move into the search area to attempt this activity.</p>`;
+
     }
 
   }
@@ -1151,11 +1752,13 @@
 
   /*
    * ============================================================
-   * PHOTO ACTIVITY
+   * PHOTO
    * ============================================================
    */
 
-  function photoInterface(activity) {
+  function photoInterface(
+    activity
+  ) {
 
     return `
 
@@ -1175,18 +1778,26 @@
       <div class="small">
         Your photograph will be checked by a hunt validator.
       </div>
+
     `;
+
   }
 
 
-  function submitPhoto(activityId) {
+  function submitPhoto(
+    activityId
+  ) {
 
     const input =
       document.getElementById(
         `photo-${activityId}`
       );
 
-    if (!input || !input.files.length) {
+
+    if (
+      !input ||
+      !input.files.length
+    ) {
 
       alert(
         "Please take or choose a photograph first."
@@ -1196,53 +1807,58 @@
     }
 
 
-    /*
-     * In this prototype we simulate the remote human
-     * validator with a short delay.
-     *
-     * The important thing is that the game state is
-     * PENDING before approval.
-     */
-
-    activitiesState[activityId].status =
+    activitiesState[
+      activityId
+    ].status =
       "pending";
+
 
     saveGame();
 
     renderActivities();
 
+
     /*
-     * Simulated validator.
-     *
-     * Later this will be replaced by:
-     *
-     * photo upload → server → validator →
-     * approved/rejected → player's phone
+     * Prototype simulation of
+     * remote human validation.
      */
 
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      approvePhoto(activityId);
+        approvePhoto(
+          activityId
+        );
 
-    }, 3000);
+      },
+      3000
+    );
 
   }
 
 
-  function approvePhoto(activityId) {
+  function approvePhoto(
+    activityId
+  ) {
 
     const state =
-      activitiesState[activityId];
+      activitiesState[
+        activityId
+      ];
+
 
     if (!state) {
       return;
     }
 
+
     state.status =
       "completed";
 
+
     state.scoreAwarded =
       true;
+
 
     saveGame();
 
@@ -1250,9 +1866,11 @@
 
     updateScoreDisplay();
 
+
     alert(
       "📷 Photo approved! Points awarded."
     );
+
   }
 
 
@@ -1262,7 +1880,9 @@
    * ============================================================
    */
 
-  function puzzleInterface(activity) {
+  function puzzleInterface(
+    activity
+  ) {
 
     return `
 
@@ -1279,20 +1899,27 @@
       </button>
 
     `;
+
   }
 
 
-  function submitPuzzle(activityId) {
+  function submitPuzzle(
+    activityId
+  ) {
 
     const activity =
       activities.find(
-        item => item.id === activityId
+        item =>
+          item.id ===
+          activityId
       );
+
 
     const input =
       document.getElementById(
         `answer-${activityId}`
       );
+
 
     if (!input) {
       return;
@@ -1305,13 +1932,22 @@
         .toUpperCase();
 
 
-    if (answer === activity.answer) {
+    if (
+      answer ===
+      activity.answer
+    ) {
 
-      activitiesState[activityId].status =
+      activitiesState[
+        activityId
+      ].status =
         "completed";
 
-      activitiesState[activityId].scoreAwarded =
+
+      activitiesState[
+        activityId
+      ].scoreAwarded =
         true;
+
 
       saveGame();
 
@@ -1319,15 +1955,18 @@
 
       updateScoreDisplay();
 
+
       alert(
         `Correct! +${activity.points} points`
       );
 
+
     } else {
 
       alert(
-        "Not correct — have another look at the physical item and try again."
+        "Not correct — have another look and try again."
       );
+
     }
 
   }
@@ -1341,7 +1980,26 @@
 
   function getLocation() {
 
-    if (!navigator.geolocation) {
+    /*
+     * In Test Mode, don't replace the simulated
+     * position with the phone's real GPS.
+     */
+
+    if (
+      testMode &&
+      currentLocation &&
+      currentLocation.simulated
+    ) {
+
+      updateLocationDisplay();
+
+      return;
+    }
+
+
+    if (
+      !navigator.geolocation
+    ) {
 
       document.getElementById(
         "gpsStatus"
@@ -1371,34 +2029,15 @@
             position.coords.longitude,
 
           accuracy:
-            position.coords.accuracy
+            position.coords.accuracy,
+
+          simulated:
+            false
 
         };
 
 
-        document.getElementById(
-          "gpsStatus"
-        ).innerHTML = `
-
-          <strong>GPS working</strong><br>
-
-          Accuracy:
-          approximately ${Math.round(
-            currentLocation.accuracy
-          )}m<br>
-
-          Coordinates:
-          ${currentLocation.lat.toFixed(6)},
-          ${currentLocation.lon.toFixed(6)}
-
-        `;
-
-
-        updateStarterLocation();
-
-        renderActivities();
-
-        updateReturnStatus();
+        updateLocationDisplay();
 
       },
 
@@ -1413,9 +2052,16 @@
       },
 
       {
-        enableHighAccuracy: true,
-        maximumAge: 5000,
-        timeout: 15000
+
+        enableHighAccuracy:
+          true,
+
+        maximumAge:
+          5000,
+
+        timeout:
+          15000
+
       }
 
     );
@@ -1423,23 +2069,78 @@
   }
 
 
-  /*
-   * Automatically refresh GPS every 5 seconds.
-   */
+  function updateLocationDisplay() {
 
-  setInterval(() => {
-
-    if (
-      !document
-        .getElementById("gameScreen")
-        .classList.contains("hidden")
-    ) {
-
-      getLocation();
-
+    if (!currentLocation) {
+      return;
     }
 
-  }, 5000);
+
+    document.getElementById(
+      "gpsStatus"
+    ).innerHTML = `
+
+      <strong>
+        ${
+          currentLocation.simulated
+            ? "🧪 Simulated GPS"
+            : "GPS working"
+        }
+      </strong>
+
+      <br>
+
+      Accuracy:
+      approximately
+      ${Math.round(
+        currentLocation.accuracy
+      )}m
+
+      <br>
+
+      Coordinates:
+      ${currentLocation.lat.toFixed(6)},
+      ${currentLocation.lon.toFixed(6)}
+
+    `;
+
+
+    updateStarterLocation();
+
+    renderActivities();
+
+    updateReturnStatus();
+
+  }
+
+
+  /*
+   * Refresh real GPS every 5 seconds.
+   *
+   * Test Mode deliberately ignores this while
+   * a simulated location is active.
+   */
+
+  setInterval(
+    () => {
+
+      if (
+        !document
+          .getElementById(
+            "gameScreen"
+          )
+          .classList.contains(
+            "hidden"
+          )
+      ) {
+
+        getLocation();
+
+      }
+
+    },
+    5000
+  );
 
 
   /*
@@ -1470,17 +2171,23 @@
       );
 
 
-    if (distance <= returnRadius) {
+    if (
+      distance <=
+      returnRadius
+    ) {
 
       status.innerHTML = `
 
         <div class="message success">
 
-          <strong>🏁 You are at the meeting point.</strong>
+          <strong>
+            🏁 You are at the meeting point.
+          </strong>
 
           <br>
 
-          Approximately ${Math.round(distance)}m away.
+          Approximately
+          ${Math.round(distance)}m away.
 
         </div>
 
@@ -1493,7 +2200,9 @@
         <div class="message">
 
           You are approximately
-          <strong>${Math.round(distance)}m</strong>
+          <strong>
+            ${Math.round(distance)}m
+          </strong>
           from the meeting point.
 
           <br><br>
@@ -1503,6 +2212,7 @@
         </div>
 
       `;
+
     }
 
   }
@@ -1510,7 +2220,7 @@
 
   /*
    * ============================================================
-   * FINISH GAME
+   * FINISH
    * ============================================================
    */
 
@@ -1537,7 +2247,10 @@
       );
 
 
-    if (distance > returnRadius) {
+    if (
+      distance >
+      returnRadius
+    ) {
 
       alert(
         `You are still approximately ${Math.round(distance)}m from the meeting point.`
@@ -1548,16 +2261,14 @@
 
 
     const elapsedSeconds =
-      Math.floor(
-        (Date.now() - gameStartedAt) / 1000
-      );
+      getElapsedSeconds();
 
 
     const lateSeconds =
       Math.max(
         0,
         elapsedSeconds -
-        (gameDurationMinutes * 60)
+        (60 * 60)
       );
 
 
@@ -1566,47 +2277,83 @@
 
 
     const penalty =
-      calculateLatePenalty(lateSeconds);
+      calculateLatePenalty(
+        lateSeconds
+      );
 
 
     const finalScore =
-      earned - penalty;
+      earned -
+      penalty;
 
 
-    clearInterval(timerInterval);
+    clearInterval(
+      timerInterval
+    );
 
-    localStorage.removeItem(storageKey);
+
+    localStorage.removeItem(
+      storageKey
+    );
 
 
     document
-      .getElementById("gameScreen")
-      .classList.add("hidden");
+      .getElementById(
+        "gameScreen"
+      )
+      .classList.add(
+        "hidden"
+      );
+
 
     document
-      .getElementById("finishScreen")
-      .classList.remove("hidden");
+      .getElementById(
+        "finishScreen"
+      )
+      .classList.remove(
+        "hidden"
+      );
 
 
-    let timeMessage = "";
+    let timeMessage =
+      "";
 
-    if (lateSeconds === 0) {
 
-      timeMessage =
-        "<strong>🎉 You returned within the 60 minute target!</strong>";
+    if (
+      lateSeconds === 0
+    ) {
+
+      timeMessage = `
+
+        <div class="message success">
+
+          <strong>
+            🎉 You returned within the 60 minute target!
+          </strong>
+
+        </div>
+
+      `;
 
     } else {
 
       const lateMinutes =
-        Math.floor(lateSeconds / 60);
+        Math.floor(
+          lateSeconds / 60
+        );
+
 
       const lateRemainingSeconds =
         lateSeconds % 60;
+
 
       timeMessage = `
 
         <div class="late-box">
 
-          <strong>⏰ You returned late.</strong>
+          <strong>
+            ⏰ You returned late.
+          </strong>
 
           <br><br>
 
@@ -1617,11 +2364,14 @@
           <br>
 
           Time penalty:
-          <strong>-${penalty} points</strong>
+          <strong>
+            -${penalty} points
+          </strong>
 
         </div>
 
       `;
+
     }
 
 
@@ -1653,11 +2403,9 @@
       </p>
 
       <p>
-        <strong>Final score: ${finalScore}</strong>
-      </p>
-
-      <p>
-        Thanks for playing!
+        <strong>
+          Final score: ${finalScore}
+        </strong>
       </p>
 
     `;
@@ -1667,7 +2415,7 @@
 
   /*
    * ============================================================
-   * DISTANCE CALCULATION
+   * DISTANCE
    * ============================================================
    */
 
@@ -1678,32 +2426,57 @@
     lon2
   ) {
 
-    const earthRadius = 6371000;
+    const earthRadius =
+      6371000;
+
 
     const lat1Radians =
-      lat1 * Math.PI / 180;
+      lat1 *
+      Math.PI /
+      180;
+
 
     const lat2Radians =
-      lat2 * Math.PI / 180;
+      lat2 *
+      Math.PI /
+      180;
+
 
     const deltaLat =
       (lat2 - lat1) *
-      Math.PI / 180;
+      Math.PI /
+      180;
+
 
     const deltaLon =
       (lon2 - lon1) *
-      Math.PI / 180;
+      Math.PI /
+      180;
 
 
     const a =
-      Math.sin(deltaLat / 2) *
-      Math.sin(deltaLat / 2) +
+      Math.sin(
+        deltaLat / 2
+      ) *
+      Math.sin(
+        deltaLat / 2
+      ) +
 
-      Math.cos(lat1Radians) *
-      Math.cos(lat2Radians) *
+      Math.cos(
+        lat1Radians
+      ) *
 
-      Math.sin(deltaLon / 2) *
-      Math.sin(deltaLon / 2);
+      Math.cos(
+        lat2Radians
+      ) *
+
+      Math.sin(
+        deltaLon / 2
+      ) *
+
+      Math.sin(
+        deltaLon / 2
+      );
 
 
     const c =
@@ -1714,13 +2487,17 @@
       );
 
 
-    return earthRadius * c;
+    return (
+      earthRadius *
+      c
+    );
+
   }
 
 
   /*
    * ============================================================
-   * AUTOMATICALLY RESTORE GAME AFTER PAGE REFRESH
+   * RESTORE AFTER REFRESH
    * ============================================================
    */
 
@@ -1728,13 +2505,17 @@
     "load",
     () => {
 
-      if (loadGame()) {
+      if (
+        loadGame()
+      ) {
 
         showGameScreen();
 
         renderStarter();
 
         renderActivities();
+
+        renderTestPanel();
 
         startTimer();
 
