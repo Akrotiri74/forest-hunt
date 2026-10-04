@@ -433,23 +433,6 @@ const locations = {
    ACTIVITIES
    ============================================================ */
 
-/*
- * IMPORTANT:
- *
- * id = JavaScript/game ID
- *
- * dbId = Supabase activity_id
- *
- * Supabase activity_id is an INTEGER.
- *
- * At the moment we know:
- *
- *     Hall Photograph = 1
- *
- * We have deliberately left the other photo activities
- * without a dbId until their database IDs are established.
- */
-
 const activities = [
 
     {
@@ -627,11 +610,6 @@ let validatorRefreshInterval = null;
 
 let submissionPollingInterval = null;
 
-
-/*
- * activityId -> Supabase submission ID
- */
-
 let activeSubmissionIds = {};
 
 
@@ -755,6 +733,78 @@ function loadState() {
 
 
 /* ============================================================
+   RESET GAME
+   ============================================================ */
+
+function resetGameState() {
+
+    selectedTeam = null;
+
+    gameStartedAt = null;
+
+    currentActivityId = null;
+
+    activitiesState = {};
+
+    starterCompleted = false;
+
+    testMode = false;
+
+    testTimeOffsetSeconds = 0;
+
+    activeSubmissionIds = {};
+
+    previousScreen = "home";
+
+
+    if (timerInterval) {
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval = null;
+
+    }
+
+
+    stopSubmissionPolling();
+
+    stopValidatorRefresh();
+
+
+    localStorage.removeItem(
+        "forestHunt_selectedTeam"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_gameStartedAt"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_activitiesState"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_starterCompleted"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_testMode"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_testTimeOffsetSeconds"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_activeSubmissionIds"
+    );
+
+}
+
+
+/* ============================================================
    SCREEN MANAGEMENT
    ============================================================ */
 
@@ -789,6 +839,13 @@ function showScreen(id) {
 
 function selectTeam(team) {
 
+    /*
+     * Selecting a team from the home screen
+     * always starts a completely fresh hunt.
+     */
+
+    resetGameState();
+
     selectedTeam = team;
 
     testMode = false;
@@ -808,6 +865,12 @@ function selectTeam(team) {
 
 
 function enterTestMode() {
+
+    /*
+     * Test Mode also starts from a clean game.
+     */
+
+    resetGameState();
 
     testMode = true;
 
@@ -831,9 +894,12 @@ function enterTestMode() {
 
 function backToHome() {
 
-    stopSubmissionPolling();
+    /*
+     * This is now a genuine
+     * "start a new hunt" action.
+     */
 
-    stopValidatorRefresh();
+    resetGameState();
 
     showScreen(
         "homeScreen"
@@ -1410,11 +1476,6 @@ function renderPhotoActivity(
         );
 
 
-    /*
-     * We cannot submit a photo to Supabase
-     * until we know the integer database ID.
-     */
-
     if (
         activity.dbId === null
         ||
@@ -1536,13 +1597,6 @@ async function submitPhoto(
     }
 
 
-    /*
-     * IMPORTANT:
-     *
-     * Use the INTEGER database ID,
-     * not the JavaScript text ID.
-     */
-
     const databaseActivityId =
         getDatabaseActivityId(
             activityId
@@ -1613,10 +1667,6 @@ async function submitPhoto(
 
     try {
 
-        /*
-         * Unique filename for every submission.
-         */
-
         const fileExtension =
             getFileExtension(
                 file.name
@@ -1654,10 +1704,6 @@ async function submitPhoto(
             uniqueName;
 
 
-        /*
-         * Upload image to Supabase Storage.
-         */
-
         const uploadResult =
             await supabaseClient
                 .storage
@@ -1683,23 +1729,6 @@ async function submitPhoto(
 
         }
 
-
-        /*
-         * Create database submission.
-         *
-         * IMPORTANT:
-         *
-         * activity_id receives the INTEGER
-         * database ID.
-         *
-         * For Hall Photograph this is:
-         *
-         *     1
-         *
-         * NOT:
-         *
-         *     "hall-photo"
-         */
 
         const insertResult =
             await supabaseClient
@@ -1737,10 +1766,6 @@ async function submitPhoto(
         const submission =
             insertResult.data;
 
-
-        /*
-         * Remember the Supabase submission ID.
-         */
 
         activeSubmissionIds[
             activityId
@@ -1788,16 +1813,8 @@ async function submitPhoto(
         renderActivities();
 
 
-        /*
-         * Start polling immediately.
-         */
-
         startSubmissionPolling();
 
-
-        /*
-         * Add Continue Hunting button.
-         */
 
         setTimeout(
             () => {
@@ -1880,16 +1897,8 @@ function startSubmissionPolling() {
     }
 
 
-    /*
-     * Check immediately.
-     */
-
     checkSubmissionStatuses();
 
-
-    /*
-     * Then every 5 seconds.
-     */
 
     submissionPollingInterval =
         setInterval(
@@ -1977,19 +1986,6 @@ async function checkSubmissionStatuses() {
         submissions.forEach(
             submission => {
 
-                /*
-                 * Convert database integer
-                 * back into JavaScript activity ID.
-                 *
-                 * Example:
-                 *
-                 *     1
-                 *
-                 * becomes:
-                 *
-                 *     "hall-photo"
-                 */
-
                 const activityId =
                     getGameActivityId(
                         submission.activity_id
@@ -2008,15 +2004,33 @@ async function checkSubmissionStatuses() {
                 }
 
 
+                /*
+                 * Ignore old submissions if a newer
+                 * submission has already replaced them.
+                 */
+
+                if (
+                    String(
+                        activeSubmissionIds[
+                            activityId
+                        ]
+                    )
+                    !==
+                    String(
+                        submission.id
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
                 const state =
                     getActivityState(
                         activityId
                     );
 
-
-                /*
-                 * APPROVED
-                 */
 
                 if (
                     submission.status ===
@@ -2041,10 +2055,6 @@ async function checkSubmissionStatuses() {
                         "APPROVED";
 
 
-                    /*
-                     * Award points only once.
-                     */
-
                     if (
                         !state.pointsAwarded
                         ||
@@ -2065,11 +2075,6 @@ async function checkSubmissionStatuses() {
                         true;
 
 
-                    /*
-                     * If this was the starter,
-                     * unlock the rest.
-                     */
-
                     if (
                         activity.starterTeam ===
                         selectedTeam
@@ -2087,10 +2092,6 @@ async function checkSubmissionStatuses() {
 
                 }
 
-
-                /*
-                 * REJECTED
-                 */
 
                 else if (
                     submission.status ===
@@ -2165,11 +2166,6 @@ function showPlayerApproval(
         return;
     }
 
-
-    /*
-     * If player is currently viewing
-     * this activity, update it immediately.
-     */
 
     if (
         currentActivityId ===
@@ -3216,13 +3212,6 @@ async function renderValidatorSubmission(
     }
 
 
-    /*
-     * IMPORTANT:
-     *
-     * Supabase stores the integer ID.
-     * Convert it back to the game activity.
-     */
-
     const activity =
         getActivityByDatabaseId(
             submission.activity_id
@@ -3560,8 +3549,14 @@ loadState();
 
 
 /*
- * If there is an active game when
- * the page is reopened, restore it.
+ * IMPORTANT:
+ *
+ * If an active hunt exists, restore it.
+ *
+ * If the user deliberately used
+ * "Return to Start", resetGameState()
+ * has removed these values, so the
+ * home screen will appear instead.
  */
 
 if (
