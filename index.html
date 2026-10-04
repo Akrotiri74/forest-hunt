@@ -69,6 +69,10 @@
         background: #a52d2d;
     }
 
+    button.approve {
+        background: #2f6b3a;
+    }
+
     button:disabled {
         background: #aaa;
         cursor: not-allowed;
@@ -118,10 +122,6 @@
         margin-bottom: 12px;
     }
 
-    .activity.locked {
-        opacity: 0.5;
-    }
-
     .activity.completed {
         border-color: #3d7d47;
         background: #eef7ef;
@@ -130,6 +130,11 @@
     .activity.pending {
         border-color: #d28b00;
         background: #fff8e8;
+    }
+
+    .activity.rejected {
+        border-color: #a52d2d;
+        background: #fff0f0;
     }
 
     .points {
@@ -217,6 +222,41 @@
         border: 3px solid #24452b;
         background: #f4faf3;
     }
+
+    .validator-photo {
+        width: 100%;
+        max-height: 450px;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-top: 10px;
+        background: #eee;
+    }
+
+    .validator-card {
+        border: 2px solid #d28b00;
+        background: #fffaf0;
+    }
+
+    .validator-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .validator-buttons button {
+        margin-top: 10px;
+    }
+
+    .validator-empty {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+    }
+
+    .small-note {
+        font-size: 13px;
+        color: #666;
+    }
 </style>
 </head>
 
@@ -228,241 +268,319 @@
 
 <div class="container">
 
-    <!-- TEAM SELECTION -->
-    <section id="teamScreen">
-        <div class="card">
-            <h2>Choose Your Team</h2>
-            <p>Select your team to begin.</p>
 
-            <button class="team-button" onclick="selectTeam(1)">Team 1</button>
-            <button class="team-button" onclick="selectTeam(2)">Team 2</button>
-            <button class="team-button" onclick="selectTeam(3)">Team 3</button>
+<!-- ============================================================
+     TEAM SELECTION
+     ============================================================ -->
 
-            <button class="secondary" onclick="enableTestMode()">
-                Enable Test Mode
-            </button>
+<section id="teamScreen">
+
+    <div class="card">
+
+        <h2>Choose Your Team</h2>
+
+        <p>Select your team to begin.</p>
+
+        <button class="team-button" onclick="selectTeam(1)">
+            Team 1
+        </button>
+
+        <button class="team-button" onclick="selectTeam(2)">
+            Team 2
+        </button>
+
+        <button class="team-button" onclick="selectTeam(3)">
+            Team 3
+        </button>
+
+        <button class="secondary" onclick="enableTestMode()">
+            Enable Test Mode
+        </button>
+
+        <button class="warning" onclick="showValidatorScreen()">
+            Validator View
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     BRIEFING
+     ============================================================ -->
+
+<section id="briefingScreen" class="hidden">
+
+    <div class="card briefing">
+
+        <h2>Team <span id="briefingTeam"></span></h2>
+
+        <p>
+            You have <strong>60 minutes</strong> to complete as many
+            challenges as possible and return to the starting point.
+        </p>
+
+        <p>
+            Your first challenge is compulsory. Complete it to unlock
+            the rest of the hunt.
+        </p>
+
+        <p>
+            Once unlocked, you may complete the remaining challenges
+            in any order.
+        </p>
+
+        <p>
+            Some challenges require a photograph. Photographs are
+            checked remotely and may take some time to be approved.
+        </p>
+
+        <p>
+            <strong>Late penalty:</strong> 5 points for every 2 minutes
+            or part of 2 minutes late.
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Ready?</h2>
+
+        <p>
+            The organiser will start the hunt when all teams are ready.
+        </p>
+
+        <button class="big-button" onclick="startHunt()">
+            START THE HUNT
+        </button>
+
+        <button class="secondary" onclick="backToTeams()">
+            Back
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     GAME
+     ============================================================ -->
+
+<section id="gameScreen" class="hidden">
+
+    <div class="card">
+
+        <div class="timer" id="timer">
+            60:00
         </div>
-    </section>
 
+        <div class="scoreboard">
 
-    <!-- BRIEFING -->
-    <section id="briefingScreen" class="hidden">
-
-        <div class="card briefing">
-            <h2>Team <span id="briefingTeam"></span></h2>
-
-            <p>
-                You have <strong>60 minutes</strong> to complete as many
-                challenges as possible and return to the starting point.
-            </p>
-
-            <p>
-                Your first challenge is compulsory. Complete it to unlock
-                the rest of the hunt.
-            </p>
-
-            <p>
-                Once unlocked, you may complete the remaining challenges
-                in any order.
-            </p>
-
-            <p>
-                Some challenges require a photograph. Photographs are
-                checked remotely and may take a little time to be approved.
-            </p>
-
-            <p>
-                Your final score is your approved points minus any
-                late-return penalty.
-            </p>
-
-            <p>
-                <strong>Late penalty:</strong> 5 points for every 2 minutes
-                or part of 2 minutes late.
-            </p>
-        </div>
-
-        <div class="card">
-            <h2>Ready?</h2>
-            <p>The organiser will start the hunt when all teams are ready.</p>
-
-            <button class="big-button" onclick="startHunt()">
-                START THE HUNT
-            </button>
-
-            <button class="secondary" onclick="backToTeams()">
-                Back
-            </button>
-        </div>
-
-    </section>
-
-
-    <!-- GAME -->
-    <section id="gameScreen" class="hidden">
-
-        <div class="card">
-            <div class="timer" id="timer">60:00</div>
-
-            <div class="scoreboard">
-
-                <div class="score-box">
-                    <div>Score</div>
-                    <div class="score-number" id="score">0</div>
-                </div>
-
-                <div class="score-box">
-                    <div>Activities</div>
-                    <div class="score-number" id="activitiesCompleted">0</div>
-                </div>
-
-                <div class="score-box">
-                    <div>Late penalty</div>
-                    <div class="score-number" id="latePenalty">0</div>
-                </div>
-
+            <div class="score-box">
+                <div>Score</div>
+                <div class="score-number" id="score">0</div>
             </div>
 
-            <div class="gps-status" id="gpsStatus">
-                Waiting for GPS...
-            </div>
-        </div>
-
-
-        <!-- STARTER -->
-        <div class="card starter">
-
-            <h2>⭐ Starter Challenge</h2>
-
-            <div id="starterContent"></div>
-
-        </div>
-
-
-        <!-- ACTIVITIES -->
-        <div class="card">
-
-            <h2>Challenges</h2>
-
-            <div id="activitiesLockedMessage">
-                Complete your starter challenge to unlock the rest of the hunt.
+            <div class="score-box">
+                <div>Activities</div>
+                <div class="score-number" id="activitiesCompleted">0</div>
             </div>
 
-            <div id="activities"></div>
-
-        </div>
-
-
-        <!-- RETURN -->
-        <div class="card">
-
-            <h2>🏁 Return to Start</h2>
-
-            <p>
-                Return to the starting point when you are ready to finish.
-            </p>
-
-            <div id="returnStatus">
-                Checking your location...
-            </div>
-
-            <button id="finishButton" onclick="finishGame()" disabled>
-                FINISH THE HUNT
-            </button>
-
-        </div>
-
-
-        <!-- TEST MODE -->
-        <div id="testModePanel" class="card hidden">
-
-            <h2>🧪 Test Mode</h2>
-
-            <p>
-                Test Mode lets you simulate GPS movement and time.
-            </p>
-
-            <div class="test-controls">
-
-                <h3>Move to activity</h3>
-
-                <div id="testLocationButtons"></div>
-
-                <h3>Time controls</h3>
-
-                <div class="test-grid">
-
-                    <button onclick="changeTestTime(60)">
-                        +1 min
-                    </button>
-
-                    <button onclick="changeTestTime(300)">
-                        +5 min
-                    </button>
-
-                    <button onclick="changeTestTime(600)">
-                        +10 min
-                    </button>
-
-                    <button onclick="changeTestTime(1200)">
-                        +20 min
-                    </button>
-
-                    <button onclick="jumpTestTime(61)">
-                        Jump to 61 min
-                    </button>
-
-                    <button onclick="jumpTestTime(70)">
-                        Jump to 70 min
-                    </button>
-
-                    <button onclick="resetTestTime()">
-                        Reset Time
-                    </button>
-
-                </div>
-
+            <div class="score-box">
+                <div>Late penalty</div>
+                <div class="score-number" id="latePenalty">0</div>
             </div>
 
         </div>
 
-    </section>
+        <div class="gps-status" id="gpsStatus">
+            Waiting for GPS...
+        </div>
+
+    </div>
 
 
-    <!-- RESULTS -->
-    <section id="resultsScreen" class="hidden">
+    <!-- STARTER -->
 
-        <div class="card">
+    <div class="card starter">
 
-            <h2>🏆 Hunt Complete</h2>
+        <h2>⭐ Starter Challenge</h2>
 
-            <p>
-                Team <strong id="resultTeam"></strong>
-            </p>
+        <div id="starterContent"></div>
 
-            <div class="result-score" id="finalScore">
-                0
+    </div>
+
+
+    <!-- ACTIVITIES -->
+
+    <div class="card">
+
+        <h2>Challenges</h2>
+
+        <div id="activitiesLockedMessage">
+            Complete your starter challenge to unlock the rest
+            of the hunt.
+        </div>
+
+        <div id="activities"></div>
+
+    </div>
+
+
+    <!-- RETURN -->
+
+    <div class="card">
+
+        <h2>🏁 Return to Start</h2>
+
+        <p>
+            Return to the starting point when you are ready to finish.
+        </p>
+
+        <div id="returnStatus">
+            Checking your location...
+        </div>
+
+        <button id="finishButton"
+                onclick="finishGame()"
+                disabled>
+            FINISH THE HUNT
+        </button>
+
+    </div>
+
+
+    <!-- TEST MODE -->
+
+    <div id="testModePanel" class="card hidden">
+
+        <h2>🧪 Test Mode</h2>
+
+        <p>
+            Test Mode lets you simulate GPS movement and time.
+        </p>
+
+        <div class="test-controls">
+
+            <h3>Move to activity</h3>
+
+            <div id="testLocationButtons"></div>
+
+            <h3>Time controls</h3>
+
+            <div class="test-grid">
+
+                <button onclick="changeTestTime(60)">
+                    +1 min
+                </button>
+
+                <button onclick="changeTestTime(300)">
+                    +5 min
+                </button>
+
+                <button onclick="changeTestTime(600)">
+                    +10 min
+                </button>
+
+                <button onclick="changeTestTime(1200)">
+                    +20 min
+                </button>
+
+                <button onclick="jumpTestTime(61)">
+                    Jump to 61 min
+                </button>
+
+                <button onclick="jumpTestTime(70)">
+                    Jump to 70 min
+                </button>
+
+                <button onclick="resetTestTime()">
+                    Reset Time
+                </button>
+
             </div>
 
-            <p id="resultBreakdown"></p>
-
         </div>
 
-        <div class="card">
+    </div>
 
-            <h2>Thank you!</h2>
+</section>
 
-            <p>
-                Your result has been recorded.
-            </p>
 
-            <button onclick="location.reload()">
-                Return to Start
-            </button>
+<!-- ============================================================
+     RESULTS
+     ============================================================ -->
 
+<section id="resultsScreen" class="hidden">
+
+    <div class="card">
+
+        <h2>🏆 Hunt Complete</h2>
+
+        <p>
+            Team <strong id="resultTeam"></strong>
+        </p>
+
+        <div class="result-score" id="finalScore">
+            0
         </div>
 
-    </section>
+        <p id="resultBreakdown"></p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Challenges Completed</h2>
+
+        <div id="resultActivities"></div>
+
+    </div>
+
+    <div class="card">
+
+        <button onclick="location.reload()">
+            Return to Start
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ============================================================
+     VALIDATOR SCREEN
+     ============================================================ -->
+
+<section id="validatorScreen" class="hidden">
+
+    <div class="card">
+
+        <h2>📷 Photo Validator</h2>
+
+        <p>
+            Review photographs submitted by teams.
+        </p>
+
+        <p class="small-note">
+            Prototype only: photographs currently exist in this
+            browser session. A future server version will allow a
+            separate organiser device to perform validation.
+        </p>
+
+        <button class="secondary"
+                onclick="backFromValidator()">
+            Back
+        </button>
+
+    </div>
+
+    <div id="validatorQueue"></div>
+
+</section>
+
 
 </div>
 
@@ -476,16 +594,12 @@
 const gameDurationMinutes = 60;
 
 /*
- * Players must be within this distance of an activity
- * before it becomes available.
- *
- * CHANGED FROM 50m TO 40m.
+ * Players must be within 40 metres of an activity.
  */
 const searchRadius = 40;
 
 /*
- * Players have a larger area in which they can finish
- * by returning to the starting point.
+ * Players have a larger area in which they can finish.
  */
 const returnRadius = 150;
 
@@ -610,6 +724,8 @@ let testTimeOffsetSeconds = 0;
 
 let selectedPhotoFiles = {};
 
+let photoPreviewUrls = {};
+
 let activitiesState = {};
 
 let starterCompleted = false;
@@ -618,7 +734,7 @@ let timerInterval = null;
 
 
 /* ============================================================
-   INITIALISE ACTIVITY STATE
+   INITIALISE
    ============================================================ */
 
 function initialiseActivities() {
@@ -629,7 +745,8 @@ function initialiseActivities() {
 
         activitiesState[activity.id] = {
             status: "AVAILABLE",
-            photoState: null
+            photoState: null,
+            rejectionReason: null
         };
 
     });
@@ -660,7 +777,8 @@ function saveGame() {
 
 function loadGame() {
 
-    const saved = localStorage.getItem("forestHuntGame");
+    const saved =
+        localStorage.getItem("forestHuntGame");
 
     if (!saved) {
         return false;
@@ -668,18 +786,30 @@ function loadGame() {
 
     try {
 
-        const data = JSON.parse(saved);
+        const data =
+            JSON.parse(saved);
 
         if (!data.gameStartedAt) {
             return false;
         }
 
-        selectedTeam = data.selectedTeam;
-        gameStartedAt = data.gameStartedAt;
-        activitiesState = data.activitiesState || {};
-        testMode = data.testMode || false;
-        testTimeOffsetSeconds = data.testTimeOffsetSeconds || 0;
-        starterCompleted = data.starterCompleted || false;
+        selectedTeam =
+            data.selectedTeam;
+
+        gameStartedAt =
+            data.gameStartedAt;
+
+        activitiesState =
+            data.activitiesState || {};
+
+        testMode =
+            data.testMode || false;
+
+        testTimeOffsetSeconds =
+            data.testTimeOffsetSeconds || 0;
+
+        starterCompleted =
+            data.starterCompleted || false;
 
         showGameScreen();
 
@@ -688,6 +818,7 @@ function loadGame() {
     } catch (error) {
 
         console.error(error);
+
         return false;
 
     }
@@ -752,7 +883,7 @@ function startHunt() {
 
 
 /* ============================================================
-   SHOW GAME
+   GAME SCREEN
    ============================================================ */
 
 function showGameScreen() {
@@ -764,6 +895,9 @@ function showGameScreen() {
         .classList.add("hidden");
 
     document.getElementById("resultsScreen")
+        .classList.add("hidden");
+
+    document.getElementById("validatorScreen")
         .classList.add("hidden");
 
     document.getElementById("gameScreen")
@@ -780,10 +914,9 @@ function showGameScreen() {
     renderActivities();
     updateScoreboard();
     updateReturnStatus();
+
     startTimer();
-
     startGPS();
-
     renderTestControls();
 
 }
@@ -798,7 +931,8 @@ function startGPS() {
     if (testMode) {
 
         document.getElementById("gpsStatus")
-            .textContent = "Test Mode: simulated GPS";
+            .textContent =
+            "Test Mode: simulated GPS";
 
         return;
 
@@ -814,43 +948,45 @@ function startGPS() {
 
     }
 
-    watchId = navigator.geolocation.watchPosition(
+    watchId =
+        navigator.geolocation.watchPosition(
 
-        position => {
+            position => {
 
-            currentPosition = {
-                lat: position.coords.latitude,
-                lon: position.coords.longitude
-            };
+                currentPosition = {
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude
+                };
 
-            document.getElementById("gpsStatus")
-                .textContent =
-                "GPS active • " +
-                currentPosition.lat.toFixed(6) +
-                ", " +
-                currentPosition.lon.toFixed(6);
+                document.getElementById("gpsStatus")
+                    .textContent =
+                    "GPS active • " +
+                    currentPosition.lat.toFixed(6) +
+                    ", " +
+                    currentPosition.lon.toFixed(6);
 
-            updateStarterLocation();
-            updateActivitiesLocation();
-            updateReturnStatus();
+                updateStarterLocation();
+                updateActivitiesLocation();
+                updateReturnStatus();
 
-        },
+            },
 
-        error => {
+            error => {
 
-            document.getElementById("gpsStatus")
-                .textContent =
-                "GPS error: " + error.message;
+                document.getElementById("gpsStatus")
+                    .textContent =
+                    "GPS error: " +
+                    error.message;
 
-        },
+            },
 
-        {
-            enableHighAccuracy: true,
-            maximumAge: 5000,
-            timeout: 10000
-        }
+            {
+                enableHighAccuracy: true,
+                maximumAge: 5000,
+                timeout: 10000
+            }
 
-    );
+        );
 
 }
 
@@ -859,15 +995,22 @@ function startGPS() {
    DISTANCE
    ============================================================ */
 
-function distanceBetween(lat1, lon1, lat2, lon2) {
+function distanceBetween(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
 
     const R = 6371000;
 
     const dLat =
-        (lat2 - lat1) * Math.PI / 180;
+        (lat2 - lat1) *
+        Math.PI / 180;
 
     const dLon =
-        (lon2 - lon1) * Math.PI / 180;
+        (lon2 - lon1) *
+        Math.PI / 180;
 
     const a =
         Math.sin(dLat / 2) *
@@ -891,7 +1034,7 @@ function distanceBetween(lat1, lon1, lat2, lon2) {
 
 
 /* ============================================================
-   CURRENT TIME
+   TIME
    ============================================================ */
 
 function getCurrentGameTime() {
@@ -912,10 +1055,6 @@ function getCurrentGameTime() {
 }
 
 
-/* ============================================================
-   TIMER
-   ============================================================ */
-
 function startTimer() {
 
     if (timerInterval) {
@@ -932,12 +1071,18 @@ function startTimer() {
 
 function updateTimer() {
 
-    const elapsed = getCurrentGameTime();
+    const elapsed =
+        getCurrentGameTime();
 
     const totalSeconds =
         gameDurationMinutes * 60;
 
-    const timer = document.getElementById("timer");
+    const timer =
+        document.getElementById("timer");
+
+    if (!timer) {
+        return;
+    }
 
     if (elapsed <= totalSeconds) {
 
@@ -1005,18 +1150,77 @@ function renderStarter() {
     const container =
         document.getElementById("starterContent");
 
+    if (!starter || !container) {
+        return;
+    }
+
+    const state =
+        activitiesState[starter.id];
+
     if (starterCompleted) {
 
         container.innerHTML = `
             <div class="status success">
                 ✓ Starter completed
             </div>
+
             <p>
                 All remaining challenges are now unlocked.
             </p>
         `;
 
         return;
+    }
+
+    if (state && state.status === "PENDING") {
+
+        container.innerHTML = `
+            <h3>${starter.name}</h3>
+
+            <p>
+                <span class="points">
+                    ${starter.points} points
+                </span>
+
+                <span class="type">
+                    ${starter.type}
+                </span>
+            </p>
+
+            <div class="status">
+                ⏳ Photograph submitted —
+                awaiting validation.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    let rejectionMessage = "";
+
+    if (
+        state &&
+        state.status === "REJECTED"
+    ) {
+
+        rejectionMessage = `
+            <div class="status error">
+                ✕ Photograph rejected.
+            </div>
+        `;
+
+        if (state.rejectionReason) {
+
+            rejectionMessage += `
+                <p class="error">
+                    Validator note:
+                    ${escapeHtml(state.rejectionReason)}
+                </p>
+            `;
+
+        }
+
     }
 
     container.innerHTML = `
@@ -1035,6 +1239,8 @@ function renderStarter() {
         <p>
             ${starter.description}
         </p>
+
+        ${rejectionMessage}
 
         <div id="starterAction">
             Checking your location...
@@ -1059,6 +1265,16 @@ function updateStarterLocation() {
         return;
     }
 
+    const state =
+        activitiesState[starter.id];
+
+    if (
+        state &&
+        state.status === "PENDING"
+    ) {
+        return;
+    }
+
     const action =
         document.getElementById("starterAction");
 
@@ -1072,6 +1288,7 @@ function updateStarterLocation() {
             "<p>Waiting for GPS...</p>";
 
         return;
+
     }
 
     const distance =
@@ -1086,17 +1303,19 @@ function updateStarterLocation() {
 
         if (starter.type === "PHOTO") {
 
-            action.innerHTML = createPhotoInterface(
-                starter,
-                true
-            );
+            action.innerHTML =
+                createPhotoInterface(
+                    starter,
+                    true
+                );
 
         } else {
 
-            action.innerHTML = createPuzzleInterface(
-                starter,
-                true
-            );
+            action.innerHTML =
+                createPuzzleInterface(
+                    starter,
+                    true
+                );
 
         }
 
@@ -1130,6 +1349,10 @@ function renderActivities() {
     const container =
         document.getElementById("activities");
 
+    if (!container) {
+        return;
+    }
+
     if (!starterCompleted) {
 
         document.getElementById(
@@ -1139,6 +1362,7 @@ function renderActivities() {
         container.innerHTML = "";
 
         return;
+
     }
 
     document.getElementById(
@@ -1152,7 +1376,10 @@ function renderActivities() {
         const starter =
             getStarterActivity();
 
-        if (starter && activity.id === starter.id) {
+        if (
+            starter &&
+            activity.id === starter.id
+        ) {
             return;
         }
 
@@ -1171,6 +1398,10 @@ function renderActivities() {
 
         if (state.status === "PENDING") {
             div.classList.add("pending");
+        }
+
+        if (state.status === "REJECTED") {
+            div.classList.add("rejected");
         }
 
         let html = `
@@ -1202,11 +1433,34 @@ function renderActivities() {
             html += `
                 <div class="status">
                     ⏳ Photograph submitted —
-                    awaiting validation
+                    awaiting validation.
                 </div>
             `;
 
         } else {
+
+            if (state.status === "REJECTED") {
+
+                html += `
+                    <div class="status error">
+                        ✕ Previous photograph rejected.
+                    </div>
+                `;
+
+                if (state.rejectionReason) {
+
+                    html += `
+                        <p class="error">
+                            Validator note:
+                            ${escapeHtml(
+                                state.rejectionReason
+                            )}
+                        </p>
+                    `;
+
+                }
+
+            }
 
             html += `
                 <div id="activity-action-${activity.id}">
@@ -1238,7 +1492,10 @@ function updateActivitiesLocation() {
         const starter =
             getStarterActivity();
 
-        if (starter && activity.id === starter.id) {
+        if (
+            starter &&
+            activity.id === starter.id
+        ) {
             return;
         }
 
@@ -1325,7 +1582,10 @@ function updateActivitiesLocation() {
    PHOTO INTERFACE
    ============================================================ */
 
-function createPhotoInterface(activity, isStarter) {
+function createPhotoInterface(
+    activity,
+    isStarter
+) {
 
     return `
         <p>
@@ -1336,11 +1596,17 @@ function createPhotoInterface(activity, isStarter) {
             type="file"
             accept="image/*"
             capture="environment"
-            onchange="photoSelected(${activity.id}, this)"
+            onchange="photoSelected(
+                ${activity.id},
+                this
+            )"
         >
 
         <button
-            onclick="submitPhoto(${activity.id}, ${isStarter})"
+            onclick="submitPhoto(
+                ${activity.id},
+                ${isStarter}
+            )"
         >
             Submit Photograph
         </button>
@@ -1351,14 +1617,33 @@ function createPhotoInterface(activity, isStarter) {
 }
 
 
-function photoSelected(activityId, input) {
+function photoSelected(
+    activityId,
+    input
+) {
 
-    if (!input.files || !input.files[0]) {
+    if (
+        !input.files ||
+        !input.files[0]
+    ) {
         return;
     }
 
     selectedPhotoFiles[activityId] =
         input.files[0];
+
+    if (photoPreviewUrls[activityId]) {
+
+        URL.revokeObjectURL(
+            photoPreviewUrls[activityId]
+        );
+
+    }
+
+    photoPreviewUrls[activityId] =
+        URL.createObjectURL(
+            input.files[0]
+        );
 
     const status =
         document.getElementById(
@@ -1381,7 +1666,10 @@ function photoSelected(activityId, input) {
    PHOTO SUBMISSION
    ============================================================ */
 
-function submitPhoto(activityId, isStarter) {
+function submitPhoto(
+    activityId,
+    isStarter
+) {
 
     const file =
         selectedPhotoFiles[activityId];
@@ -1401,19 +1689,24 @@ function submitPhoto(activityId, isStarter) {
     activitiesState[activityId].photoState =
         "PENDING";
 
+    activitiesState[activityId].rejectionReason =
+        null;
+
     saveGame();
 
     if (isStarter) {
 
         const starterAction =
-            document.getElementById("starterAction");
+            document.getElementById(
+                "starterAction"
+            );
 
         if (starterAction) {
 
             starterAction.innerHTML = `
                 <div class="status">
                     ⏳ Photograph submitted —
-                    awaiting validation
+                    awaiting validation.
                 </div>
             `;
 
@@ -1425,42 +1718,211 @@ function submitPhoto(activityId, isStarter) {
 
     }
 
-    /*
-     * Temporary prototype behaviour:
-     * simulate remote human validation after 3 seconds.
-     */
+}
 
-    setTimeout(() => {
 
-        approvePhoto(
-            activityId,
-            isStarter
+/* ============================================================
+   VALIDATOR
+   ============================================================ */
+
+function showValidatorScreen() {
+
+    document.getElementById("teamScreen")
+        .classList.add("hidden");
+
+    document.getElementById("briefingScreen")
+        .classList.add("hidden");
+
+    document.getElementById("gameScreen")
+        .classList.add("hidden");
+
+    document.getElementById("resultsScreen")
+        .classList.add("hidden");
+
+    document.getElementById("validatorScreen")
+        .classList.remove("hidden");
+
+    renderValidatorQueue();
+
+}
+
+
+function backFromValidator() {
+
+    document.getElementById("validatorScreen")
+        .classList.add("hidden");
+
+    if (gameStartedAt) {
+
+        showGameScreen();
+
+    } else {
+
+        document.getElementById("teamScreen")
+            .classList.remove("hidden");
+
+    }
+
+}
+
+
+function renderValidatorQueue() {
+
+    const container =
+        document.getElementById(
+            "validatorQueue"
         );
 
-    }, 3000);
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    let pendingCount = 0;
+
+    activities.forEach(activity => {
+
+        const state =
+            activitiesState[activity.id];
+
+        if (
+            !state ||
+            state.status !== "PENDING"
+        ) {
+            return;
+        }
+
+        pendingCount++;
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "card validator-card";
+
+        let photoHtml =
+            "<p>No photograph available.</p>";
+
+        if (photoPreviewUrls[activity.id]) {
+
+            photoHtml = `
+                <img
+                    src="${photoPreviewUrls[activity.id]}"
+                    class="validator-photo"
+                    alt="Submitted photograph"
+                >
+            `;
+
+        }
+
+        card.innerHTML = `
+            <h2>${activity.name}</h2>
+
+            <p>
+                <strong>Team ${getActivityTeam()}</strong>
+            </p>
+
+            <p>
+                <span class="points">
+                    ${activity.points} points
+                </span>
+            </p>
+
+            ${photoHtml}
+
+            <div class="validator-buttons">
+
+                <button
+                    class="approve"
+                    onclick="approvePhoto(${activity.id})"
+                >
+                    ✓ APPROVE
+                </button>
+
+                <button
+                    class="danger"
+                    onclick="rejectPhoto(${activity.id})"
+                >
+                    ✕ REJECT
+                </button>
+
+            </div>
+        `;
+
+        container.appendChild(card);
+
+    });
+
+    if (pendingCount === 0) {
+
+        container.innerHTML = `
+            <div class="card validator-empty">
+                <h2>Nothing awaiting validation</h2>
+                <p>
+                    Submitted photographs will appear here.
+                </p>
+            </div>
+        `;
+
+    }
+
+}
+
+
+/*
+ * The prototype only has one active game at a time, so the
+ * current selected team is the team associated with submissions.
+ */
+function getActivityTeam() {
+
+    return selectedTeam || "Unknown";
 
 }
 
 
 /* ============================================================
-   PHOTO APPROVAL
+   APPROVE PHOTO
    ============================================================ */
 
-function approvePhoto(activityId, isStarter) {
+function approvePhoto(activityId) {
 
-    activitiesState[activityId].status =
+    const activity =
+        activities.find(
+            item => item.id === activityId
+        );
+
+    if (!activity) {
+        return;
+    }
+
+    const state =
+        activitiesState[activityId];
+
+    state.status =
         "COMPLETED";
 
-    activitiesState[activityId].photoState =
+    state.photoState =
         "APPROVED";
 
-    saveGame();
+    state.rejectionReason =
+        null;
 
-    if (isStarter) {
+    if (
+        activity.starterForTeam === selectedTeam
+    ) {
 
         starterCompleted = true;
 
-        saveGame();
+    }
+
+    saveGame();
+
+    renderValidatorQueue();
+
+    if (
+        activity.starterForTeam === selectedTeam
+    ) {
 
         renderStarter();
         renderActivities();
@@ -1477,10 +1939,72 @@ function approvePhoto(activityId, isStarter) {
 
 
 /* ============================================================
+   REJECT PHOTO
+   ============================================================ */
+
+function rejectPhoto(activityId) {
+
+    const activity =
+        activities.find(
+            item => item.id === activityId
+        );
+
+    if (!activity) {
+        return;
+    }
+
+    const reason =
+        prompt(
+            "Optional reason for rejection:",
+            ""
+        );
+
+    const state =
+        activitiesState[activityId];
+
+    state.status =
+        "REJECTED";
+
+    state.photoState =
+        "REJECTED";
+
+    state.rejectionReason =
+        reason || "";
+
+    /*
+     * The old photograph remains in memory until replaced.
+     * The player can simply take another photograph.
+     */
+
+    delete selectedPhotoFiles[activityId];
+
+    saveGame();
+
+    renderValidatorQueue();
+
+    if (
+        activity.starterForTeam === selectedTeam
+    ) {
+
+        renderStarter();
+
+    } else {
+
+        renderActivities();
+
+    }
+
+}
+
+
+/* ============================================================
    PUZZLES
    ============================================================ */
 
-function createPuzzleInterface(activity, isStarter) {
+function createPuzzleInterface(
+    activity,
+    isStarter
+) {
 
     return `
         <p>
@@ -1495,7 +2019,10 @@ function createPuzzleInterface(activity, isStarter) {
         >
 
         <button
-            onclick="submitPuzzle(${activity.id}, ${isStarter})"
+            onclick="submitPuzzle(
+                ${activity.id},
+                ${isStarter}
+            )"
         >
             Submit Answer
         </button>
@@ -1506,7 +2033,10 @@ function createPuzzleInterface(activity, isStarter) {
 }
 
 
-function submitPuzzle(activityId, isStarter) {
+function submitPuzzle(
+    activityId,
+    isStarter
+) {
 
     const activity =
         activities.find(
@@ -1523,14 +2053,18 @@ function submitPuzzle(activityId, isStarter) {
     }
 
     const answer =
-        input.value.trim().toUpperCase();
+        input.value
+            .trim()
+            .toUpperCase();
 
     const status =
         document.getElementById(
             `puzzle-status-${activityId}`
         );
 
-    if (answer === activity.answer) {
+    if (
+        answer === activity.answer
+    ) {
 
         activitiesState[activityId].status =
             "COMPLETED";
@@ -1580,7 +2114,10 @@ function calculateActivityScore() {
         const state =
             activitiesState[activity.id];
 
-        if (state && state.status === "COMPLETED") {
+        if (
+            state &&
+            state.status === "COMPLETED"
+        ) {
 
             score += activity.points;
 
@@ -1609,7 +2146,8 @@ function calculateLatePenalty() {
         elapsed - totalSeconds;
 
     return Math.ceil(
-        lateSeconds / penaltyIntervalSeconds
+        lateSeconds /
+        penaltyIntervalSeconds
     ) * penaltyPerInterval;
 
 }
@@ -1623,11 +2161,26 @@ function updateScoreboard() {
     const penalty =
         calculateLatePenalty();
 
-    document.getElementById("score")
-        .textContent = score;
+    const scoreElement =
+        document.getElementById("score");
 
-    document.getElementById("latePenalty")
-        .textContent = penalty;
+    const penaltyElement =
+        document.getElementById(
+            "latePenalty"
+        );
+
+    const completedElement =
+        document.getElementById(
+            "activitiesCompleted"
+        );
+
+    if (scoreElement) {
+        scoreElement.textContent = score;
+    }
+
+    if (penaltyElement) {
+        penaltyElement.textContent = penalty;
+    }
 
     let completed = 0;
 
@@ -1645,9 +2198,10 @@ function updateScoreboard() {
 
     });
 
-    document.getElementById(
-        "activitiesCompleted"
-    ).textContent = completed;
+    if (completedElement) {
+        completedElement.textContent =
+            completed;
+    }
 
 }
 
@@ -1659,10 +2213,18 @@ function updateScoreboard() {
 function updateReturnStatus() {
 
     const status =
-        document.getElementById("returnStatus");
+        document.getElementById(
+            "returnStatus"
+        );
 
     const button =
-        document.getElementById("finishButton");
+        document.getElementById(
+            "finishButton"
+        );
+
+    if (!status || !button) {
+        return;
+    }
 
     if (!currentPosition) {
 
@@ -1721,8 +2283,11 @@ function updateReturnStatus() {
 function finishGame() {
 
     if (!currentPosition) {
+
         alert("Waiting for GPS.");
+
         return;
+
     }
 
     const distance =
@@ -1762,11 +2327,13 @@ function finishGame() {
 
     document.getElementById(
         "resultTeam"
-    ).textContent = selectedTeam;
+    ).textContent =
+        selectedTeam;
 
     document.getElementById(
         "finalScore"
-    ).textContent = finalScore;
+    ).textContent =
+        finalScore;
 
     document.getElementById(
         "resultBreakdown"
@@ -1780,6 +2347,8 @@ function finishGame() {
         Final score:
         <strong>${finalScore}</strong>
     `;
+
+    renderResultActivities();
 
     if (timerInterval) {
         clearInterval(timerInterval);
@@ -1796,6 +2365,47 @@ function finishGame() {
     localStorage.removeItem(
         "forestHuntGame"
     );
+
+}
+
+
+function renderResultActivities() {
+
+    const container =
+        document.getElementById(
+            "resultActivities"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    activities.forEach(activity => {
+
+        const state =
+            activitiesState[activity.id];
+
+        if (
+            state &&
+            state.status === "COMPLETED"
+        ) {
+
+            const item =
+                document.createElement("p");
+
+            item.innerHTML = `
+                ✓ ${activity.name}
+                —
+                <strong>${activity.points} points</strong>
+            `;
+
+            container.appendChild(item);
+
+        }
+
+    });
 
 }
 
@@ -1843,11 +2453,14 @@ function renderTestControls() {
             document.createElement("button");
 
         button.textContent =
-            "Go to: " + activity.name;
+            "Go to: " +
+            activity.name;
 
         button.onclick = () => {
 
-            testMoveToActivity(activity.id);
+            testMoveToActivity(
+                activity.id
+            );
 
         };
 
@@ -1868,8 +2481,9 @@ function renderTestControls() {
             lon: locations.playingField.lon
         };
 
-        document.getElementById("gpsStatus")
-            .textContent =
+        document.getElementById(
+            "gpsStatus"
+        ).textContent =
             "Test Mode: Meeting Point";
 
         updateStarterLocation();
@@ -1899,9 +2513,11 @@ function testMoveToActivity(activityId) {
         lon: activity.location.lon
     };
 
-    document.getElementById("gpsStatus")
-        .textContent =
-        "Test Mode: " + activity.name;
+    document.getElementById(
+        "gpsStatus"
+    ).textContent =
+        "Test Mode: " +
+        activity.name;
 
     updateStarterLocation();
     updateActivitiesLocation();
@@ -1912,7 +2528,8 @@ function testMoveToActivity(activityId) {
 
 function changeTestTime(seconds) {
 
-    testTimeOffsetSeconds += seconds;
+    testTimeOffsetSeconds +=
+        seconds;
 
     saveGame();
 
@@ -1951,6 +2568,22 @@ function resetTestTime() {
 
     updateTimer();
     updateScoreboard();
+
+}
+
+
+/* ============================================================
+   HTML ESCAPING
+   ============================================================ */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
 
