@@ -117,6 +117,22 @@ button:disabled {
     background: #e4edf5;
 }
 
+.status.warning-zone {
+    background: #fff1c9;
+    border: 2px solid #d58b00;
+}
+
+.status.penalty-zone {
+    background: #ffe0bd;
+    border: 2px solid #a85c00;
+}
+
+.status.disqualified {
+    background: #f6dddd;
+    border: 2px solid #9b3333;
+    font-weight: bold;
+}
+
 .big-timer {
     font-size: 36px;
     font-weight: bold;
@@ -236,6 +252,22 @@ hr {
 }
 
 .location-distance {
+    font-weight: bold;
+}
+
+.geofence-test-warning {
+    background: #d58b00 !important;
+}
+
+.geofence-test-penalty {
+    background: #a85c00 !important;
+}
+
+.geofence-test-danger {
+    background: #9b3333 !important;
+}
+
+.geofence-status {
     font-weight: bold;
 }
 </style>
@@ -392,6 +424,30 @@ hr {
                 </button>
 
                 <button
+                    class="test-location geofence-test-warning"
+                    onclick="setTestLocation('testWarningZone')">
+
+                    🟡 TEST — Warning Zone
+
+                </button>
+
+                <button
+                    class="test-location geofence-test-penalty"
+                    onclick="setTestLocation('testPenaltyZone')">
+
+                    🟠 TEST — Penalty Zone
+
+                </button>
+
+                <button
+                    class="test-location geofence-test-danger"
+                    onclick="setTestLocation('testDisqualifyZone')">
+
+                    🔴 TEST — Disqualification Zone
+
+                </button>
+
+                <button
                     class="secondary"
                     onclick="resetTestLocation()">
 
@@ -525,6 +581,18 @@ hr {
 
             </div>
 
+            <div class="test-section">
+
+                <div
+                    id="testGeofenceStatus"
+                    class="status test">
+
+                    🟢 Geo-fence status: Clear
+
+                </div>
+
+            </div>
+
         </div>
 
 
@@ -538,6 +606,8 @@ hr {
                 Find and complete your mandatory starting challenge.
                 Once it is correct, the rest of the hunt unlocks.
             </div>
+
+            <div id="geoFenceStatus" class="status hidden"></div>
 
             <button
                 class="secondary"
@@ -674,8 +744,6 @@ const supabaseClient =
 
 const gameDurationMinutes = 60;
 
-// GPS is deliberately an area trigger rather than an exact checkpoint.
-// 100m gives the hunt some tolerance for normal phone GPS error in woodland.
 const searchRadius = 100;
 
 const returnRadius = 150;
@@ -683,6 +751,18 @@ const returnRadius = 150;
 const penaltyPerInterval = 5;
 
 const penaltyIntervalSeconds = 120;
+
+
+/*
+ * GEO-FENCE SETTINGS
+ *
+ * These are deliberately TEST zones for now.
+ *
+ * They can later be replaced with the real dangerous-area
+ * polygons without changing the rest of the geo-fence system.
+ */
+
+const geoFencePenaltyPoints = 10;
 
 
 /* ============================================================
@@ -707,9 +787,163 @@ const locations = {
         name: "High Street",
         lat: 52.541854232784715,
         lon: 0.5890602942562545
+    },
+
+    /*
+     * TEST LOCATIONS
+     *
+     * These are artificial positions used only for testing
+     * the geo-fence system.
+     */
+
+    testWarningZone: {
+        name: "TEST Warning Zone",
+        lat: 52.541200,
+        lon: 0.587000
+    },
+
+    testPenaltyZone: {
+        name: "TEST Penalty Zone",
+        lat: 52.540500,
+        lon: 0.587000
+    },
+
+    testDisqualifyZone: {
+        name: "TEST Disqualification Zone",
+        lat: 52.539800,
+        lon: 0.587000
     }
 
 };
+
+
+/* ============================================================
+   GEO-FENCES
+   ============================================================ */
+
+/*
+ * Each zone is a polygon.
+ *
+ * The polygons below are deliberately artificial test zones.
+ *
+ * type:
+ *
+ * WARNING
+ *     Warn the team but do not affect score.
+ *
+ * PENALTY
+ *     Deduct points once.
+ *
+ * DISQUALIFY
+ *     End the team's hunt immediately.
+ *
+ * The real Forest Hunt zones can later be entered here.
+ */
+
+const geoFences = [
+
+    {
+        id: "test-warning-zone",
+
+        name: "TEST Warning Zone",
+
+        type: "WARNING",
+
+        polygon: [
+
+            {
+                lat: 52.541450,
+                lon: 0.586750
+            },
+
+            {
+                lat: 52.541450,
+                lon: 0.587250
+            },
+
+            {
+                lat: 52.540950,
+                lon: 0.587250
+            },
+
+            {
+                lat: 52.540950,
+                lon: 0.586750
+            }
+
+        ]
+
+    },
+
+    {
+        id: "test-penalty-zone",
+
+        name: "TEST Penalty Zone",
+
+        type: "PENALTY",
+
+        penalty: geoFencePenaltyPoints,
+
+        polygon: [
+
+            {
+                lat: 52.540750,
+                lon: 0.586750
+            },
+
+            {
+                lat: 52.540750,
+                lon: 0.587250
+            },
+
+            {
+                lat: 52.540250,
+                lon: 0.587250
+            },
+
+            {
+                lat: 52.540250,
+                lon: 0.586750
+            }
+
+        ]
+
+    },
+
+    {
+        id: "test-disqualify-zone",
+
+        name: "TEST Disqualification Zone",
+
+        type: "DISQUALIFY",
+
+        polygon: [
+
+            {
+                lat: 52.540050,
+                lon: 0.586750
+            },
+
+            {
+                lat: 52.540050,
+                lon: 0.587250
+            },
+
+            {
+                lat: 52.539550,
+                lon: 0.587250
+            },
+
+            {
+                lat: 52.539550,
+                lon: 0.586750
+            }
+
+        ]
+
+    }
+
+];
 
 
 /* ============================================================
@@ -801,6 +1035,7 @@ const activities = [
         dbId: null,
 
         title: "Field Puzzle",
+        dbId: null,
         type: "PUZZLE",
         points: 5,
 
@@ -900,6 +1135,25 @@ let submissionPollingInterval = null;
 let activeSubmissionIds = {};
 
 
+/*
+ * GEO-FENCE STATE
+ */
+
+let geoFencePenaltyPointsAwarded = 0;
+
+let geoFenceTriggeredZones = {};
+
+let geoFenceDisqualified = false;
+
+let geoFenceDisqualificationZone = null;
+
+let geoFenceWatchId = null;
+
+let lastGeoFencePosition = null;
+
+let lastGeoFenceState = "CLEAR";
+
+
 /* ============================================================
    LOCAL STORAGE
    ============================================================ */
@@ -950,6 +1204,35 @@ function saveState() {
         JSON.stringify(
             activeSubmissionIds
         )
+    );
+
+
+    /*
+     * GEO-FENCE STATE
+     */
+
+    localStorage.setItem(
+        "forestHunt_geoFencePenaltyPoints",
+        geoFencePenaltyPointsAwarded
+    );
+
+    localStorage.setItem(
+        "forestHunt_geoFenceTriggeredZones",
+        JSON.stringify(
+            geoFenceTriggeredZones
+        )
+    );
+
+    localStorage.setItem(
+        "forestHunt_geoFenceDisqualified",
+        geoFenceDisqualified
+            ? "true"
+            : "false"
+    );
+
+    localStorage.setItem(
+        "forestHunt_geoFenceDisqualificationZone",
+        geoFenceDisqualificationZone || ""
     );
 
 }
@@ -1034,6 +1317,46 @@ function loadState() {
 
     }
 
+
+    /*
+     * GEO-FENCE STATE
+     */
+
+    geoFencePenaltyPointsAwarded =
+        parseInt(
+            localStorage.getItem(
+                "forestHunt_geoFencePenaltyPoints"
+            )
+        ) || 0;
+
+
+    try {
+
+        geoFenceTriggeredZones =
+            JSON.parse(
+                localStorage.getItem(
+                    "forestHunt_geoFenceTriggeredZones"
+                )
+            ) || {};
+
+    } catch {
+
+        geoFenceTriggeredZones = {};
+
+    }
+
+
+    geoFenceDisqualified =
+        localStorage.getItem(
+            "forestHunt_geoFenceDisqualified"
+        ) === "true";
+
+
+    geoFenceDisqualificationZone =
+        localStorage.getItem(
+            "forestHunt_geoFenceDisqualificationZone"
+        ) || null;
+
 }
 
 
@@ -1042,6 +1365,8 @@ function loadState() {
    ============================================================ */
 
 function resetGameState() {
+
+    stopGeoFenceMonitoring();
 
     selectedTeam = null;
 
@@ -1062,6 +1387,19 @@ function resetGameState() {
     activeSubmissionIds = {};
 
     previousScreen = "home";
+
+
+    geoFencePenaltyPointsAwarded = 0;
+
+    geoFenceTriggeredZones = {};
+
+    geoFenceDisqualified = false;
+
+    geoFenceDisqualificationZone = null;
+
+    lastGeoFencePosition = null;
+
+    lastGeoFenceState = "CLEAR";
 
 
     if (timerInterval) {
@@ -1110,6 +1448,22 @@ function resetGameState() {
 
     localStorage.removeItem(
         "forestHunt_activeSubmissionIds"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_geoFencePenaltyPoints"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_geoFenceTriggeredZones"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_geoFenceDisqualified"
+    );
+
+    localStorage.removeItem(
+        "forestHunt_geoFenceDisqualificationZone"
     );
 
 }
@@ -1180,10 +1534,6 @@ function enterTestMode() {
 
     testTimeOffsetSeconds = 0;
 
-    /*
-     * Team 1's starter is at the Hall,
-     * so start the simulated player there.
-     */
     testLocationKey = "hall";
 
     saveState();
@@ -1257,6 +1607,8 @@ function showGameScreen() {
 
     startSubmissionPolling();
 
+    startGeoFenceMonitoring();
+
 }
 
 
@@ -1288,12 +1640,50 @@ function setTestLocation(
 
     updateTimer();
 
-    renderActivities();
 
+    /*
+     * Run the geo-fence check immediately.
+     *
+     * This is deliberately done without re-rendering the
+     * whole page.
+     */
 
     const location =
         locations[locationKey];
 
+
+    processGeoFencePosition({
+
+        coords: {
+
+            latitude:
+                location.lat,
+
+            longitude:
+                location.lon,
+
+            accuracy:
+                1
+
+        }
+
+    });
+
+
+    if (
+        geoFenceDisqualified
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Changing a test location still updates the normal
+     * game status so that the existing Test Mode remains
+     * easy to understand.
+     */
 
     const status =
         document.getElementById(
@@ -1318,6 +1708,9 @@ function setTestLocation(
 
     }
 
+
+    renderActivities();
+
 }
 
 
@@ -1336,6 +1729,31 @@ function resetTestLocation() {
 
     updateTestPanel();
 
+
+    const location =
+        locations.hall;
+
+
+    processGeoFencePosition({
+
+        coords: {
+
+            latitude:
+                location.lat,
+
+            longitude:
+                location.lon,
+
+            accuracy:
+                1
+
+        }
+
+    });
+
+
+    renderActivities();
+
 }
 
 
@@ -1353,11 +1771,27 @@ function setTestTeam(team) {
 
     selectedTeam = teamNumber;
 
-    // Changing test team starts that team's starter from scratch,
-    // but deliberately leaves the Supabase photo/validator system untouched.
     starterCompleted = false;
+
     activitiesState = {};
+
     activeSubmissionIds = {};
+
+    /*
+     * Reset geo-fence state when switching simulated teams.
+     */
+
+    geoFencePenaltyPointsAwarded = 0;
+
+    geoFenceTriggeredZones = {};
+
+    geoFenceDisqualified = false;
+
+    geoFenceDisqualificationZone = null;
+
+    lastGeoFencePosition = null;
+
+    lastGeoFenceState = "CLEAR";
 
     saveState();
 
@@ -1380,6 +1814,8 @@ function setTestTeam(team) {
 
     renderActivities();
 
+    updateGeoFenceDisplay("CLEAR");
+
     const gameStatus =
         document.getElementById("gameStatus");
 
@@ -1399,11 +1835,32 @@ function resetTestGameProgress() {
     }
 
     activitiesState = {};
+
     starterCompleted = false;
+
     activeSubmissionIds = {};
 
+    /*
+     * Reset geo-fence penalties and disqualification too.
+     */
+
+    geoFencePenaltyPointsAwarded = 0;
+
+    geoFenceTriggeredZones = {};
+
+    geoFenceDisqualified = false;
+
+    geoFenceDisqualificationZone = null;
+
+    lastGeoFencePosition = null;
+
+    lastGeoFenceState = "CLEAR";
+
     saveState();
+
     renderActivities();
+
+    updateGeoFenceDisplay("CLEAR");
 
     const gameStatus =
         document.getElementById("gameStatus");
@@ -1795,6 +2252,15 @@ function isStarter(activity) {
 function isUnlocked(activity) {
 
     if (
+        geoFenceDisqualified
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
         isStarter(activity)
     ) {
 
@@ -1967,8 +2433,13 @@ function renderActivities() {
                 statusText =
                     `
                     <div class="status">
-                        🔒 Complete your starter
-                        challenge first.
+                        ${
+                            geoFenceDisqualified
+                            ?
+                            "⛔ Hunt disqualified."
+                            :
+                            "🔒 Complete your starter challenge first."
+                        }
                     </div>
                     `;
 
@@ -2069,10 +2540,25 @@ function renderActivities() {
     );
 
 
+    /*
+     * IMPORTANT:
+     *
+     * Geo-fence deductions are separate from activity points.
+     * This means the existing activity scoring system is untouched.
+     */
+
+    const displayedScore =
+        Math.max(
+            0,
+            totalScore -
+            geoFencePenaltyPointsAwarded
+        );
+
+
     document.getElementById(
         "score"
     ).textContent =
-        totalScore;
+        displayedScore;
 
 }
 
@@ -2084,6 +2570,13 @@ function renderActivities() {
 async function openActivity(
     activityId
 ) {
+
+    if (geoFenceDisqualified) {
+
+        return;
+
+    }
+
 
     const activity =
         getActivityByGameId(
@@ -2133,6 +2626,20 @@ async function openActivity(
 
         const position =
             await getCurrentPosition();
+
+
+        /*
+         * Also run the geo-fence check on this fresh position.
+         */
+
+        processGeoFencePosition(
+            position
+        );
+
+
+        if (geoFenceDisqualified) {
+            return;
+        }
 
 
         const distance =
@@ -2400,6 +2907,16 @@ async function verifyActivityLocation(
         await getCurrentPosition();
 
 
+    /*
+     * Keep geo-fence enforcement active during
+     * the existing activity location check.
+     */
+
+    processGeoFencePosition(
+        position
+    );
+
+
     const distance =
         distanceInMetres(
             position.coords.latitude,
@@ -2411,6 +2928,7 @@ async function verifyActivityLocation(
 
     return {
         allowed:
+            !geoFenceDisqualified &&
             distance <= searchRadius,
 
         distance:
@@ -2418,6 +2936,7 @@ async function verifyActivityLocation(
 
         position:
             position
+
     };
 
 }
@@ -2430,6 +2949,11 @@ async function verifyActivityLocation(
 async function submitPhoto(
     activityId
 ) {
+
+    if (geoFenceDisqualified) {
+        return;
+    }
+
 
     const activity =
         getActivityByGameId(
@@ -2451,6 +2975,22 @@ async function submitPhoto(
 
             const status =
                 document.getElementById("photoStatus");
+
+            if (geoFenceDisqualified) {
+
+                status.innerHTML =
+                    `
+                    <div class="status disqualified">
+
+                        ⛔ Hunt disqualified.
+
+                    </div>
+                    `;
+
+                return;
+
+            }
+
 
             status.innerHTML =
                 `
@@ -3381,6 +3921,11 @@ async function submitPuzzle(
     activityId
 ) {
 
+    if (geoFenceDisqualified) {
+        return;
+    }
+
+
     const activity =
         getActivityByGameId(
             activityId
@@ -3416,6 +3961,22 @@ async function submitPuzzle(
             await verifyActivityLocation(activity);
 
         if (!locationCheck.allowed) {
+
+            if (geoFenceDisqualified) {
+
+                status.innerHTML =
+                    `
+                    <div class="status disqualified">
+
+                        ⛔ Hunt disqualified.
+
+                    </div>
+                    `;
+
+                return;
+
+            }
+
 
             status.innerHTML =
                 `
@@ -3558,6 +4119,23 @@ async function submitPuzzle(
 
 function returnToGame() {
 
+    if (geoFenceDisqualified) {
+
+        showScreen(
+            "gameScreen"
+        );
+
+        updateTestPanel();
+
+        updateGeoFenceDisplay(
+            "DISQUALIFIED"
+        );
+
+        return;
+
+    }
+
+
     showScreen(
         "gameScreen"
     );
@@ -3567,6 +4145,8 @@ function returnToGame() {
     renderActivities();
 
     startSubmissionPolling();
+
+    startGeoFenceMonitoring();
 
 }
 
@@ -3663,6 +4243,1040 @@ function getCurrentPosition() {
 }
 
 
+/* ============================================================
+   CONTINUOUS GPS GEO-FENCE MONITORING
+   ============================================================ */
+
+/*
+ * This is intentionally separate from getCurrentPosition().
+ *
+ * getCurrentPosition() is still used for the existing
+ * activity/finish checks.
+ *
+ * watchPosition() is used only for continuous geo-fencing.
+ *
+ * IMPORTANT:
+ *
+ * A GPS update calls processGeoFencePosition().
+ *
+ * It does NOT call renderActivities().
+ *
+ * It does NOT reload the page.
+ *
+ * It does NOT rebuild the current activity.
+ */
+
+function startGeoFenceMonitoring() {
+
+    /*
+     * Test Mode does not need a real GPS watch.
+     *
+     * setTestLocation() directly feeds simulated positions
+     * into processGeoFencePosition().
+     */
+
+    if (testMode) {
+
+        const location =
+            getTestLocation();
+
+        if (location) {
+
+            processGeoFencePosition({
+
+                coords: {
+
+                    latitude:
+                        location.lat,
+
+                    longitude:
+                        location.lon,
+
+                    accuracy:
+                        1
+
+                }
+
+            });
+
+        }
+
+        return;
+
+    }
+
+
+    if (
+        geoFenceWatchId !== null
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !navigator.geolocation
+    ) {
+
+        updateGeoFenceDisplay(
+            "GPS_UNAVAILABLE"
+        );
+
+        return;
+
+    }
+
+
+    geoFenceWatchId =
+        navigator.geolocation.watchPosition(
+            handleGeoFencePosition,
+            handleGeoFenceError,
+            {
+
+                enableHighAccuracy:
+                    true,
+
+                maximumAge:
+                    10000,
+
+                timeout:
+                    15000
+
+            }
+        );
+
+}
+
+
+function stopGeoFenceMonitoring() {
+
+    if (
+        geoFenceWatchId !== null
+        &&
+        navigator.geolocation
+    ) {
+
+        navigator.geolocation.clearWatch(
+            geoFenceWatchId
+        );
+
+    }
+
+
+    geoFenceWatchId =
+        null;
+
+
+    lastGeoFencePosition =
+        null;
+
+}
+
+
+function handleGeoFencePosition(
+    position
+) {
+
+    processGeoFencePosition(
+        position
+    );
+
+}
+
+
+function handleGeoFenceError(
+    error
+) {
+
+    console.warn(
+        "Geo-fence GPS error:",
+        error
+    );
+
+
+    /*
+     * We do not disqualify or penalise somebody merely because
+     * the phone temporarily cannot obtain GPS.
+     *
+     * The last known geo-fence state remains in force.
+     */
+
+    const status =
+        document.getElementById(
+            "gameStatus"
+        );
+
+
+    if (
+        status
+        &&
+        !geoFenceDisqualified
+    ) {
+
+        /*
+         * Only show this as a small location notice.
+         *
+         * We deliberately do not rebuild the page.
+         */
+
+        if (
+            error.code ===
+            1
+        ) {
+
+            updateGeoFenceDisplay(
+                "GPS_PERMISSION"
+            );
+
+        }
+
+        else {
+
+            updateGeoFenceDisplay(
+                "GPS_TEMPORARILY_UNAVAILABLE"
+            );
+
+        }
+
+    }
+
+}
+
+
+/* ============================================================
+   GEO-FENCE POSITION PROCESSING
+   ============================================================ */
+
+function processGeoFencePosition(
+    position
+) {
+
+    if (!position || !position.coords) {
+        return;
+    }
+
+
+    const lat =
+        Number(
+            position.coords.latitude
+        );
+
+    const lon =
+        Number(
+            position.coords.longitude
+        );
+
+
+    if (
+        !Number.isFinite(lat)
+        ||
+        !Number.isFinite(lon)
+    ) {
+
+        return;
+
+    }
+
+
+    lastGeoFencePosition = {
+
+        lat: lat,
+
+        lon: lon,
+
+        accuracy:
+            Number(
+                position.coords.accuracy
+            ) || null,
+
+        timestamp:
+            Date.now()
+
+    };
+
+
+    /*
+     * Once disqualified, nothing can undo that decision.
+     */
+
+    if (
+        geoFenceDisqualified
+    ) {
+
+        updateGeoFenceDisplay(
+            "DISQUALIFIED"
+        );
+
+        return;
+
+    }
+
+
+    const containingZones =
+        geoFences.filter(
+            zone =>
+                pointInPolygon(
+                    lat,
+                    lon,
+                    zone.polygon
+                )
+        );
+
+
+    /*
+     * DISQUALIFICATION HAS PRIORITY.
+     *
+     * If a point happened to fall within overlapping zones,
+     * the disqualification zone wins.
+     */
+
+    const disqualificationZone =
+        containingZones.find(
+            zone =>
+                zone.type ===
+                "DISQUALIFY"
+        );
+
+
+    if (
+        disqualificationZone
+    ) {
+
+        triggerGeoFenceDisqualification(
+            disqualificationZone
+        );
+
+        return;
+
+    }
+
+
+    const penaltyZone =
+        containingZones.find(
+            zone =>
+                zone.type ===
+                "PENALTY"
+        );
+
+
+    if (
+        penaltyZone
+    ) {
+
+        triggerGeoFencePenalty(
+            penaltyZone
+        );
+
+    }
+
+
+    const warningZone =
+        containingZones.find(
+            zone =>
+                zone.type ===
+                "WARNING"
+        );
+
+
+    if (
+        penaltyZone
+    ) {
+
+        updateGeoFenceDisplay(
+            "PENALTY",
+            penaltyZone
+        );
+
+    }
+
+    else if (
+        warningZone
+    ) {
+
+        updateGeoFenceDisplay(
+            "WARNING",
+            warningZone
+        );
+
+    }
+
+    else {
+
+        updateGeoFenceDisplay(
+            "CLEAR"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   GEO-FENCE PENALTY
+   ============================================================ */
+
+function triggerGeoFencePenalty(
+    zone
+) {
+
+    /*
+     * Only deduct once per zone.
+     *
+     * GPS may report the same location many times.
+     */
+
+    if (
+        geoFenceTriggeredZones[
+            zone.id
+        ]
+    ) {
+
+        return;
+
+    }
+
+
+    geoFenceTriggeredZones[
+        zone.id
+    ] = {
+
+        triggeredAt:
+            new Date().toISOString(),
+
+        penalty:
+            zone.penalty ||
+            geoFencePenaltyPoints
+
+    };
+
+
+    geoFencePenaltyPointsAwarded +=
+        zone.penalty ||
+        geoFencePenaltyPoints;
+
+
+    saveState();
+
+
+    /*
+     * This is the ONLY score update caused by the GPS watcher.
+     *
+     * It updates the number on the existing page.
+     *
+     * It does NOT render the activities list.
+     */
+
+    updateDisplayedScore();
+
+
+    const gameStatus =
+        document.getElementById(
+            "gameStatus"
+        );
+
+
+    if (
+        gameStatus
+        &&
+        !geoFenceDisqualified
+    ) {
+
+        gameStatus.className =
+            "status penalty-zone";
+
+        gameStatus.innerHTML =
+            `
+            ⚠️ <strong>
+                Restricted area entered
+            </strong>
+
+            <br><br>
+
+            ${escapeHtml(zone.name)}
+
+            <br>
+
+            <strong>
+                -${zone.penalty || geoFencePenaltyPoints}
+                points
+            </strong>
+
+            <br><br>
+
+            Leave the area immediately.
+            `;
+
+    }
+
+
+    updateGeoFenceDisplay(
+        "PENALTY",
+        zone
+    );
+
+}
+
+
+/* ============================================================
+   GEO-FENCE DISQUALIFICATION
+   ============================================================ */
+
+function triggerGeoFenceDisqualification(
+    zone
+) {
+
+    if (
+        geoFenceDisqualified
+    ) {
+
+        return;
+
+    }
+
+
+    geoFenceDisqualified =
+        true;
+
+
+    geoFenceDisqualificationZone =
+        zone.id;
+
+
+    geoFenceTriggeredZones[
+        zone.id
+    ] = {
+
+        triggeredAt:
+            new Date().toISOString(),
+
+        action:
+            "DISQUALIFIED"
+
+    };
+
+
+    saveState();
+
+
+    /*
+     * Stop the continuous watcher.
+     *
+     * There is no reason to continue monitoring after the
+     * game has already been disqualified.
+     */
+
+    stopGeoFenceMonitoring();
+
+
+    if (timerInterval) {
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval =
+            null;
+
+    }
+
+
+    stopSubmissionPolling();
+
+
+    updateDisplayedScore();
+
+
+    updateGeoFenceDisplay(
+        "DISQUALIFIED",
+        zone
+    );
+
+
+    const gameStatus =
+        document.getElementById(
+            "gameStatus"
+        );
+
+
+    if (gameStatus) {
+
+        gameStatus.className =
+            "status disqualified";
+
+        gameStatus.innerHTML =
+            `
+            ⛔ <strong>
+                HUNT DISQUALIFIED
+            </strong>
+
+            <br><br>
+
+            Your team entered:
+
+            <br>
+
+            <strong>
+                ${escapeHtml(zone.name)}
+            </strong>
+
+            <br><br>
+
+            This area is prohibited.
+            The hunt has ended.
+            `;
+
+    }
+
+
+    /*
+     * If the team happens to be looking at an activity,
+     * replace only that activity's content.
+     *
+     * No page reload occurs.
+     */
+
+    const activityScreen =
+        document.getElementById(
+            "activityScreen"
+        );
+
+
+    if (
+        activityScreen
+        &&
+        !activityScreen.classList.contains(
+            "hidden"
+        )
+    ) {
+
+        const content =
+            document.getElementById(
+                "activityContent"
+            );
+
+
+        if (content) {
+
+            content.innerHTML =
+                `
+                <div class="status disqualified">
+
+                    ⛔ <h3>
+                        Hunt Disqualified
+                    </h3>
+
+                    <p>
+                        Your team entered:
+                    </p>
+
+                    <strong>
+                        ${escapeHtml(zone.name)}
+                    </strong>
+
+                    <p>
+                        This area is prohibited.
+                        The hunt has ended.
+                    </p>
+
+                </div>
+                `;
+
+        }
+
+    }
+
+
+    /*
+     * Render the activity list once here so that the buttons
+     * become locked after disqualification.
+     *
+     * This happens only once, when the state actually changes.
+     */
+
+    renderActivities();
+
+}
+
+
+/* ============================================================
+   GEO-FENCE DISPLAY
+   ============================================================ */
+
+function updateGeoFenceDisplay(
+    state,
+    zone = null
+) {
+
+    /*
+     * Avoid needless DOM updates.
+     *
+     * This is one of the things that prevents the old
+     * "jerky" behaviour.
+     */
+
+    if (
+        state ===
+        lastGeoFenceState
+        &&
+        state !== "PENALTY"
+        &&
+        state !== "WARNING"
+    ) {
+
+        return;
+
+    }
+
+
+    lastGeoFenceState =
+        state;
+
+
+    const display =
+        document.getElementById(
+            "geoFenceStatus"
+        );
+
+
+    const testDisplay =
+        document.getElementById(
+            "testGeofenceStatus"
+        );
+
+
+    let html = "";
+
+    let className =
+        "status";
+
+
+    if (
+        state ===
+        "CLEAR"
+    ) {
+
+        html =
+            "🟢 <strong>Geo-fence status:</strong> Clear";
+
+    }
+
+    else if (
+        state ===
+        "WARNING"
+    ) {
+
+        html =
+            `
+            🟡 <strong>WARNING</strong>
+
+            <br>
+
+            You are approaching or inside
+            <strong>
+                ${escapeHtml(
+                    zone
+                    ? zone.name
+                    : "a restricted area"
+                )}
+            </strong>.
+
+            <br>
+
+            Turn back now.
+            `;
+
+        className =
+            "status warning-zone";
+
+    }
+
+    else if (
+        state ===
+        "PENALTY"
+    ) {
+
+        html =
+            `
+            🟠 <strong>RESTRICTED AREA</strong>
+
+            <br>
+
+            ${escapeHtml(
+                zone
+                ? zone.name
+                : "Restricted area"
+            )}
+
+            <br>
+
+            A geo-fence penalty has been applied.
+            `;
+
+        className =
+            "status penalty-zone";
+
+    }
+
+    else if (
+        state ===
+        "DISQUALIFIED"
+    ) {
+
+        html =
+            `
+            ⛔ <strong>HUNT DISQUALIFIED</strong>
+
+            <br>
+
+            ${
+                geoFenceDisqualificationZone
+                ?
+                "You entered a prohibited area."
+                :
+                "The hunt has ended."
+            }
+            `;
+
+        className =
+            "status disqualified";
+
+    }
+
+    else if (
+        state ===
+        "GPS_PERMISSION"
+    ) {
+
+        html =
+            `
+            📍 GPS permission is required
+            for continuous safety monitoring.
+            `;
+
+        className =
+            "status warning-zone";
+
+    }
+
+    else if (
+        state ===
+        "GPS_TEMPORARILY_UNAVAILABLE"
+    ) {
+
+        html =
+            `
+            📍 GPS temporarily unavailable.
+            Your last known geo-fence status remains in force.
+            `;
+
+        className =
+            "status warning-zone";
+
+    }
+
+    else if (
+        state ===
+        "GPS_UNAVAILABLE"
+    ) {
+
+        html =
+            `
+            📍 This device does not provide GPS.
+            `;
+
+        className =
+            "status error";
+
+    }
+
+
+    if (display) {
+
+        display.className =
+            className;
+
+        display.innerHTML =
+            html;
+
+        display.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    if (testDisplay) {
+
+        testDisplay.className =
+            className;
+
+        testDisplay.innerHTML =
+            testMode
+            ?
+            html
+            :
+            "";
+
+    }
+
+}
+
+
+/* ============================================================
+   DISPLAYED SCORE
+   ============================================================ */
+
+function calculateActivityScore() {
+
+    let totalScore =
+        0;
+
+
+    activities.forEach(
+        activity => {
+
+            const state =
+                getActivityState(
+                    activity.id
+                );
+
+
+            totalScore +=
+                state.pointsAwarded ||
+                0;
+
+        }
+    );
+
+
+    return totalScore;
+
+}
+
+
+function calculateCurrentScore() {
+
+    return Math.max(
+        0,
+        calculateActivityScore()
+        -
+        geoFencePenaltyPointsAwarded
+    );
+
+}
+
+
+function updateDisplayedScore() {
+
+    const scoreElement =
+        document.getElementById(
+            "score"
+        );
+
+
+    if (
+        scoreElement
+    ) {
+
+        scoreElement.textContent =
+            calculateCurrentScore();
+
+    }
+
+}
+
+
+/* ============================================================
+   POINT IN POLYGON
+   ============================================================ */
+
+/*
+ * Standard ray-casting algorithm.
+ *
+ * Returns true if the supplied latitude/longitude is
+ * inside the polygon.
+ */
+
+function pointInPolygon(
+    lat,
+    lon,
+    polygon
+) {
+
+    let inside =
+        false;
+
+
+    for (
+        let i = 0,
+        j = polygon.length - 1;
+        i < polygon.length;
+        j = i++
+    ) {
+
+        const xi =
+            polygon[i].lon;
+
+        const yi =
+            polygon[i].lat;
+
+        const xj =
+            polygon[j].lon;
+
+        const yj =
+            polygon[j].lat;
+
+
+        const intersects =
+            (
+                yi > lat
+            )
+            !==
+            (
+                yj > lat
+            )
+            &&
+            (
+                lon
+                <
+                (
+                    xj - xi
+                )
+                *
+                (
+                    lat - yi
+                )
+                /
+                (
+                    yj - yi
+                )
+                +
+                xi
+            );
+
+
+        if (
+            intersects
+        ) {
+
+            inside =
+                !inside;
+
+        }
+
+    }
+
+
+    return inside;
+
+}
+
+
+/* ============================================================
+   DISTANCE
+   ============================================================ */
+
 function distanceInMetres(
     lat1,
     lon1,
@@ -3738,6 +5352,24 @@ function distanceInMetres(
 
 async function finishHunt() {
 
+    if (geoFenceDisqualified) {
+
+        const status =
+            document.getElementById(
+                "gameStatus"
+            );
+
+        status.className =
+            "status disqualified";
+
+        status.textContent =
+            "⛔ This hunt has been disqualified.";
+
+        return;
+
+    }
+
+
     const status =
         document.getElementById(
             "gameStatus"
@@ -3760,6 +5392,21 @@ async function finishHunt() {
 
         const position =
             await getCurrentPosition();
+
+
+        /*
+         * Perform one final geo-fence check before allowing
+         * the team to finish.
+         */
+
+        processGeoFencePosition(
+            position
+        );
+
+
+        if (geoFenceDisqualified) {
+            return;
+        }
 
 
         const distance =
@@ -3842,37 +5489,25 @@ async function finishHunt() {
             );
 
 
-        const penalty =
+        const timePenalty =
             penaltyIntervals *
             penaltyPerInterval;
 
 
-        let totalScore =
-            0;
+        const activityScore =
+            calculateActivityScore();
 
 
-        activities.forEach(
-            activity => {
-
-                const state =
-                    getActivityState(
-                        activity.id
-                    );
-
-
-                totalScore +=
-                    state.pointsAwarded ||
-                    0;
-
-            }
-        );
+        const combinedPenalty =
+            timePenalty +
+            geoFencePenaltyPointsAwarded;
 
 
         const finalScore =
             Math.max(
                 0,
-                totalScore -
-                penalty
+                activityScore -
+                combinedPenalty
             );
 
 
@@ -3903,12 +5538,12 @@ async function finishHunt() {
             }
 
             ${
-                penalty > 0
+                timePenalty > 0
                 ?
                 `
                 <br><br>
                 Time penalty:
-                -${penalty}
+                -${timePenalty}
                 points
                 `
                 :
@@ -3916,6 +5551,19 @@ async function finishHunt() {
                 <br><br>
                 No time penalty.
                 `
+            }
+
+            ${
+                geoFencePenaltyPointsAwarded > 0
+                ?
+                `
+                <br><br>
+                Geo-fence penalties:
+                -${geoFencePenaltyPointsAwarded}
+                points
+                `
+                :
+                ""
             }
 
             `;
@@ -3934,6 +5582,8 @@ async function finishHunt() {
 
 
         stopSubmissionPolling();
+
+        stopGeoFenceMonitoring();
 
 
         showScreen(
@@ -4017,6 +5667,8 @@ function returnFromValidator() {
         renderActivities();
 
         startSubmissionPolling();
+
+        startGeoFenceMonitoring();
 
     }
 
@@ -4606,6 +6258,8 @@ if (
     selectedTeam
     &&
     gameStartedAt
+    &&
+    !geoFenceDisqualified
 ) {
 
     showScreen(
@@ -4628,6 +6282,37 @@ if (
 
 
     startSubmissionPolling();
+
+    startGeoFenceMonitoring();
+
+}
+
+else if (
+    selectedTeam
+    &&
+    gameStartedAt
+    &&
+    geoFenceDisqualified
+) {
+
+    /*
+     * Restore a previously disqualified game.
+     */
+
+    showScreen(
+        "gameScreen"
+    );
+
+
+    updateTestPanel();
+
+    renderActivities();
+
+    updateTimer();
+
+    updateGeoFenceDisplay(
+        "DISQUALIFIED"
+    );
 
 }
 
