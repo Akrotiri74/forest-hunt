@@ -306,6 +306,13 @@ hr {
             </p>
 
             <p>
+                Photograph challenges are checked by the organiser
+                asynchronously. You do <strong>not</strong> need to
+                wait for a photograph to be approved before continuing
+                with the hunt.
+            </p>
+
+            <p>
                 At the end, return to the meeting point and press
                 <strong>FINISH HUNT</strong>.
             </p>
@@ -528,7 +535,8 @@ hr {
             </div>
 
             <div id="gameStatus" class="status">
-                Find and complete your starter challenge.
+                Find and complete your mandatory starting challenge.
+                Once it is correct, the rest of the hunt unlocks.
             </div>
 
             <button
@@ -721,9 +729,7 @@ const activities = [
         location: locations.hall,
 
         description:
-            "Find the designated target at the Hall and photograph it.",
-
-        starterTeam: 1
+            "Find the designated target at the Hall and photograph it."
     },
 
     {
@@ -737,9 +743,11 @@ const activities = [
         location: locations.hall,
 
         description:
-            "Find the clue at the Hall and solve the puzzle.",
+            "Find the clue at the Hall and solve the puzzle. This is Team 1's mandatory starting challenge.",
 
-        answer: "FOREST"
+        answer: "FOREST",
+
+        starterTeam: 1
     },
 
     {
@@ -753,9 +761,7 @@ const activities = [
         location: locations.highStreet,
 
         description:
-            "Find the designated target on the High Street and photograph it.",
-
-        starterTeam: 2
+            "Find the designated target on the High Street and photograph it."
     },
 
     {
@@ -769,9 +775,11 @@ const activities = [
         location: locations.highStreet,
 
         description:
-            "Find the clue on the High Street and solve the puzzle.",
+            "Find the clue on the High Street and solve the puzzle. This is Team 2's mandatory starting challenge.",
 
-        answer: "TREE"
+        answer: "TREE",
+
+        starterTeam: 2
     },
 
     {
@@ -785,9 +793,7 @@ const activities = [
         location: locations.playingField,
 
         description:
-            "Find the designated target at the Playing Field and photograph it.",
-
-        starterTeam: 3
+            "Find the designated target at the Playing Field and photograph it."
     },
 
     {
@@ -801,9 +807,11 @@ const activities = [
         location: locations.playingField,
 
         description:
-            "Find the clue at the Playing Field and solve the puzzle.",
+            "Find the clue at the Playing Field and solve the puzzle. This is Team 3's mandatory starting challenge.",
 
-        answer: "GREEN"
+        answer: "GREEN",
+
+        starterTeam: 3
     }
 
 ];
@@ -1901,7 +1909,9 @@ function renderActivities() {
                     `
                     <div class="status pending">
                         📷 Photo submitted —
-                        awaiting organiser approval
+                        awaiting organiser approval.
+                        <br>
+                        You can continue hunting while it is checked.
                     </div>
                     `;
 
@@ -2002,6 +2012,11 @@ function renderActivities() {
             div.innerHTML = `
 
                 <h3>
+                    ${
+                        activity.starterTeam === selectedTeam
+                        ? "⭐ "
+                        : ""
+                    }
                     ${escapeHtml(
                         activity.title
                     )}
@@ -3316,6 +3331,19 @@ function renderPuzzleActivity(
 ) {
 
     container.innerHTML = `
+
+        ${
+            activity.starterTeam === selectedTeam
+            ?
+            `
+            <div class="status location-ok">
+                ⭐ <strong>Mandatory starting challenge</strong><br>
+                Complete this challenge correctly to unlock the rest of the hunt.
+            </div>
+            `
+            :
+            ""
+        }
 
         <p>
             Find the physical clue and
