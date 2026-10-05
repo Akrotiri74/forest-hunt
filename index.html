@@ -322,7 +322,7 @@ hr {
 
             <h2 id="briefingTeam"></h2>
 
-            <p>
+            <p id="briefingDuration">
                 You have 60 minutes to complete as many challenges
                 as possible.
             </p>
@@ -576,7 +576,9 @@ hr {
                 <div
                     id="testDistance"
                     class="status">
+
                     Distance to meeting point: 0m
+
                 </div>
 
             </div>
@@ -739,317 +741,623 @@ const supabaseClient =
 
 
 /* ============================================================
-   GAME SETTINGS
+   ============================================================
+   GAME RULES / HUNT CONFIGURATION
+   ============================================================
+   ============================================================
+
+   THIS IS NOW THE MAIN CONFIGURATION AREA FOR THE HUNT.
+
+   The game engine below this section should normally not need
+   changing when creating a new hunt.
+
+   Hunt-specific things such as:
+
+   - duration
+   - search radius
+   - return radius
+   - late penalties
+   - locations
+   - activities
+   - activity points
+   - starter teams
+   - geo-fences
+
+   should be configured here.
+
+   The current values are the existing TEST HUNT values.
+
    ============================================================ */
-
-const gameDurationMinutes = 60;
-
-const searchRadius = 100;
-
-const returnRadius = 150;
-
-const penaltyPerInterval = 5;
-
-const penaltyIntervalSeconds = 120;
-
-
-/*
- * GEO-FENCE SETTINGS
- *
- * These are deliberately TEST zones for now.
- *
- * They can later be replaced with the real dangerous-area
- * polygons without changing the rest of the geo-fence system.
- */
-
-const geoFencePenaltyPoints = 10;
 
 
 /* ============================================================
-   LOCATIONS
+   BASIC GAME RULES
    ============================================================ */
 
-const locations = {
+const GAME_RULES = {
 
-    playingField: {
-        name: "Playing Field",
-        lat: 52.538761848398785,
-        lon: 0.5901938775221194
+    name:
+        "Forest Hunt",
+
+    durationMinutes:
+        60,
+
+    searchRadiusMetres:
+        100,
+
+    returnRadiusMetres:
+        150,
+
+    teams:
+        [
+            1,
+            2,
+            3
+        ],
+
+
+    /* --------------------------------------------------------
+       LATE FINISH PENALTY
+       -------------------------------------------------------- */
+
+    latePenalty: {
+
+        points:
+            5,
+
+        intervalSeconds:
+            120
+
     },
 
-    hall: {
-        name: "Hall",
-        lat: 52.54189431671765,
-        lon: 0.5853905864119698
+
+    /* --------------------------------------------------------
+       GEO-FENCE RULES
+       -------------------------------------------------------- */
+
+    geoFence: {
+
+        defaultPenaltyPoints:
+            10
+
     },
 
-    highStreet: {
-        name: "High Street",
-        lat: 52.541854232784715,
-        lon: 0.5890602942562545
+
+    /* --------------------------------------------------------
+       LOCATIONS
+       -------------------------------------------------------- */
+
+    locations: {
+
+        playingField: {
+
+            name:
+                "Playing Field",
+
+            lat:
+                52.538761848398785,
+
+            lon:
+                0.5901938775221194
+
+        },
+
+        hall: {
+
+            name:
+                "Hall",
+
+            lat:
+                52.54189431671765,
+
+            lon:
+                0.5853905864119698
+
+        },
+
+        highStreet: {
+
+            name:
+                "High Street",
+
+            lat:
+                52.541854232784715,
+
+            lon:
+                0.5890602942562545
+
+        },
+
+
+        /* ----------------------------------------------------
+           TEST LOCATIONS
+           ----------------------------------------------------
+
+           These are artificial positions used only to exercise
+           the geo-fence system.
+
+           They can be removed when the production hunt is
+           created.
+           ---------------------------------------------------- */
+
+        testWarningZone: {
+
+            name:
+                "TEST Warning Zone",
+
+            lat:
+                52.541200,
+
+            lon:
+                0.587000
+
+        },
+
+        testPenaltyZone: {
+
+            name:
+                "TEST Penalty Zone",
+
+            lat:
+                52.540500,
+
+            lon:
+                0.587000
+
+        },
+
+        testDisqualifyZone: {
+
+            name:
+                "TEST Disqualification Zone",
+
+            lat:
+                52.539800,
+
+            lon:
+                0.587000
+
+        }
+
     },
 
-    /*
-     * TEST LOCATIONS
-     *
-     * These are artificial positions used only for testing
-     * the geo-fence system.
-     */
 
-    testWarningZone: {
-        name: "TEST Warning Zone",
-        lat: 52.541200,
-        lon: 0.587000
-    },
+    /* --------------------------------------------------------
+       GEO-FENCES
+       --------------------------------------------------------
 
-    testPenaltyZone: {
-        name: "TEST Penalty Zone",
-        lat: 52.540500,
-        lon: 0.587000
-    },
+       Current zones are deliberately artificial TEST zones.
 
-    testDisqualifyZone: {
-        name: "TEST Disqualification Zone",
-        lat: 52.539800,
-        lon: 0.587000
-    }
+       type:
+
+       WARNING
+           Warn the team but do not affect score.
+
+       PENALTY
+           Deduct points once.
+
+       DISQUALIFY
+           End the team's hunt immediately.
+
+       Real hunt zones can later be entered here.
+
+       -------------------------------------------------------- */
+
+    geoFences: [
+
+        {
+
+            id:
+                "test-warning-zone",
+
+            name:
+                "TEST Warning Zone",
+
+            type:
+                "WARNING",
+
+            polygon: [
+
+                {
+                    lat:
+                        52.541450,
+
+                    lon:
+                        0.586750
+                },
+
+                {
+                    lat:
+                        52.541450,
+
+                    lon:
+                        0.587250
+                },
+
+                {
+                    lat:
+                        52.540950,
+
+                    lon:
+                        0.587250
+                },
+
+                {
+                    lat:
+                        52.540950,
+
+                    lon:
+                        0.586750
+                }
+
+            ]
+
+        },
+
+
+        {
+
+            id:
+                "test-penalty-zone",
+
+            name:
+                "TEST Penalty Zone",
+
+            type:
+                "PENALTY",
+
+            penalty:
+                10,
+
+            polygon: [
+
+                {
+                    lat:
+                        52.540750,
+
+                    lon:
+                        0.586750
+                },
+
+                {
+                    lat:
+                        52.540750,
+
+                    lon:
+                        0.587250
+                },
+
+                {
+                    lat:
+                        52.540250,
+
+                    lon:
+                        0.587250
+                },
+
+                {
+                    lat:
+                        52.540250,
+
+                    lon:
+                        0.586750
+                }
+
+            ]
+
+        },
+
+
+        {
+
+            id:
+                "test-disqualify-zone",
+
+            name:
+                "TEST Disqualification Zone",
+
+            type:
+                "DISQUALIFY",
+
+            polygon: [
+
+                {
+                    lat:
+                        52.540050,
+
+                    lon:
+                        0.586750
+                },
+
+                {
+                    lat:
+                        52.540050,
+
+                    lon:
+                        0.587250
+                },
+
+                {
+                    lat:
+                        52.539550,
+
+                    lon:
+                        0.587250
+                },
+
+                {
+                    lat:
+                        52.539550,
+
+                    lon:
+                        0.586750
+                }
+
+            ]
+
+        }
+
+    ],
+
+
+    /* --------------------------------------------------------
+       ACTIVITIES
+       --------------------------------------------------------
+
+       Each activity contains the information that defines the
+       challenge itself.
+
+       type:
+           PHOTO or PUZZLE
+
+       dbId:
+           Supabase activity ID for photograph challenges.
+
+       starterTeam:
+           The team for which this is the mandatory starting
+           challenge.
+
+       -------------------------------------------------------- */
+
+    activities: [
+
+        {
+
+            id:
+                "hall-photo",
+
+            dbId:
+                1,
+
+            title:
+                "Hall Photograph",
+
+            type:
+                "PHOTO",
+
+            points:
+                20,
+
+            locationKey:
+                "hall",
+
+            description:
+                "Find the designated target at the Hall and photograph it."
+
+        },
+
+
+        {
+
+            id:
+                "hall-puzzle",
+
+            dbId:
+                null,
+
+            title:
+                "Hall Puzzle",
+
+            type:
+                "PUZZLE",
+
+            points:
+                15,
+
+            locationKey:
+                "hall",
+
+            description:
+                "Find the clue at the Hall and solve the puzzle. This is Team 1's mandatory starting challenge.",
+
+            answer:
+                "FOREST",
+
+            starterTeam:
+                1
+
+        },
+
+
+        {
+
+            id:
+                "street-photo",
+
+            dbId:
+                2,
+
+            title:
+                "High Street Photograph",
+
+            type:
+                "PHOTO",
+
+            points:
+                25,
+
+            locationKey:
+                "highStreet",
+
+            description:
+                "Find the designated target on the High Street and photograph it."
+
+        },
+
+
+        {
+
+            id:
+                "street-puzzle",
+
+            dbId:
+                null,
+
+            title:
+                "High Street Puzzle",
+
+            type:
+                "PUZZLE",
+
+            points:
+                10,
+
+            locationKey:
+                "highStreet",
+
+            description:
+                "Find the clue on the High Street and solve the puzzle. This is Team 2's mandatory starting challenge.",
+
+            answer:
+                "TREE",
+
+            starterTeam:
+                2
+
+        },
+
+
+        {
+
+            id:
+                "field-photo",
+
+            dbId:
+                3,
+
+            title:
+                "Meeting Point Photograph",
+
+            type:
+                "PHOTO",
+
+            points:
+                30,
+
+            locationKey:
+                "playingField",
+
+            description:
+                "Find the designated target at the Playing Field and photograph it."
+
+        },
+
+
+        {
+
+            id:
+                "field-puzzle",
+
+            dbId:
+                null,
+
+            title:
+                "Field Puzzle",
+
+            type:
+                "PUZZLE",
+
+            points:
+                5,
+
+            locationKey:
+                "playingField",
+
+            description:
+                "Find the clue at the Playing Field and solve the puzzle. This is Team 3's mandatory starting challenge.",
+
+            answer:
+                "GREEN",
+
+            starterTeam:
+                3
+
+        }
+
+    ]
 
 };
 
 
 /* ============================================================
-   GEO-FENCES
+   GAME ENGINE ALIASES
+   ============================================================
+
+   The rest of the program uses these names.
+
+   Keeping these aliases means the existing game engine remains
+   largely unchanged while GAME_RULES becomes the single source
+   of hunt configuration.
    ============================================================ */
 
-/*
- * Each zone is a polygon.
- *
- * The polygons below are deliberately artificial test zones.
- *
- * type:
- *
- * WARNING
- *     Warn the team but do not affect score.
- *
- * PENALTY
- *     Deduct points once.
- *
- * DISQUALIFY
- *     End the team's hunt immediately.
- *
- * The real Forest Hunt zones can later be entered here.
- */
+const gameDurationMinutes =
+    GAME_RULES.durationMinutes;
 
-const geoFences = [
+const searchRadius =
+    GAME_RULES.searchRadiusMetres;
 
-    {
-        id: "test-warning-zone",
+const returnRadius =
+    GAME_RULES.returnRadiusMetres;
 
-        name: "TEST Warning Zone",
+const penaltyPerInterval =
+    GAME_RULES.latePenalty.points;
 
-        type: "WARNING",
+const penaltyIntervalSeconds =
+    GAME_RULES.latePenalty.intervalSeconds;
 
-        polygon: [
+const geoFencePenaltyPoints =
+    GAME_RULES.geoFence.defaultPenaltyPoints;
 
-            {
-                lat: 52.541450,
-                lon: 0.586750
-            },
+const locations =
+    GAME_RULES.locations;
 
-            {
-                lat: 52.541450,
-                lon: 0.587250
-            },
-
-            {
-                lat: 52.540950,
-                lon: 0.587250
-            },
-
-            {
-                lat: 52.540950,
-                lon: 0.586750
-            }
-
-        ]
-
-    },
-
-    {
-        id: "test-penalty-zone",
-
-        name: "TEST Penalty Zone",
-
-        type: "PENALTY",
-
-        penalty: geoFencePenaltyPoints,
-
-        polygon: [
-
-            {
-                lat: 52.540750,
-                lon: 0.586750
-            },
-
-            {
-                lat: 52.540750,
-                lon: 0.587250
-            },
-
-            {
-                lat: 52.540250,
-                lon: 0.587250
-            },
-
-            {
-                lat: 52.540250,
-                lon: 0.586750
-            }
-
-        ]
-
-    },
-
-    {
-        id: "test-disqualify-zone",
-
-        name: "TEST Disqualification Zone",
-
-        type: "DISQUALIFY",
-
-        polygon: [
-
-            {
-                lat: 52.540050,
-                lon: 0.586750
-            },
-
-            {
-                lat: 52.540050,
-                lon: 0.587250
-            },
-
-            {
-                lat: 52.539550,
-                lon: 0.587250
-            },
-
-            {
-                lat: 52.539550,
-                lon: 0.586750
-            }
-
-        ]
-
-    }
-
-];
+const geoFences =
+    GAME_RULES.geoFences;
 
 
 /* ============================================================
-   ACTIVITIES
+   BUILD ACTIVITIES FROM CONFIGURATION
+   ============================================================
+
+   Activities in GAME_RULES use locationKey rather than
+   duplicating latitude/longitude data.
+
+   This makes the rules section much easier to maintain.
    ============================================================ */
 
-const activities = [
+const activities =
+    GAME_RULES.activities.map(
+        activity => ({
 
-    {
-        id: "hall-photo",
-        dbId: 1,
+            ...activity,
 
-        title: "Hall Photograph",
-        type: "PHOTO",
-        points: 20,
+            location:
+                locations[
+                    activity.locationKey
+                ]
 
-        location: locations.hall,
-
-        description:
-            "Find the designated target at the Hall and photograph it."
-    },
-
-    {
-        id: "hall-puzzle",
-        dbId: null,
-
-        title: "Hall Puzzle",
-        type: "PUZZLE",
-        points: 15,
-
-        location: locations.hall,
-
-        description:
-            "Find the clue at the Hall and solve the puzzle. This is Team 1's mandatory starting challenge.",
-
-        answer: "FOREST",
-
-        starterTeam: 1
-    },
-
-    {
-        id: "street-photo",
-        dbId: 2,
-
-        title: "High Street Photograph",
-        type: "PHOTO",
-        points: 25,
-
-        location: locations.highStreet,
-
-        description:
-            "Find the designated target on the High Street and photograph it."
-    },
-
-    {
-        id: "street-puzzle",
-        dbId: null,
-
-        title: "High Street Puzzle",
-        type: "PUZZLE",
-        points: 10,
-
-        location: locations.highStreet,
-
-        description:
-            "Find the clue on the High Street and solve the puzzle. This is Team 2's mandatory starting challenge.",
-
-        answer: "TREE",
-
-        starterTeam: 2
-    },
-
-    {
-        id: "field-photo",
-        dbId: 3,
-
-        title: "Meeting Point Photograph",
-        type: "PHOTO",
-        points: 30,
-
-        location: locations.playingField,
-
-        description:
-            "Find the designated target at the Playing Field and photograph it."
-    },
-
-    {
-        id: "field-puzzle",
-        dbId: null,
-
-        title: "Field Puzzle",
-        dbId: null,
-        type: "PUZZLE",
-        points: 5,
-
-        location: locations.playingField,
-
-        description:
-            "Find the clue at the Playing Field and solve the puzzle. This is Team 3's mandatory starting challenge.",
-
-        answer: "GREEN",
-
-        starterTeam: 3
-    }
-
-];
+        })
+    );
 
 
 /* ============================================================
@@ -1059,7 +1367,8 @@ const activities = [
 function getActivityByGameId(activityId) {
 
     return activities.find(
-        activity => activity.id === activityId
+        activity =>
+            activity.id === activityId
     );
 
 }
@@ -1101,6 +1410,7 @@ function getGameActivityId(databaseActivityId) {
     return activity
         ? activity.id
         : null;
+
 }
 
 
@@ -1172,7 +1482,9 @@ function saveState() {
 
     localStorage.setItem(
         "forestHunt_activitiesState",
-        JSON.stringify(activitiesState)
+        JSON.stringify(
+            activitiesState
+        )
     );
 
     localStorage.setItem(
@@ -1206,10 +1518,6 @@ function saveState() {
         )
     );
 
-
-    /*
-     * GEO-FENCE STATE
-     */
 
     localStorage.setItem(
         "forestHunt_geoFencePenaltyPoints",
@@ -1262,7 +1570,9 @@ function loadState() {
                 )
             ) || {};
 
-    } catch {
+    }
+
+    catch {
 
         activitiesState = {};
 
@@ -1297,7 +1607,8 @@ function loadState() {
 
     if (!locations[testLocationKey]) {
 
-        testLocationKey = "hall";
+        testLocationKey =
+            "hall";
 
     }
 
@@ -1311,16 +1622,14 @@ function loadState() {
                 )
             ) || {};
 
-    } catch {
+    }
+
+    catch {
 
         activeSubmissionIds = {};
 
     }
 
-
-    /*
-     * GEO-FENCE STATE
-     */
 
     geoFencePenaltyPointsAwarded =
         parseInt(
@@ -1339,7 +1648,9 @@ function loadState() {
                 )
             ) || {};
 
-    } catch {
+    }
+
+    catch {
 
         geoFenceTriggeredZones = {};
 
@@ -1517,6 +1828,8 @@ function selectTeam(team) {
     ).textContent =
         "Team " + team;
 
+    updateBriefingText();
+
     showScreen(
         "briefingScreen"
     );
@@ -1543,6 +1856,8 @@ function enterTestMode() {
     ).textContent =
         "Team 1 — 🧪 TEST MODE";
 
+    updateBriefingText();
+
     showScreen(
         "briefingScreen"
     );
@@ -1557,6 +1872,33 @@ function backToHome() {
     showScreen(
         "homeScreen"
     );
+
+}
+
+
+/* ============================================================
+   BRIEFING CONFIGURATION
+   ============================================================ */
+
+function updateBriefingText() {
+
+    const element =
+        document.getElementById(
+            "briefingDuration"
+        );
+
+    if (!element) {
+        return;
+    }
+
+    element.innerHTML =
+        "You have <strong>" +
+        escapeHtml(
+            String(
+                GAME_RULES.durationMinutes
+            )
+        ) +
+        " minutes</strong> to complete as many challenges as possible.";
 
 }
 
@@ -1641,13 +1983,6 @@ function setTestLocation(
     updateTimer();
 
 
-    /*
-     * Run the geo-fence check immediately.
-     *
-     * This is deliberately done without re-rendering the
-     * whole page.
-     */
-
     const location =
         locations[locationKey];
 
@@ -1678,12 +2013,6 @@ function setTestLocation(
 
     }
 
-
-    /*
-     * Changing a test location still updates the normal
-     * game status so that the existing Test Mode remains
-     * easy to understand.
-     */
 
     const status =
         document.getElementById(
@@ -1763,68 +2092,116 @@ function setTestTeam(team) {
         return;
     }
 
-    const teamNumber = Number(team);
+    const teamNumber =
+        Number(team);
 
-    if (![1, 2, 3].includes(teamNumber)) {
+    if (
+        !GAME_RULES.teams.includes(
+            teamNumber
+        )
+    ) {
+
         return;
+
     }
 
-    selectedTeam = teamNumber;
+    selectedTeam =
+        teamNumber;
 
-    starterCompleted = false;
+    starterCompleted =
+        false;
 
     activitiesState = {};
 
     activeSubmissionIds = {};
 
-    /*
-     * Reset geo-fence state when switching simulated teams.
-     */
 
-    geoFencePenaltyPointsAwarded = 0;
+    geoFencePenaltyPointsAwarded =
+        0;
 
     geoFenceTriggeredZones = {};
 
-    geoFenceDisqualified = false;
+    geoFenceDisqualified =
+        false;
 
-    geoFenceDisqualificationZone = null;
+    geoFenceDisqualificationZone =
+        null;
 
-    lastGeoFencePosition = null;
+    lastGeoFencePosition =
+        null;
 
-    lastGeoFenceState = "CLEAR";
+    lastGeoFenceState =
+        "CLEAR";
+
 
     saveState();
 
+
     const status =
-        document.getElementById("testTeamStatus");
+        document.getElementById(
+            "testTeamStatus"
+        );
+
 
     if (status) {
+
         status.textContent =
-            "Testing as Team " + teamNumber +
-            ". Starter: " +
+            "Testing as Team "
+            +
+            teamNumber
+            +
+            ". Starter: "
+            +
             (
                 activities.find(
-                    activity => activity.starterTeam === teamNumber
-                )?.title || "none"
+                    activity =>
+                        activity.starterTeam ===
+                        teamNumber
+                )?.title
+                ||
+                "none"
             );
+
     }
 
-    document.getElementById("briefingTeam").textContent =
-        "Team " + teamNumber + " — 🧪 TEST MODE";
+
+    document.getElementById(
+        "briefingTeam"
+    ).textContent =
+        "Team "
+        +
+        teamNumber
+        +
+        " — 🧪 TEST MODE";
+
 
     renderActivities();
 
-    updateGeoFenceDisplay("CLEAR");
+    updateGeoFenceDisplay(
+        "CLEAR"
+    );
+
 
     const gameStatus =
-        document.getElementById("gameStatus");
+        document.getElementById(
+            "gameStatus"
+        );
+
 
     if (gameStatus) {
-        gameStatus.className = "status test";
+
+        gameStatus.className =
+            "status test";
+
         gameStatus.textContent =
-            "🧪 Testing as Team " + teamNumber +
+            "🧪 Testing as Team "
+            +
+            teamNumber
+            +
             ". Go to the starter's simulated location.";
+
     }
+
 }
 
 
@@ -1834,42 +2211,58 @@ function resetTestGameProgress() {
         return;
     }
 
+
     activitiesState = {};
 
-    starterCompleted = false;
+    starterCompleted =
+        false;
 
     activeSubmissionIds = {};
 
-    /*
-     * Reset geo-fence penalties and disqualification too.
-     */
 
-    geoFencePenaltyPointsAwarded = 0;
+    geoFencePenaltyPointsAwarded =
+        0;
 
     geoFenceTriggeredZones = {};
 
-    geoFenceDisqualified = false;
+    geoFenceDisqualified =
+        false;
 
-    geoFenceDisqualificationZone = null;
+    geoFenceDisqualificationZone =
+        null;
 
-    lastGeoFencePosition = null;
+    lastGeoFencePosition =
+        null;
 
-    lastGeoFenceState = "CLEAR";
+    lastGeoFenceState =
+        "CLEAR";
+
 
     saveState();
 
     renderActivities();
 
-    updateGeoFenceDisplay("CLEAR");
+    updateGeoFenceDisplay(
+        "CLEAR"
+    );
+
 
     const gameStatus =
-        document.getElementById("gameStatus");
+        document.getElementById(
+            "gameStatus"
+        );
+
 
     if (gameStatus) {
-        gameStatus.className = "status test";
+
+        gameStatus.className =
+            "status test";
+
         gameStatus.textContent =
             "🧪 Test progress reset. Your starter is locked until completed.";
+
     }
+
 }
 
 
@@ -1895,9 +2288,7 @@ function advanceTestTime(
 ) {
 
     if (!testMode) {
-
         return;
-
     }
 
 
@@ -1918,7 +2309,7 @@ function advanceTestTime(
 
     if (
         elapsed >=
-        gameDurationMinutes * 60
+        GAME_RULES.durationMinutes * 60
     ) {
 
         const status =
@@ -1949,7 +2340,8 @@ function resetTestTime() {
     }
 
 
-    testTimeOffsetSeconds = 0;
+    testTimeOffsetSeconds =
+        0;
 
     saveState();
 
@@ -1974,9 +2366,13 @@ function formatElapsedTime(
 
 
     return (
-        minutes +
-        ":" +
-        String(seconds).padStart(
+        minutes
+        +
+        ":"
+        +
+        String(
+            seconds
+        ).padStart(
             2,
             "0"
         )
@@ -2048,23 +2444,42 @@ function updateTestPanel() {
 
 
     const teamStatus =
-        document.getElementById("testTeamStatus");
+        document.getElementById(
+            "testTeamStatus"
+        );
+
 
     if (teamStatus) {
+
         const starter =
             activities.find(
-                activity => activity.starterTeam === selectedTeam
+                activity =>
+                    activity.starterTeam ===
+                    selectedTeam
             );
 
+
         teamStatus.textContent =
-            "Testing as Team " +
-            (selectedTeam || "?") +
+            "Testing as Team "
+            +
+            (
+                selectedTeam
+                ||
+                "?"
+            )
+            +
             (
                 starter
-                ? " · Starter: " + starter.title
-                : ""
+                ?
+                " · Starter: "
+                +
+                starter.title
+                :
+                ""
             );
+
     }
+
 
     if (location) {
 
@@ -2082,7 +2497,9 @@ function updateTestPanel() {
         ).textContent =
             "Distance to meeting point: "
             +
-            Math.round(distance)
+            Math.round(
+                distance
+            )
             +
             "m";
 
@@ -2104,7 +2521,8 @@ function getCurrentTime() {
                 gameStartedAt
             ).getTime()
             +
-            testTimeOffsetSeconds * 1000
+            testTimeOffsetSeconds *
+            1000
         );
 
     }
@@ -2146,7 +2564,7 @@ function updateTimer() {
     const remaining =
         Math.max(
             0,
-            gameDurationMinutes * 60
+            GAME_RULES.durationMinutes * 60
             -
             elapsed
         );
@@ -2164,14 +2582,18 @@ function updateTimer() {
     document.getElementById(
         "timer"
     ).textContent =
-        String(minutes).padStart(
+        String(
+            minutes
+        ).padStart(
             2,
             "0"
         )
         +
         ":"
         +
-        String(seconds).padStart(
+        String(
+            seconds
+        ).padStart(
             2,
             "0"
         );
@@ -2219,13 +2641,17 @@ function getActivityState(
             activityId
         ] = {
 
-            status: "LOCKED",
+            status:
+                "LOCKED",
 
-            pointsAwarded: 0,
+            pointsAwarded:
+                0,
 
-            submissionId: null,
+            submissionId:
+                null,
 
-            rejectionReason: ""
+            rejectionReason:
+                ""
 
         };
 
@@ -2285,7 +2711,8 @@ function renderActivities() {
     container.innerHTML = "";
 
 
-    let totalScore = 0;
+    let totalScore =
+        0;
 
 
     activities.forEach(
@@ -2298,7 +2725,8 @@ function renderActivities() {
 
 
             totalScore +=
-                state.pointsAwarded || 0;
+                state.pointsAwarded ||
+                0;
 
 
             const div =
@@ -2347,7 +2775,8 @@ function renderActivities() {
             }
 
 
-            let statusText = "";
+            let statusText =
+                "";
 
 
             if (
@@ -2449,34 +2878,48 @@ function renderActivities() {
             const buttonDisabled =
                 !isUnlocked(activity)
                 ||
-                state.status === "PENDING"
+                state.status ===
+                "PENDING"
                 ||
-                state.status === "APPROVED"
+                state.status ===
+                "APPROVED"
                 ||
-                state.status === "COMPLETED";
+                state.status ===
+                "COMPLETED";
 
 
-            let locationText = "";
+            let locationText =
+                "";
+
 
             if (
                 isUnlocked(activity)
                 &&
-                state.status !== "APPROVED"
+                state.status !==
+                "APPROVED"
                 &&
-                state.status !== "COMPLETED"
+                state.status !==
+                "COMPLETED"
             ) {
+
                 locationText =
                     `
                     <div class="status location-warning">
                         📍 Search area: within
-                        <strong>${searchRadius}m</strong>
-                        of ${escapeHtml(activity.location.name)}.
+                        <strong>
+                            ${searchRadius}m
+                        </strong>
+                        of
+                        ${escapeHtml(
+                            activity.location.name
+                        )}.
                         <br>
                         <span class="small">
                             Your location will be checked when you open the challenge.
                         </span>
                     </div>
                     `;
+
             }
 
 
@@ -2484,17 +2927,23 @@ function renderActivities() {
 
                 <h3>
                     ${
-                        activity.starterTeam === selectedTeam
-                        ? "⭐ "
-                        : ""
+                        activity.starterTeam ===
+                        selectedTeam
+                        ?
+                        "⭐ "
+                        :
+                        ""
                     }
+
                     ${escapeHtml(
                         activity.title
                     )}
                 </h3>
 
                 <p>
-                    ${activity.type}
+                    ${escapeHtml(
+                        activity.type
+                    )}
                     ·
                     ${activity.points} points
                     ·
@@ -2540,25 +2989,7 @@ function renderActivities() {
     );
 
 
-    /*
-     * IMPORTANT:
-     *
-     * Geo-fence deductions are separate from activity points.
-     * This means the existing activity scoring system is untouched.
-     */
-
-    const displayedScore =
-        Math.max(
-            0,
-            totalScore -
-            geoFencePenaltyPointsAwarded
-        );
-
-
-    document.getElementById(
-        "score"
-    ).textContent =
-        displayedScore;
+    updateDisplayedScore();
 
 }
 
@@ -2572,9 +3003,7 @@ async function openActivity(
 ) {
 
     if (geoFenceDisqualified) {
-
         return;
-
     }
 
 
@@ -2595,30 +3024,45 @@ async function openActivity(
 
 
     const state =
-        getActivityState(activityId);
+        getActivityState(
+            activityId
+        );
 
 
     if (
-        state.status === "PENDING"
+        state.status ===
+        "PENDING"
         ||
-        state.status === "APPROVED"
+        state.status ===
+        "APPROVED"
         ||
-        state.status === "COMPLETED"
+        state.status ===
+        "COMPLETED"
     ) {
+
         return;
+
     }
 
 
     const gameStatus =
-        document.getElementById("gameStatus");
+        document.getElementById(
+            "gameStatus"
+        );
 
 
     if (gameStatus) {
-        gameStatus.className = "status pending";
+
+        gameStatus.className =
+            "status pending";
+
         gameStatus.textContent =
             testMode
-            ? "Checking simulated location..."
-            : "Checking your location...";
+            ?
+            "Checking simulated location..."
+            :
+            "Checking your location...";
+
     }
 
 
@@ -2628,17 +3072,17 @@ async function openActivity(
             await getCurrentPosition();
 
 
-        /*
-         * Also run the geo-fence check on this fresh position.
-         */
-
         processGeoFencePosition(
             position
         );
 
 
-        if (geoFenceDisqualified) {
+        if (
+            geoFenceDisqualified
+        ) {
+
             return;
+
         }
 
 
@@ -2651,27 +3095,52 @@ async function openActivity(
             );
 
 
-        if (distance > searchRadius) {
+        if (
+            distance >
+            searchRadius
+        ) {
 
             if (gameStatus) {
-                gameStatus.className = "status error";
+
+                gameStatus.className =
+                    "status error";
+
+
                 gameStatus.innerHTML =
                     testMode
                     ?
-                    "🧪 You are approximately <strong>" +
-                    Math.round(distance) +
-                    "m</strong> from the " +
-                    escapeHtml(activity.location.name) +
+                    "🧪 You are approximately <strong>"
+                    +
+                    Math.round(
+                        distance
+                    )
+                    +
+                    "m</strong> from the "
+                    +
+                    escapeHtml(
+                        activity.location.name
+                    )
+                    +
                     " search area. Simulate that location to open this challenge."
                     :
-                    "You are approximately <strong>" +
-                    Math.round(distance) +
-                    "m</strong> from the " +
-                    escapeHtml(activity.location.name) +
+                    "You are approximately <strong>"
+                    +
+                    Math.round(
+                        distance
+                    )
+                    +
+                    "m</strong> from the "
+                    +
+                    escapeHtml(
+                        activity.location.name
+                    )
+                    +
                     " search area. Move closer and try again.";
+
             }
 
             return;
+
         }
 
 
@@ -2694,10 +3163,18 @@ async function openActivity(
         document.getElementById(
             "activityLocation"
         ).innerHTML =
-            "📍 " +
-            escapeHtml(activity.location.name) +
-            " · <span class=\"location-distance\">" +
-            Math.round(distance) +
+            "📍 "
+            +
+            escapeHtml(
+                activity.location.name
+            )
+            +
+            " · <span class=\"location-distance\">"
+            +
+            Math.round(
+                distance
+            )
+            +
             "m away</span>";
 
 
@@ -2715,15 +3192,20 @@ async function openActivity(
     catch (error) {
 
         if (gameStatus) {
-            gameStatus.className = "status error";
+
+            gameStatus.className =
+                "status error";
+
             gameStatus.textContent =
                 "Unable to obtain your location. Please try again.";
+
         }
 
         console.error(
             "Activity GPS check error:",
             error
         );
+
     }
 
 }
@@ -2788,9 +3270,11 @@ function renderPhotoActivity(
 
 
     if (
-        activity.dbId === null
+        activity.dbId ===
+        null
         ||
-        activity.dbId === undefined
+        activity.dbId ===
+        undefined
     ) {
 
         wrapper.innerHTML = `
@@ -2811,9 +3295,11 @@ function renderPhotoActivity(
 
         `;
 
+
         container.appendChild(
             wrapper
         );
+
 
         return;
 
@@ -2828,9 +3314,16 @@ function renderPhotoActivity(
         </p>
 
         <div class="status location-warning">
+
             📍 Search area:
-            <strong>${searchRadius}m</strong>
-            around ${escapeHtml(activity.location.name)}.
+            <strong>
+                ${searchRadius}m
+            </strong>
+            around
+            ${escapeHtml(
+                activity.location.name
+            )}.
+
         </div>
 
         <input
@@ -2884,6 +3377,7 @@ function renderPhotoActivity(
                 }
 
                 <br>
+
                 Please take another photograph.
 
             </div>
@@ -2907,11 +3401,6 @@ async function verifyActivityLocation(
         await getCurrentPosition();
 
 
-    /*
-     * Keep geo-fence enforcement active during
-     * the existing activity location check.
-     */
-
     processGeoFencePosition(
         position
     );
@@ -2927,6 +3416,7 @@ async function verifyActivityLocation(
 
 
     return {
+
         allowed:
             !geoFenceDisqualified &&
             distance <= searchRadius,
@@ -2969,21 +3459,25 @@ async function submitPhoto(
     try {
 
         const locationCheck =
-            await verifyActivityLocation(activity);
+            await verifyActivityLocation(
+                activity
+            );
+
 
         if (!locationCheck.allowed) {
 
             const status =
-                document.getElementById("photoStatus");
+                document.getElementById(
+                    "photoStatus"
+                );
+
 
             if (geoFenceDisqualified) {
 
                 status.innerHTML =
                     `
                     <div class="status disqualified">
-
                         ⛔ Hunt disqualified.
-
                     </div>
                     `;
 
@@ -2998,12 +3492,17 @@ async function submitPhoto(
 
                     ${
                         testMode
-                        ? "🧪 "
-                        : ""
+                        ?
+                        "🧪 "
+                        :
+                        ""
                     }
+
                     You are approximately
                     <strong>
-                        ${Math.round(locationCheck.distance)}m
+                        ${Math.round(
+                            locationCheck.distance
+                        )}m
                     </strong>
                     from the search area.
 
@@ -3014,7 +3513,9 @@ async function submitPhoto(
                 </div>
                 `;
 
+
             return;
+
         }
 
     }
@@ -3022,7 +3523,10 @@ async function submitPhoto(
     catch (error) {
 
         const status =
-            document.getElementById("photoStatus");
+            document.getElementById(
+                "photoStatus"
+            );
+
 
         status.innerHTML =
             `
@@ -3034,8 +3538,15 @@ async function submitPhoto(
             </div>
             `;
 
-        console.error("Photo GPS check error:", error);
+
+        console.error(
+            "Photo GPS check error:",
+            error
+        );
+
+
         return;
+
     }
 
 
@@ -3046,14 +3557,17 @@ async function submitPhoto(
 
 
     if (
-        databaseActivityId === null
+        databaseActivityId ===
+        null
         ||
-        databaseActivityId === undefined
+        databaseActivityId ===
+        undefined
     ) {
 
         alert(
             "This activity is not yet configured for photo submission."
         );
+
 
         return;
 
@@ -3087,6 +3601,7 @@ async function submitPhoto(
 
             </div>
             `;
+
 
         return;
 
@@ -3149,7 +3664,9 @@ async function submitPhoto(
         const uploadResult =
             await supabaseClient
                 .storage
-                .from("hunt-photos")
+                .from(
+                    "hunt-photos"
+                )
                 .upload(
                     filePath,
                     file,
@@ -3304,7 +3821,6 @@ async function submitPhoto(
             },
             500
         );
-
 
     }
 
@@ -3508,7 +4024,8 @@ async function checkSubmissionStatuses() {
                     if (
                         !state.pointsAwarded
                         ||
-                        state.pointsAwarded === 0
+                        state.pointsAwarded ===
+                        0
                     ) {
 
                         state.pointsAwarded =
@@ -3873,12 +4390,21 @@ function renderPuzzleActivity(
     container.innerHTML = `
 
         ${
-            activity.starterTeam === selectedTeam
+            activity.starterTeam ===
+            selectedTeam
             ?
             `
             <div class="status location-ok">
-                ⭐ <strong>Mandatory starting challenge</strong><br>
-                Complete this challenge correctly to unlock the rest of the hunt.
+
+                ⭐ <strong>
+                    Mandatory starting challenge
+                </strong>
+
+                <br>
+
+                Complete this challenge correctly
+                to unlock the rest of the hunt.
+
             </div>
             `
             :
@@ -3891,9 +4417,14 @@ function renderPuzzleActivity(
         </p>
 
         <div class="status location-warning">
+
             📍 You must be within
-            <strong>${searchRadius}m</strong>
-            of the search area to submit your answer.
+            <strong>
+                ${searchRadius}m
+            </strong>
+            of the search area to submit
+            your answer.
+
         </div>
 
         <input
@@ -3958,7 +4489,10 @@ async function submitPuzzle(
     try {
 
         const locationCheck =
-            await verifyActivityLocation(activity);
+            await verifyActivityLocation(
+                activity
+            );
+
 
         if (!locationCheck.allowed) {
 
@@ -3984,12 +4518,17 @@ async function submitPuzzle(
 
                     ${
                         testMode
-                        ? "🧪 "
-                        : ""
+                        ?
+                        "🧪 "
+                        :
+                        ""
                     }
+
                     You are approximately
                     <strong>
-                        ${Math.round(locationCheck.distance)}m
+                        ${Math.round(
+                            locationCheck.distance
+                        )}m
                     </strong>
                     from the search area.
 
@@ -4000,7 +4539,9 @@ async function submitPuzzle(
                 </div>
                 `;
 
+
             return;
+
         }
 
     }
@@ -4017,8 +4558,15 @@ async function submitPuzzle(
             </div>
             `;
 
-        console.error("Puzzle GPS check error:", error);
+
+        console.error(
+            "Puzzle GPS check error:",
+            error
+        );
+
+
         return;
+
     }
 
 
@@ -4032,6 +4580,7 @@ async function submitPuzzle(
 
             </div>
             `;
+
 
         return;
 
@@ -4157,13 +4706,6 @@ function returnToGame() {
 
 function getCurrentPosition() {
 
-    /*
-     * TEST MODE:
-     *
-     * Return the selected simulated location
-     * instead of asking the phone for GPS.
-     */
-
     if (testMode) {
 
         const location =
@@ -4226,6 +4768,7 @@ function getCurrentPosition() {
                 resolve,
                 reject,
                 {
+
                     enableHighAccuracy:
                         true,
 
@@ -4234,6 +4777,7 @@ function getCurrentPosition() {
 
                     maximumAge:
                         10000
+
                 }
             );
 
@@ -4247,38 +4791,13 @@ function getCurrentPosition() {
    CONTINUOUS GPS GEO-FENCE MONITORING
    ============================================================ */
 
-/*
- * This is intentionally separate from getCurrentPosition().
- *
- * getCurrentPosition() is still used for the existing
- * activity/finish checks.
- *
- * watchPosition() is used only for continuous geo-fencing.
- *
- * IMPORTANT:
- *
- * A GPS update calls processGeoFencePosition().
- *
- * It does NOT call renderActivities().
- *
- * It does NOT reload the page.
- *
- * It does NOT rebuild the current activity.
- */
-
 function startGeoFenceMonitoring() {
-
-    /*
-     * Test Mode does not need a real GPS watch.
-     *
-     * setTestLocation() directly feeds simulated positions
-     * into processGeoFencePosition().
-     */
 
     if (testMode) {
 
         const location =
             getTestLocation();
+
 
         if (location) {
 
@@ -4307,7 +4826,8 @@ function startGeoFenceMonitoring() {
 
 
     if (
-        geoFenceWatchId !== null
+        geoFenceWatchId !==
+        null
     ) {
 
         return;
@@ -4352,7 +4872,8 @@ function startGeoFenceMonitoring() {
 function stopGeoFenceMonitoring() {
 
     if (
-        geoFenceWatchId !== null
+        geoFenceWatchId !==
+        null
         &&
         navigator.geolocation
     ) {
@@ -4395,13 +4916,6 @@ function handleGeoFenceError(
     );
 
 
-    /*
-     * We do not disqualify or penalise somebody merely because
-     * the phone temporarily cannot obtain GPS.
-     *
-     * The last known geo-fence state remains in force.
-     */
-
     const status =
         document.getElementById(
             "gameStatus"
@@ -4413,12 +4927,6 @@ function handleGeoFenceError(
         &&
         !geoFenceDisqualified
     ) {
-
-        /*
-         * Only show this as a small location notice.
-         *
-         * We deliberately do not rebuild the page.
-         */
 
         if (
             error.code ===
@@ -4452,8 +4960,13 @@ function processGeoFencePosition(
     position
 ) {
 
-    if (!position || !position.coords) {
+    if (
+        !position ||
+        !position.coords
+    ) {
+
         return;
+
     }
 
 
@@ -4481,9 +4994,11 @@ function processGeoFencePosition(
 
     lastGeoFencePosition = {
 
-        lat: lat,
+        lat:
+            lat,
 
-        lon: lon,
+        lon:
+            lon,
 
         accuracy:
             Number(
@@ -4495,10 +5010,6 @@ function processGeoFencePosition(
 
     };
 
-
-    /*
-     * Once disqualified, nothing can undo that decision.
-     */
 
     if (
         geoFenceDisqualified
@@ -4523,13 +5034,6 @@ function processGeoFencePosition(
                 )
         );
 
-
-    /*
-     * DISQUALIFICATION HAS PRIORITY.
-     *
-     * If a point happened to fall within overlapping zones,
-     * the disqualification zone wins.
-     */
 
     const disqualificationZone =
         containingZones.find(
@@ -4620,12 +5124,6 @@ function triggerGeoFencePenalty(
     zone
 ) {
 
-    /*
-     * Only deduct once per zone.
-     *
-     * GPS may report the same location many times.
-     */
-
     if (
         geoFenceTriggeredZones[
             zone.id
@@ -4637,6 +5135,11 @@ function triggerGeoFencePenalty(
     }
 
 
+    const penalty =
+        zone.penalty ||
+        GAME_RULES.geoFence.defaultPenaltyPoints;
+
+
     geoFenceTriggeredZones[
         zone.id
     ] = {
@@ -4645,27 +5148,16 @@ function triggerGeoFencePenalty(
             new Date().toISOString(),
 
         penalty:
-            zone.penalty ||
-            geoFencePenaltyPoints
+            penalty
 
     };
 
 
     geoFencePenaltyPointsAwarded +=
-        zone.penalty ||
-        geoFencePenaltyPoints;
+        penalty;
 
 
     saveState();
-
-
-    /*
-     * This is the ONLY score update caused by the GPS watcher.
-     *
-     * It updates the number on the existing page.
-     *
-     * It does NOT render the activities list.
-     */
 
     updateDisplayedScore();
 
@@ -4685,6 +5177,7 @@ function triggerGeoFencePenalty(
         gameStatus.className =
             "status penalty-zone";
 
+
         gameStatus.innerHTML =
             `
             ⚠️ <strong>
@@ -4693,12 +5186,14 @@ function triggerGeoFencePenalty(
 
             <br><br>
 
-            ${escapeHtml(zone.name)}
+            ${escapeHtml(
+                zone.name
+            )}
 
             <br>
 
             <strong>
-                -${zone.penalty || geoFencePenaltyPoints}
+                -${penalty}
                 points
             </strong>
 
@@ -4759,13 +5254,6 @@ function triggerGeoFenceDisqualification(
     saveState();
 
 
-    /*
-     * Stop the continuous watcher.
-     *
-     * There is no reason to continue monitoring after the
-     * game has already been disqualified.
-     */
-
     stopGeoFenceMonitoring();
 
 
@@ -4804,6 +5292,7 @@ function triggerGeoFenceDisqualification(
         gameStatus.className =
             "status disqualified";
 
+
         gameStatus.innerHTML =
             `
             ⛔ <strong>
@@ -4817,7 +5306,9 @@ function triggerGeoFenceDisqualification(
             <br>
 
             <strong>
-                ${escapeHtml(zone.name)}
+                ${escapeHtml(
+                    zone.name
+                )}
             </strong>
 
             <br><br>
@@ -4828,13 +5319,6 @@ function triggerGeoFenceDisqualification(
 
     }
 
-
-    /*
-     * If the team happens to be looking at an activity,
-     * replace only that activity's content.
-     *
-     * No page reload occurs.
-     */
 
     const activityScreen =
         document.getElementById(
@@ -4871,7 +5355,9 @@ function triggerGeoFenceDisqualification(
                     </p>
 
                     <strong>
-                        ${escapeHtml(zone.name)}
+                        ${escapeHtml(
+                            zone.name
+                        )}
                     </strong>
 
                     <p>
@@ -4887,13 +5373,6 @@ function triggerGeoFenceDisqualification(
     }
 
 
-    /*
-     * Render the activity list once here so that the buttons
-     * become locked after disqualification.
-     *
-     * This happens only once, when the state actually changes.
-     */
-
     renderActivities();
 
 }
@@ -4908,20 +5387,15 @@ function updateGeoFenceDisplay(
     zone = null
 ) {
 
-    /*
-     * Avoid needless DOM updates.
-     *
-     * This is one of the things that prevents the old
-     * "jerky" behaviour.
-     */
-
     if (
         state ===
         lastGeoFenceState
         &&
-        state !== "PENALTY"
+        state !==
+        "PENALTY"
         &&
-        state !== "WARNING"
+        state !==
+        "WARNING"
     ) {
 
         return;
@@ -4945,7 +5419,8 @@ function updateGeoFenceDisplay(
         );
 
 
-    let html = "";
+    let html =
+        "";
 
     let className =
         "status";
@@ -4976,8 +5451,10 @@ function updateGeoFenceDisplay(
             <strong>
                 ${escapeHtml(
                     zone
-                    ? zone.name
-                    : "a restricted area"
+                    ?
+                    zone.name
+                    :
+                    "a restricted area"
                 )}
             </strong>.
 
@@ -5004,8 +5481,10 @@ function updateGeoFenceDisplay(
 
             ${escapeHtml(
                 zone
-                ? zone.name
-                : "Restricted area"
+                ?
+                zone.name
+                :
+                "Restricted area"
             )}
 
             <br>
@@ -5191,13 +5670,6 @@ function updateDisplayedScore() {
    POINT IN POLYGON
    ============================================================ */
 
-/*
- * Standard ray-casting algorithm.
- *
- * Returns true if the supplied latitude/longitude is
- * inside the polygon.
- */
-
 function pointInPolygon(
     lat,
     lon,
@@ -5337,7 +5809,9 @@ function distanceInMetres(
         2 *
         Math.atan2(
             Math.sqrt(a),
-            Math.sqrt(1 - a)
+            Math.sqrt(
+                1 - a
+            )
         );
 
 
@@ -5359,11 +5833,14 @@ async function finishHunt() {
                 "gameStatus"
             );
 
+
         status.className =
             "status disqualified";
 
+
         status.textContent =
             "⛔ This hunt has been disqualified.";
+
 
         return;
 
@@ -5394,18 +5871,17 @@ async function finishHunt() {
             await getCurrentPosition();
 
 
-        /*
-         * Perform one final geo-fence check before allowing
-         * the team to finish.
-         */
-
         processGeoFencePosition(
             position
         );
 
 
-        if (geoFenceDisqualified) {
+        if (
+            geoFenceDisqualified
+        ) {
+
             return;
+
         }
 
 
@@ -5432,13 +5908,17 @@ async function finishHunt() {
                 ?
                 "🧪 Simulated location is approximately "
                 +
-                Math.round(distance)
+                Math.round(
+                    distance
+                )
                 +
                 "m from the meeting point. Simulate the Playing Field location before finishing."
                 :
                 "You are approximately "
                 +
-                Math.round(distance)
+                Math.round(
+                    distance
+                )
                 +
                 "m from the meeting point. Return closer before finishing.";
 
@@ -5470,7 +5950,7 @@ async function finishHunt() {
 
 
         const allowedSeconds =
-            gameDurationMinutes *
+            GAME_RULES.durationMinutes *
             60;
 
 
@@ -5485,13 +5965,13 @@ async function finishHunt() {
         const penaltyIntervals =
             Math.ceil(
                 lateSeconds /
-                penaltyIntervalSeconds
+                GAME_RULES.latePenalty.intervalSeconds
             );
 
 
         const timePenalty =
             penaltyIntervals *
-            penaltyPerInterval;
+            GAME_RULES.latePenalty.points;
 
 
         const activityScore =
@@ -5808,7 +6288,8 @@ async function loadValidatorSubmissions() {
             " photo"
             +
             (
-                submissions.length === 1
+                submissions.length ===
+                1
                 ?
                 ""
                 :
@@ -6110,7 +6591,8 @@ async function rejectSubmission(
 
 
     if (
-        reason === null
+        reason ===
+        null
     ) {
 
         return;
@@ -6188,7 +6670,8 @@ function getFileExtension(
 
 
     if (
-        parts.length < 2
+        parts.length <
+        2
     ) {
 
         return "jpg";
@@ -6251,6 +6734,17 @@ loadState();
 
 
 /*
+ * Keep the page title/configuration tied to the game rules.
+ */
+
+document.title =
+    GAME_RULES.name + " 3";
+
+
+updateBriefingText();
+
+
+/*
  * If an active hunt exists, restore it.
  */
 
@@ -6294,10 +6788,6 @@ else if (
     &&
     geoFenceDisqualified
 ) {
-
-    /*
-     * Restore a previously disqualified game.
-     */
 
     showScreen(
         "gameScreen"
