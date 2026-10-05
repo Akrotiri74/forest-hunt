@@ -226,6 +226,18 @@ hr {
     font-weight: bold;
     margin: 10px 0;
 }
+
+.location-ok {
+    background: #dff1df;
+}
+
+.location-warning {
+    background: #fff1c9;
+}
+
+.location-distance {
+    font-weight: bold;
+}
 </style>
 </head>
 
@@ -379,6 +391,53 @@ hr {
                     Reset Simulated Location
 
                 </button>
+
+            </div>
+
+
+            <div class="test-section">
+
+                <h3>👥 Simulate Team</h3>
+
+                <div class="test-grid">
+
+                    <button
+                        class="test-location"
+                        onclick="setTestTeam(1)">
+
+                        Team 1
+
+                    </button>
+
+                    <button
+                        class="test-location"
+                        onclick="setTestTeam(2)">
+
+                        Team 2
+
+                    </button>
+
+                    <button
+                        class="test-location"
+                        onclick="setTestTeam(3)">
+
+                        Team 3
+
+                    </button>
+
+                    <button
+                        class="secondary"
+                        onclick="resetTestGameProgress()">
+
+                        Reset Test Progress
+
+                    </button>
+
+                </div>
+
+                <div id="testTeamStatus" class="small">
+                    Testing as Team 1
+                </div>
 
             </div>
 
@@ -607,7 +666,9 @@ const supabaseClient =
 
 const gameDurationMinutes = 60;
 
-const searchRadius = 40;
+// GPS is deliberately an area trigger rather than an exact checkpoint.
+// 100m gives the hunt some tolerance for normal phone GPS error in woodland.
+const searchRadius = 100;
 
 const returnRadius = 150;
 
@@ -1219,6 +1280,8 @@ function setTestLocation(
 
     updateTimer();
 
+    renderActivities();
+
 
     const location =
         locations[locationKey];
@@ -1265,6 +1328,83 @@ function resetTestLocation() {
 
     updateTestPanel();
 
+}
+
+
+function setTestTeam(team) {
+
+    if (!testMode) {
+        return;
+    }
+
+    const teamNumber = Number(team);
+
+    if (![1, 2, 3].includes(teamNumber)) {
+        return;
+    }
+
+    selectedTeam = teamNumber;
+
+    // Changing test team starts that team's starter from scratch,
+    // but deliberately leaves the Supabase photo/validator system untouched.
+    starterCompleted = false;
+    activitiesState = {};
+    activeSubmissionIds = {};
+
+    saveState();
+
+    const status =
+        document.getElementById("testTeamStatus");
+
+    if (status) {
+        status.textContent =
+            "Testing as Team " + teamNumber +
+            ". Starter: " +
+            (
+                activities.find(
+                    activity => activity.starterTeam === teamNumber
+                )?.title || "none"
+            );
+    }
+
+    document.getElementById("briefingTeam").textContent =
+        "Team " + teamNumber + " — 🧪 TEST MODE";
+
+    renderActivities();
+
+    const gameStatus =
+        document.getElementById("gameStatus");
+
+    if (gameStatus) {
+        gameStatus.className = "status test";
+        gameStatus.textContent =
+            "🧪 Testing as Team " + teamNumber +
+            ". Go to the starter's simulated location.";
+    }
+}
+
+
+function resetTestGameProgress() {
+
+    if (!testMode) {
+        return;
+    }
+
+    activitiesState = {};
+    starterCompleted = false;
+    activeSubmissionIds = {};
+
+    saveState();
+    renderActivities();
+
+    const gameStatus =
+        document.getElementById("gameStatus");
+
+    if (gameStatus) {
+        gameStatus.className = "status test";
+        gameStatus.textContent =
+            "🧪 Test progress reset. Your starter is locked until completed.";
+    }
 }
 
 
@@ -1441,6 +1581,25 @@ function updateTestPanel() {
             testTimeOffsetSeconds
         );
 
+
+    const teamStatus =
+        document.getElementById("testTeamStatus");
+
+    if (teamStatus) {
+        const starter =
+            activities.find(
+                activity => activity.starterTeam === selectedTeam
+            );
+
+        teamStatus.textContent =
+            "Testing as Team " +
+            (selectedTeam || "?") +
+            (
+                starter
+                ? " · Starter: " + starter.title
+                : ""
+            );
+    }
 
     if (location) {
 
@@ -1816,6 +1975,30 @@ function renderActivities() {
                 state.status === "COMPLETED";
 
 
+            let locationText = "";
+
+            if (
+                isUnlocked(activity)
+                &&
+                state.status !== "APPROVED"
+                &&
+                state.status !== "COMPLETED"
+            ) {
+                locationText =
+                    `
+                    <div class="status location-warning">
+                        📍 Search area: within
+                        <strong>${searchRadius}m</strong>
+                        of ${escapeHtml(activity.location.name)}.
+                        <br>
+                        <span class="small">
+                            Your location will be checked when you open the challenge.
+                        </span>
+                    </div>
+                    `;
+            }
+
+
             div.innerHTML = `
 
                 <h3>
@@ -1835,6 +2018,8 @@ function renderActivities() {
                 </p>
 
                 ${statusText}
+
+                ${locationText}
 
                 ${
                     !buttonDisabled
@@ -1881,7 +2066,7 @@ function renderActivities() {
    ACTIVITY OPEN
    ============================================================ */
 
-function openActivity(
+async function openActivity(
     activityId
 ) {
 
@@ -1896,45 +2081,128 @@ function openActivity(
     }
 
 
+    if (!isUnlocked(activity)) {
+        return;
+    }
+
+
+    const state =
+        getActivityState(activityId);
+
+
     if (
-        !isUnlocked(activity)
+        state.status === "PENDING"
+        ||
+        state.status === "APPROVED"
+        ||
+        state.status === "COMPLETED"
     ) {
         return;
     }
 
 
-    currentActivityId =
-        activityId;
+    const gameStatus =
+        document.getElementById("gameStatus");
 
 
-    document.getElementById(
-        "activityTitle"
-    ).textContent =
-        activity.title;
+    if (gameStatus) {
+        gameStatus.className = "status pending";
+        gameStatus.textContent =
+            testMode
+            ? "Checking simulated location..."
+            : "Checking your location...";
+    }
 
 
-    document.getElementById(
-        "activityDescription"
-    ).textContent =
-        activity.description;
+    try {
+
+        const position =
+            await getCurrentPosition();
 
 
-    document.getElementById(
-        "activityLocation"
-    ).textContent =
-        "📍 "
-        +
-        activity.location.name;
+        const distance =
+            distanceInMetres(
+                position.coords.latitude,
+                position.coords.longitude,
+                activity.location.lat,
+                activity.location.lon
+            );
 
 
-    renderActivityContent(
-        activity
-    );
+        if (distance > searchRadius) {
+
+            if (gameStatus) {
+                gameStatus.className = "status error";
+                gameStatus.innerHTML =
+                    testMode
+                    ?
+                    "🧪 You are approximately <strong>" +
+                    Math.round(distance) +
+                    "m</strong> from the " +
+                    escapeHtml(activity.location.name) +
+                    " search area. Simulate that location to open this challenge."
+                    :
+                    "You are approximately <strong>" +
+                    Math.round(distance) +
+                    "m</strong> from the " +
+                    escapeHtml(activity.location.name) +
+                    " search area. Move closer and try again.";
+            }
+
+            return;
+        }
 
 
-    showScreen(
-        "activityScreen"
-    );
+        currentActivityId =
+            activityId;
+
+
+        document.getElementById(
+            "activityTitle"
+        ).textContent =
+            activity.title;
+
+
+        document.getElementById(
+            "activityDescription"
+        ).textContent =
+            activity.description;
+
+
+        document.getElementById(
+            "activityLocation"
+        ).innerHTML =
+            "📍 " +
+            escapeHtml(activity.location.name) +
+            " · <span class=\"location-distance\">" +
+            Math.round(distance) +
+            "m away</span>";
+
+
+        renderActivityContent(
+            activity
+        );
+
+
+        showScreen(
+            "activityScreen"
+        );
+
+    }
+
+    catch (error) {
+
+        if (gameStatus) {
+            gameStatus.className = "status error";
+            gameStatus.textContent =
+                "Unable to obtain your location. Please try again.";
+        }
+
+        console.error(
+            "Activity GPS check error:",
+            error
+        );
+    }
 
 }
 
@@ -2037,6 +2305,12 @@ function renderPhotoActivity(
             take a photograph of the target.
         </p>
 
+        <div class="status location-warning">
+            📍 Search area:
+            <strong>${searchRadius}m</strong>
+            around ${escapeHtml(activity.location.name)}.
+        </div>
+
         <input
             id="photoInput"
             type="file"
@@ -2100,6 +2374,41 @@ function renderPhotoActivity(
 
 
 /* ============================================================
+   ACTIVITY LOCATION CHECK
+   ============================================================ */
+
+async function verifyActivityLocation(
+    activity
+) {
+
+    const position =
+        await getCurrentPosition();
+
+
+    const distance =
+        distanceInMetres(
+            position.coords.latitude,
+            position.coords.longitude,
+            activity.location.lat,
+            activity.location.lon
+        );
+
+
+    return {
+        allowed:
+            distance <= searchRadius,
+
+        distance:
+            distance,
+
+        position:
+            position
+    };
+
+}
+
+
+/* ============================================================
    PHOTO SUBMISSION
    ============================================================ */
 
@@ -2114,6 +2423,63 @@ async function submitPhoto(
 
 
     if (!activity) {
+        return;
+    }
+
+
+    try {
+
+        const locationCheck =
+            await verifyActivityLocation(activity);
+
+        if (!locationCheck.allowed) {
+
+            const status =
+                document.getElementById("photoStatus");
+
+            status.innerHTML =
+                `
+                <div class="status error">
+
+                    ${
+                        testMode
+                        ? "🧪 "
+                        : ""
+                    }
+                    You are approximately
+                    <strong>
+                        ${Math.round(locationCheck.distance)}m
+                    </strong>
+                    from the search area.
+
+                    <br><br>
+
+                    Move closer to the target and try again.
+
+                </div>
+                `;
+
+            return;
+        }
+
+    }
+
+    catch (error) {
+
+        const status =
+            document.getElementById("photoStatus");
+
+        status.innerHTML =
+            `
+            <div class="status error">
+
+                Unable to verify your location.
+                Please try again.
+
+            </div>
+            `;
+
+        console.error("Photo GPS check error:", error);
         return;
     }
 
@@ -2956,6 +3322,12 @@ function renderPuzzleActivity(
             enter your answer below.
         </p>
 
+        <div class="status location-warning">
+            📍 You must be within
+            <strong>${searchRadius}m</strong>
+            of the search area to submit your answer.
+        </div>
+
         <input
             type="text"
             id="puzzleAnswer"
@@ -2977,7 +3349,7 @@ function renderPuzzleActivity(
 }
 
 
-function submitPuzzle(
+async function submitPuzzle(
     activityId
 ) {
 
@@ -3008,6 +3380,57 @@ function submitPuzzle(
         input.value
             .trim()
             .toUpperCase();
+
+
+    try {
+
+        const locationCheck =
+            await verifyActivityLocation(activity);
+
+        if (!locationCheck.allowed) {
+
+            status.innerHTML =
+                `
+                <div class="status error">
+
+                    ${
+                        testMode
+                        ? "🧪 "
+                        : ""
+                    }
+                    You are approximately
+                    <strong>
+                        ${Math.round(locationCheck.distance)}m
+                    </strong>
+                    from the search area.
+
+                    <br><br>
+
+                    Move closer to the target and try again.
+
+                </div>
+                `;
+
+            return;
+        }
+
+    }
+
+    catch (error) {
+
+        status.innerHTML =
+            `
+            <div class="status error">
+
+                Unable to verify your location.
+                Please try again.
+
+            </div>
+            `;
+
+        console.error("Puzzle GPS check error:", error);
+        return;
+    }
 
 
     if (!answer) {
